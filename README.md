@@ -17,7 +17,7 @@ Full-screen (100vw × 100vh) real-time WebGL fly-through. Plain HTML + CSS + ES 
 ## Texnik (render)
 
 - **PBR:** barcha materiallar `MeshPhysicalMaterial` / `MeshStandardMaterial`. Procedural tekstura to'plamlari (albedo + roughness + bump): shpaklyovka devor, laklangan dub parket (clearcoat), ohaktosh plaza, maysazor, beton, cho'tkalangan alyuminiy.
-- **Shisha:** `transmission: 0.9, roughness: 0.1, ior: 1.5, thickness: 0.5` — fasad, ochiq eshiklar, yuqori qavat, piramida haykali; suzuvchi kub/torus — iridescent shisha; portret ustida shisha qoplama.
+- **Shisha:** `transmission: 0.9, roughness: 0.1, ior: 1.5, thickness: 0.5` — fasad, ochiq eshiklar, yuqori qavat, piramida haykali; suzuvchi kub/torus — iridescent shisha; portret ustida aks ettiruvchi shisha qoplama (rasm tiniq qolishi uchun transmission ishlatilmagan).
 - **Metall:** oyna-xrom sfera, oltin halqa va portret ramkasi, cho'tkalangan alyuminiy (doska ramkasi, mullionlar), shisha plitka ichidagi oltin/xrom matematika belgilari (π ∑ √x ∞ x² Δ).
 - **Yorug'lik:** RoomEnvironment IBL, quyosh `DirectionalLight` (PCFSoft soyalar, 2048²), osmon gradienti, hemisphere fill, sinf ichida `PointLight`lar, portret ustida `SpotLight` (galereya chirog'i).
 - **Post-processing:** `EffectComposer` — MSAA (4×) HalfFloat target → `UnrealBloomPass` (faqat chiroq panellari porlaydi) → vinyetka → `OutputPass` (`ACESFilmicToneMapping`, exposure 1.2, sRGB).

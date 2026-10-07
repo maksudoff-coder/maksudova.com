@@ -547,8 +547,11 @@ export async function initAcademy({ canvas: cvs, photoUrl = "assets/tutor-maksud
   photo.position.z = 0.085;
   photo.receiveShadow = true;
   portrait.add(photo);
+  // reflective glass glazing: not transmissive (transmission re-samples the photo at a lower
+  // resolution and softens it), so the portrait stays pin-sharp under real reflections
   const glassCover = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, roughness: 0.03, transmission: 1, ior: 1.5, thickness: 0.02, specularIntensity: 1, envMapIntensity: 1.2,
+    color: 0xffffff, roughness: 0.02, metalness: 0, transparent: true, opacity: 0.06, ior: 1.5,
+    specularIntensity: 1, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.6, depthWrite: false,
   }));
   glassCover.position.z = 0.12;
   portrait.add(glassCover);
