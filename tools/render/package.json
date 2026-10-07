@@ -1,0 +1,11 @@
+{
+  "name": "maksudova-frame-renderer",
+  "private": true,
+  "description": "Renders the cinematic Three.js clips into numbered JPG frames for the scroll scrub.",
+  "type": "module",
+  "scripts": {
+    "hero": "node render.mjs hero out/hero 180",
+    "method": "node render.mjs method out/method 180"
+  },
+  "dependencies": { "three": "0.169.0" }
+}
