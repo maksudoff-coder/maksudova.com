@@ -1,54 +1,36 @@
-# maksudova.com
+# maksudova.com — Teacher Maksudova Math Academy
 
-Light, interactive landing page for **Tutor Maksudova** — online math from Grade 1 to Algebra 1.
-Plain HTML + CSS + JS (ES modules), no build step. Runs from any static host.
+Full-screen (100vw × 100vh) real-time WebGL fly-through. Plain HTML + CSS + ES modules, no build step.
 
-## Dizayn tizimi
+## Ssenariy (scroll progressi)
 
-| | |
-|---|---|
-| **Fon** | `#FFFFFF`, `#F8FAFC`, `#F1F5F9` |
-| **Matn** | `#0F172A`, `#1E293B` (ikkilamchi `#475569`, `#64748B`) |
-| **Urg'u** | Firuza `#14B8A6` → ko'k `#0284C7` gradienti; kamdan-kam amber `#F59E0B` |
-| **Shriftlar** | Lexend (sarlavhalar), Inter (matn), STIX Two Text italik (formulalar) |
+| Scroll | Sahna | Nima bo'ladi |
+|---|---|---|
+| 0–30% | **Exterior** | Yorug' zamonaviy "Math Academy" binosi, plaza, geometrik haykallar (sfera, piramida, kub), daraxtlar. Bino ustida shisha panelda "Teacher Maksudova Math Academy", pastda "Scroll to explore". |
+| 30–65% | **Classroom + tutor** | Kamera eshikdan ichkariga uchib kiradi. Partalar, javon, raqamlar o'qi, suzib yuruvchi kub/piramida/sfera/torus, π ∑ √x ∞ belgilar, zarrachalar. O'ng devorda ramkalangan portret va "Meet your tutor" shisha kartasi. |
+| 65–100% | **Smart blackboard** | Kamera doskaga yaqinlashadi va u ekranni to'ldiradi. Doska ustida interaktiv formulalar (Grade 1 → Algebra 1), 390+ ko'nikmalar kartasi, "Book a Lesson" (Telegram) va "Start Practice" (`/app/`). |
 
-## Bo'limlar
+## Tutor rasmi
 
-1. **Hero** — real-time Three.js 3D koordinata fazosi: pol va orqa devor setkasi, x/y/z o'qlari, kub, piramida, sfera, `y = x²` parabolasi va u bo'ylab harakatlanuvchi nuqta. Sichqoncha bilan aylantiriladi, shakl ustiga borilsa formula chiqadi. Atrofida formula kartochkalari va SmartScore kartasi.
-2. **Skills** — sinflar bo'yicha tablar, Common Core kodlari bilan ko'nikmalar (amaliyot platformasi o'quv dasturidan).
-3. **Explore** — Canvas2D grafik: `y = mx + b` va `y = ax² + c`, slayderlar, hover koordinatalari.
-4. **Try it now** — mashq vidjeti: yangi savollar, javobni tekshirish, yechim bosqichlari, SmartScore va streak.
-5. **Method** — Diagnose → Practice → Master, scroll bilan chiziladigan yo'l.
-6. **Progress** — namunaviy hisobot (hover tooltipli ustunli grafik, mahorat ko'rsatkichlari).
-7. **Platform** — interaktiv kartalar (390+ ko'nikma, 10 brain games, quizzes, video, live board, badges).
-8. **CTA** va footer.
+`assets/tutor-maksudova.jpg` faylini qo'ying. Rasm `THREE.TextureLoader` bilan yuklanadi, ramka rasm proporsiyasiga moslashadi (maks. 2.2 × 2.5 m). Fayl bo'lmasa, ramkada chizilgan placeholder portret ko'rinadi va kartada eslatma chiqadi.
 
-## Sifat va tezlik
+## Texnik
 
-- WebGL: `renderer.setPixelRatio(Math.min(devicePixelRatio, 2))`, antialias, yumshoq soyalar — Retina/4K'da tiniq.
-- Canvas2D grafik ham `devicePixelRatio` bo'yicha chiziladi.
-- 3D sahna ekrandan tashqarida yoki fon tabda to'xtaydi (IntersectionObserver + visibilitychange).
-- Lenis + GSAP ScrollTrigger bitta `gsap.ticker` sikli orqali.
-- `prefers-reduced-motion` hurmat qilinadi.
+- `renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))`, antialias, PBR (`MeshPhysicalMaterial`), RoomEnvironment aks ettirishlari, Ambient + Hemisphere + yumshoq soyali Directional yorug'lik.
+- Kamera yo'li: ikkita `CatmullRomCurve3` (pozitsiya va qarash nuqtasi), keyframe'lar scroll progressiga bog'langan; ekran nisbatiga qarab yakuniy masofa hisoblanadi (doska har doim ekranni to'ldiradi).
+- Lenis + GSAP ScrollTrigger → progress → kamera damped-follow bilan.
+- Glass panellar 3D nuqtalarga proyeksiya qilinadi; doska overlay'i doskaning ekrandagi to'rtburchagiga aniq masshtablanadi (telefonda — alohida shisha karta).
+- WebGL bo'lmasa — oddiy o'qiladigan sahifa.
 
 ## Fayllar
 
 ```
-index.html
-css/styles.css
-js/app.js        Lenis/GSAP, skills, grapher, practice, report, CONFIG (havolalar)
-js/hero3d.js     Three.js hero sahnasi
-vendor/          three r169, RoomEnvironment, gsap 3.12.5 + ScrollTrigger, lenis 1.3.21
+index.html        sahna, shisha panellar, doska overlay'i
+css/styles.css    dizayn (#FAF9F6, #F3F4F6, #14B8A6, #0284C7)
+js/hero3d.js      Three.js sahna: bino, sinf, portret, doska, kamera yo'li
+js/app.js         scroll → progress, panellar, havolalar (CONFIG)
+assets/           tutor-maksudova.jpg shu yerga
+vendor/           three r169 + RoomEnvironment, gsap 3.12.5 + ScrollTrigger, lenis 1.3.21
 ```
 
-## Ishga tushirish
-
-```bash
-python3 -m http.server 8080   # http://localhost:8080
-```
-
-ES modullar `file://` orqali ochilmaydi — har doim server orqali oching.
-
-## Havolalar
-
-`js/app.js` boshidagi `CONFIG.links`: `start` (hozir sahifadagi mashq vidjetiga olib boradi — amaliyot ilovasi manzili tayyor bo'lsa, shu yerga qo'ying), `book`, `telegram`.
+Ishga tushirish: `python3 -m http.server 8080` → http://localhost:8080 (ES modullar `file://` da ishlamaydi).
