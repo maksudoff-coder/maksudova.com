@@ -3,277 +3,379 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Tutor Maksudova — Math, made beautiful</title>
-  <meta name="description" content="One-to-one online math lessons with Tutor Maksudova for Grades 1–8 and Algebra 1. 390+ practice skills, brain games, quizzes and video lessons. Teaching since 2018." />
+  <title>Tutor Maksudova — Math that finally makes sense</title>
+  <meta name="description" content="Interactive online math with Tutor Maksudova: one-to-one lessons plus 390+ practice skills from Grade 1 to Algebra 1, brain games, quizzes and video lessons. Teaching since 2018." />
   <link rel="canonical" href="https://maksudova.com/" />
-  <meta name="theme-color" content="#05060a" />
+  <meta name="theme-color" content="#ffffff" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Tutor Maksudova" />
   <meta property="og:url" content="https://maksudova.com/" />
-  <meta property="og:title" content="Tutor Maksudova — Math, made beautiful" />
-  <meta property="og:description" content="One-to-one online math lessons for Grades 1–8 and Algebra 1. Teaching since 2018, 1000+ students." />
-  <meta property="og:image" content="https://maksudova.com/frames/hero/lg/frame_0120.jpg" />
-  <meta name="twitter:card" content="summary_large_image" />
-
-  <!-- First hero frame starts downloading before any script runs -->
-  <link rel="preload" as="image" href="frames/hero/lg/frame_0001.jpg" media="(min-width: 801px)" />
-  <link rel="preload" as="image" href="frames/hero/sm/frame_0001.jpg" media="(max-width: 800px)" />
+  <meta property="og:title" content="Tutor Maksudova — Math that finally makes sense" />
+  <meta property="og:description" content="One-to-one lessons and 390+ interactive practice skills, Grade 1 to Algebra 1." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Inter:wght@400;500;600&family=STIX+Two+Text:ital,wght@1,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <script>document.documentElement.classList.add("js")</script>
+
+  <script type="importmap">
+    { "imports": {
+      "three": "./vendor/three.module.min.js",
+      "three/addons/": "./vendor/three-addons/"
+    } }
+  </script>
 </head>
-<body class="is-loading">
-  <!-- ============ PRELOADER ============ -->
-  <div class="preloader" id="preloader" aria-hidden="true">
-    <div class="preloader__mark">M</div>
-    <div class="preloader__bar"><span id="preloader-fill"></span></div>
-    <div class="preloader__meta"><span>Preparing the lesson</span><span id="preloader-pct">0%</span></div>
-  </div>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
 
-  <div class="grain" aria-hidden="true"></div>
-  <div class="cursor" aria-hidden="true"><span></span></div>
-
-  <!-- ============ NAV ============ -->
+  <!-- ================= NAV ================= -->
   <header class="nav" id="nav">
-    <a href="#top" class="nav__brand" data-scroll-to>
-      <span class="nav__mono">M</span>
-      <span>Maksudova</span>
-    </a>
-    <nav class="nav__links" aria-label="Main">
-      <a href="#method" data-scroll-to>Method</a>
-      <a href="#programs" data-scroll-to>Programs</a>
-      <a href="#platform" data-scroll-to>Platform</a>
-      <a href="#contact" data-scroll-to>Contact</a>
-    </nav>
-    <a href="#contact" class="btn btn--glass nav__cta magnetic" data-scroll-to>Book a lesson</a>
+    <div class="nav__inner">
+      <a href="#top" class="brand" data-scroll-to aria-label="Tutor Maksudova — home">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="9" fill="url(#bm)"/><path d="M9 22V11l7 7 7-7v11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14b8a6"/><stop offset="1" stop-color="#0284c7"/></linearGradient></defs></svg>
+        </span>
+        <span class="brand__name">Maksudova<span class="brand__dot">.</span></span>
+      </a>
+      <nav class="nav__links" aria-label="Main">
+        <a href="#skills" data-scroll-to>Skills</a>
+        <a href="#graph" data-scroll-to>Explore</a>
+        <a href="#method" data-scroll-to>Method</a>
+        <a href="#platform" data-scroll-to>Platform</a>
+      </nav>
+      <div class="nav__actions">
+        <a href="#practice" class="btn btn--ghost btn--sm nav__start" data-link="start">Start Learning</a>
+        <a href="#" class="btn btn--primary btn--sm" data-link="book" target="_blank" rel="noopener">Book a Lesson</a>
+      </div>
+    </div>
   </header>
 
-  <main id="top">
-    <!-- ============ 1. HERO — cinematic frame scrub ============ -->
-    <section class="scrub scrub--hero" id="hero" aria-label="Introduction">
-      <div class="scrub__sticky">
-        <canvas class="scrub__canvas" aria-hidden="true"></canvas>
-        <div class="scrub__vignette" aria-hidden="true"></div>
+  <main id="main">
+    <!-- ================= HERO ================= -->
+    <section class="hero" id="top">
+      <div class="hero__paper" aria-hidden="true"></div>
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="pill reveal"><span class="pill__dot"></span> Grade 1 → Algebra 1 · Teaching since 2018</p>
+          <h1 class="h-display reveal">Math that finally <span class="hl">makes sense.</span></h1>
+          <p class="lead reveal">Friendly one-to-one lessons with Ms.&nbsp;Maksudova, plus an interactive practice platform with <strong>390+ skills</strong>, brain games and quizzes — so every idea clicks, and stays.</p>
+          <div class="btn-row reveal">
+            <a href="#practice" class="btn btn--primary btn--lg" data-link="start">
+              Start Learning
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="#" class="btn btn--outline btn--lg" data-link="book" target="_blank" rel="noopener">Book a Lesson</a>
+          </div>
+          <ul class="hero__trust reveal" aria-label="At a glance">
+            <li><b data-count="1000" data-suffix="+">1000+</b><span>students taught</span></li>
+            <li><b data-count="390" data-suffix="+">390+</b><span>practice skills</span></li>
+            <li><b>1:1</b><span>live lessons</span></li>
+          </ul>
+        </div>
 
-        <div class="scrub__overlay">
-          <div class="reveal-line reveal-line--hero" data-in="0" data-out="0.2">
-            <p class="eyebrow">Tutor Maksudova &nbsp;·&nbsp; Online math, one-to-one</p>
-            <h1 class="display">Math, <em>made beautiful.</em></h1>
+        <div class="hero__visual" id="hero-visual">
+          <div class="hero__blob hero__blob--a" aria-hidden="true"></div>
+          <div class="hero__blob hero__blob--b" aria-hidden="true"></div>
+          <canvas class="hero__canvas" id="hero-canvas" aria-label="Interactive 3D coordinate space with a cube, a pyramid and a sphere. Drag to rotate."></canvas>
+
+          <div class="float-card float-card--formula fc-1" data-float="1">
+            <span class="fc__label">Pythagorean theorem</span>
+            <span class="math">a² + b² = c²</span>
           </div>
-          <div class="reveal-line reveal-line--left" data-in="0.25" data-out="0.48">
-            <p class="eyebrow">01 — Clarity</p>
-            <h2 class="display display--md">Every concept,<br /><em>seen from every angle.</em></h2>
-            <p class="lede">Abstract ideas become shapes a child can hold in their mind — and turn over until they make sense.</p>
+          <div class="float-card float-card--formula fc-2" data-float="2">
+            <span class="fc__label">Volume of a cube</span>
+            <span class="math">V = s³</span>
           </div>
-          <div class="reveal-line reveal-line--right" data-in="0.52" data-out="0.74">
-            <p class="eyebrow">02 — Range</p>
-            <h2 class="display display--md">Grades 1–8<br /><em>&amp; Algebra 1.</em></h2>
-            <p class="lede">From counting and place value to linear equations — one patient teacher for the whole journey.</p>
+          <div class="float-card float-card--formula fc-3" data-float="3">
+            <span class="fc__label">Parabola</span>
+            <span class="math">y = x²</span>
           </div>
-          <div class="reveal-line reveal-line--hero" data-in="0.8" data-out="1.01">
-            <p class="eyebrow">Teaching since 2018</p>
-            <h2 class="display">1000+ students. <em>One at a time.</em></h2>
-            <div class="cta-row">
-              <a href="#contact" class="btn btn--gold magnetic" data-scroll-to>Book a lesson</a>
-              <a href="#method" class="btn btn--ghost magnetic" data-scroll-to>See the method</a>
+          <div class="float-card float-card--score fc-4" data-float="4">
+            <div class="ring" style="--p:92">
+              <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16"/><circle class="ring__val" cx="20" cy="20" r="16"/></svg>
+              <b>92</b>
+            </div>
+            <div>
+              <span class="fc__label">SmartScore</span>
+              <span class="fc__title">Equivalent fractions</span>
+            </div>
+          </div>
+
+          <div class="shape-tip" id="shape-tip" role="status" aria-live="polite"></div>
+          <p class="hero__hint" aria-hidden="true">
+            <svg viewBox="0 0 20 20"><path d="M3 10a7 7 0 0 1 12-5m2 5a7 7 0 0 1-12 5M15 2v3h-3M5 18v-3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Drag to rotate · hover a shape
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SKILLS ================= -->
+    <section class="section section--tint" id="skills">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow reveal">390+ math skills</p>
+          <h2 class="h-section reveal">Every skill from <span class="hl">Grade 1 to Algebra 1.</span></h2>
+          <p class="lead reveal">Aligned to Common Core. Each skill generates endless fresh questions with step-by-step explanations and a SmartScore that grows with every answer.</p>
+        </header>
+
+        <div class="skills reveal">
+          <div class="tabs" role="tablist" aria-label="Choose a grade" id="grade-tabs"></div>
+          <div class="skills__panel" id="skills-panel" role="tabpanel" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= INTERACTIVE GRAPH ================= -->
+    <section class="section" id="graph">
+      <div class="container graph">
+        <div class="graph__copy">
+          <p class="eyebrow reveal">See math move</p>
+          <h2 class="h-section reveal">Drag a slider. <span class="hl">Watch the graph think.</span></h2>
+          <p class="lead reveal">Students don’t memorise what slope means — they see it. Change the numbers and the line and its key point update instantly.</p>
+
+          <div class="seg reveal" role="tablist" aria-label="Function type">
+            <button class="seg__btn is-active" role="tab" aria-selected="true" data-mode="linear">Linear</button>
+            <button class="seg__btn" role="tab" aria-selected="false" data-mode="quad">Quadratic</button>
+          </div>
+
+          <div class="formula-display reveal" aria-live="polite"><span class="math" id="graph-formula">y = x + 1</span></div>
+
+          <div class="slider reveal">
+            <label for="s1"><span id="s1-name">Slope m</span><output id="s1-out">1</output></label>
+            <input type="range" id="s1" min="-4" max="4" step="0.5" value="1" />
+          </div>
+          <div class="slider reveal">
+            <label for="s2"><span id="s2-name">Intercept b</span><output id="s2-out">1</output></label>
+            <input type="range" id="s2" min="-5" max="5" step="0.5" value="1" />
+          </div>
+          <p class="graph__fact reveal" id="graph-fact">The line crosses the y-axis at (0, 1).</p>
+        </div>
+
+        <div class="graph__board card reveal">
+          <canvas id="graph-canvas" aria-label="Coordinate plane showing the current function"></canvas>
+          <div class="graph__readout" id="graph-readout" aria-hidden="true">Hover the plane</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TRY A SKILL ================= -->
+    <section class="section section--tint" id="practice">
+      <div class="container practice">
+        <div class="practice__copy">
+          <p class="eyebrow reveal">Try it now</p>
+          <h2 class="h-section reveal">One question. <span class="hl">Instant feedback.</span></h2>
+          <p class="lead reveal">This is how practice feels on the platform: a fresh question, a clear answer check, and the steps when you need them.</p>
+          <ul class="checklist reveal">
+            <li>New question every time — no memorising answers</li>
+            <li>Step-by-step explanations after each try</li>
+            <li>SmartScore rewards accuracy and streaks</li>
+          </ul>
+        </div>
+
+        <div class="quiz card reveal" id="quiz">
+          <div class="quiz__top">
+            <div class="chips" role="radiogroup" aria-label="Level" id="quiz-levels">
+              <button class="chip is-active" data-level="g12" role="radio" aria-checked="true">Grades 1–2</button>
+              <button class="chip" data-level="g35" role="radio" aria-checked="false">Grades 3–5</button>
+              <button class="chip" data-level="g68" role="radio" aria-checked="false">Grades 6–8</button>
+              <button class="chip" data-level="alg" role="radio" aria-checked="false">Algebra 1</button>
+            </div>
+            <div class="quiz__score" aria-label="Your SmartScore">
+              <div class="ring ring--sm" id="quiz-ring" style="--p:0">
+                <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16"/><circle class="ring__val" cx="20" cy="20" r="16"/></svg>
+                <b id="quiz-score">0</b>
+              </div>
+              <span>SmartScore</span>
+            </div>
+          </div>
+
+          <p class="quiz__skill" id="quiz-skill">Add within 100</p>
+          <p class="quiz__q math-q" id="quiz-q">24 + 13 = ?</p>
+
+          <form class="quiz__form" id="quiz-form" autocomplete="off">
+            <label class="sr-only" for="quiz-input">Your answer</label>
+            <input id="quiz-input" inputmode="decimal" placeholder="Your answer" />
+            <button class="btn btn--primary" type="submit">Check</button>
+          </form>
+
+          <div class="quiz__feedback" id="quiz-feedback" aria-live="polite"></div>
+          <div class="quiz__foot">
+            <span id="quiz-streak">Streak: 0</span>
+            <button class="link-btn" id="quiz-next" type="button">Skip / new question →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= METHOD ================= -->
+    <section class="section" id="method">
+      <div class="container">
+        <header class="section-head section-head--center">
+          <p class="eyebrow reveal">The method</p>
+          <h2 class="h-section reveal">Three steps to <span class="hl">real confidence.</span></h2>
+        </header>
+
+        <div class="steps">
+          <svg class="steps__path" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+            <path id="steps-path" d="M60 60 C 250 -10, 330 130, 500 60 S 760 -10, 940 60" />
+          </svg>
+
+          <article class="step card reveal">
+            <div class="step__art" aria-hidden="true">
+              <svg viewBox="0 0 120 90"><rect x="10" y="60" width="16" height="20" rx="4" fill="#ccfbf1"/><rect x="34" y="44" width="16" height="36" rx="4" fill="#99f6e4"/><rect x="58" y="30" width="16" height="50" rx="4" fill="#5eead4"/><rect x="82" y="50" width="16" height="30" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-dasharray="3 3"/><circle cx="90" cy="26" r="11" fill="none" stroke="#0284c7" stroke-width="3"/><path d="m98 34 8 8" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/></svg>
+            </div>
+            <span class="step__num">01</span>
+            <h3>Diagnose</h3>
+            <p>A level check shows exactly where your child is — what’s solid, and which pieces are missing.</p>
+          </article>
+
+          <article class="step card reveal">
+            <div class="step__art" aria-hidden="true">
+              <svg viewBox="0 0 120 90"><rect x="14" y="20" width="56" height="56" rx="10" fill="#e0f2fe" transform="rotate(-8 42 48)"/><rect x="30" y="14" width="56" height="56" rx="10" fill="#fff" stroke="#bae6fd" stroke-width="2"/><text x="58" y="48" text-anchor="middle" font-family="STIX Two Text, serif" font-style="italic" font-size="18" fill="#0f172a">3x = 12</text><circle cx="96" cy="62" r="12" fill="#14b8a6"/><path d="m90 62 4 4 8-8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="step__num">02</span>
+            <h3>Practice</h3>
+            <p>Live one-to-one lessons, then targeted skills, brain games and quizzes between sessions.</p>
+          </article>
+
+          <article class="step card reveal">
+            <div class="step__art" aria-hidden="true">
+              <svg viewBox="0 0 120 90"><path d="M60 10 72 34l26 4-19 18 5 26-24-13-24 13 5-26-19-18 26-4z" fill="#fde68a" stroke="#f59e0b" stroke-width="2.5" stroke-linejoin="round"/><circle cx="60" cy="46" r="8" fill="#fff"/></svg>
+            </div>
+            <span class="step__num">03</span>
+            <h3>Master</h3>
+            <p>Badges, certificates and a rising SmartScore turn small wins into lasting confidence.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PROGRESS DASHBOARD ================= -->
+    <section class="section section--tint" id="progress">
+      <div class="container progress">
+        <div class="progress__copy">
+          <p class="eyebrow reveal">Progress you can see</p>
+          <h2 class="h-section reveal">Clear results for <span class="hl">students and parents.</span></h2>
+          <p class="lead reveal">Every answer feeds a simple report: skills practised, accuracy, recent mistakes, badges and certificates — week by week.</p>
+          <a href="#" class="btn btn--outline reveal" data-link="book" target="_blank" rel="noopener">Ask about a report</a>
+        </div>
+
+        <div class="dash card reveal" id="dash">
+          <div class="dash__head">
+            <div>
+              <span class="dash__tag">Sample report</span>
+              <h3>This week</h3>
+            </div>
+            <div class="dash__kpis">
+              <div><b data-count="148">148</b><span>questions</span></div>
+              <div><b data-count="87" data-suffix="%">87%</b><span>accuracy</span></div>
+              <div><b data-count="5">5</b><span>badges</span></div>
+            </div>
+          </div>
+
+          <div class="dash__body">
+            <figure class="dash__chart">
+              <figcaption>Questions answered per day</figcaption>
+              <div class="bars" id="bars" role="img" aria-label="Questions answered per day: Mon 18, Tue 26, Wed 14, Thu 31, Fri 22, Sat 12, Sun 25"></div>
+              <div class="bars__tip" id="bars-tip" aria-hidden="true"></div>
+            </figure>
+
+            <div class="dash__skills">
+              <p class="dash__sub">Skill mastery</p>
+              <ul class="mastery" id="mastery"></ul>
             </div>
           </div>
         </div>
-
-        <div class="hud" aria-hidden="true">
-          <span class="hud__tl">MAKSUDOVA / MATH</span>
-          <span class="hud__tr" data-frame-readout>000 / 180</span>
-          <span class="hud__bl">φ = 1.6180339…</span>
-          <span class="hud__br">GRADES 1–8 · ALGEBRA 1</span>
-          <div class="hud__progress"><span data-progress-fill></span></div>
-        </div>
-        <div class="scroll-hint" aria-hidden="true"><span>Scroll</span><i></i></div>
       </div>
     </section>
 
-    <!-- ============ 2. MANIFESTO — word-by-word scrub ============ -->
-    <section class="manifesto" aria-label="Philosophy">
-      <p class="eyebrow eyebrow--center reveal">The philosophy</p>
-      <p class="manifesto__text" data-split-words>
-        Most children don’t hate math. They hate feeling lost. Every lesson replaces that feeling with
-        <em>clarity</em> — one patient step, one small win, one confident student at a time.
-      </p>
-      <p class="manifesto__sign reveal">— Ms. Maksudova</p>
-    </section>
-
-    <!-- ============ 3. STATS ============ -->
-    <section class="stats" aria-label="In numbers">
-      <div class="stat reveal">
-        <span class="stat__num" data-count="2018" data-plain>0</span>
-        <span class="stat__label">Teaching since</span>
-      </div>
-      <div class="stat reveal">
-        <span class="stat__num" data-count="1000" data-suffix="+">0</span>
-        <span class="stat__label">Students taught</span>
-      </div>
-      <div class="stat reveal">
-        <span class="stat__num" data-count="390" data-suffix="+">0</span>
-        <span class="stat__label">Practice skills</span>
-      </div>
-      <div class="stat reveal">
-        <span class="stat__num stat__num--static">1:1</span>
-        <span class="stat__label">Live, personal lessons</span>
-      </div>
-    </section>
-
-    <!-- ============ 4. METHOD — cinematic frame scrub #2 ============ -->
-    <section class="scrub scrub--method" id="method" aria-label="The method">
-      <div class="scrub__sticky">
-        <canvas class="scrub__canvas" aria-hidden="true"></canvas>
-        <div class="scrub__vignette scrub__vignette--side" aria-hidden="true"></div>
-
-        <div class="scrub__overlay scrub__overlay--steps">
-          <p class="eyebrow method__eyebrow">The method</p>
-          <div class="reveal-line step" data-in="0" data-out="0.34">
-            <span class="step__num">01</span>
-            <h2 class="display display--md">Diagnose.</h2>
-            <p class="lede">A level check finds exactly where your child is — the solid pieces, and the missing ones.</p>
-          </div>
-          <div class="reveal-line step" data-in="0.36" data-out="0.68">
-            <span class="step__num">02</span>
-            <h2 class="display display--md">Practice.</h2>
-            <p class="lede">Live one-to-one lessons, then 390+ adaptive skills, brain games and quizzes between sessions.</p>
-          </div>
-          <div class="reveal-line step" data-in="0.7" data-out="1.01">
-            <span class="step__num">03</span>
-            <h2 class="display display--md"><em>Master.</em></h2>
-            <p class="lede">Scattered pieces become structure. Confidence becomes a habit.</p>
-          </div>
-        </div>
-
-        <div class="hud" aria-hidden="true">
-          <span class="hud__tl">METHOD</span>
-          <span class="hud__tr" data-frame-readout>000 / 180</span>
-          <span class="hud__bl">137.507764°</span>
-          <span class="hud__br">CHAOS → STRUCTURE</span>
-          <div class="hud__progress"><span data-progress-fill></span></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 5. PROGRAMS — pinned horizontal scroll, 3D cards ============ -->
-    <section class="programs" id="programs" aria-label="Programs">
-      <div class="programs__pin">
-        <header class="programs__head">
-          <p class="eyebrow">Programs</p>
-          <h2 class="display display--md">A path for <em>every level.</em></h2>
+    <!-- ================= PLATFORM ================= -->
+    <section class="section" id="platform">
+      <div class="container">
+        <header class="section-head section-head--center">
+          <p class="eyebrow reveal">The platform</p>
+          <h2 class="h-section reveal">Everything between lessons, <span class="hl">in one place.</span></h2>
         </header>
-        <div class="programs__track">
-          <article class="card tilt">
-            <span class="card__glyph">1+2</span>
-            <p class="card__grade">Grades 1–2</p>
-            <h3 class="card__title">Foundations</h3>
-            <p class="card__text">Counting, place value, addition and subtraction, shapes and measurement — built through play.</p>
-          </article>
-          <article class="card tilt">
-            <span class="card__glyph">×</span>
-            <p class="card__grade">Grades 3–5</p>
-            <h3 class="card__title">Fluency</h3>
-            <p class="card__text">Multiplication and division, fractions and decimals, word problems, area and volume.</p>
-          </article>
-          <article class="card tilt">
-            <span class="card__glyph">a:b</span>
-            <p class="card__grade">Grades 6–8</p>
-            <h3 class="card__title">Reasoning</h3>
-            <p class="card__text">Ratios and percents, negative numbers, expressions, geometry and an introduction to statistics.</p>
-          </article>
-          <article class="card tilt card--accent">
-            <span class="card__glyph">x</span>
-            <p class="card__grade">Algebra 1</p>
-            <h3 class="card__title">Abstraction</h3>
-            <p class="card__text">Linear equations and inequalities, functions, systems, exponents and quadratics.</p>
-          </article>
-          <article class="card card--cta">
-            <p class="card__grade">Not sure where to start?</p>
-            <h3 class="card__title">Find your child’s level.</h3>
-            <a href="#contact" class="btn btn--gold magnetic" data-scroll-to>Start here</a>
-          </article>
+
+        <div class="tiles">
+          <a class="tile tile--teal reveal" href="#practice" data-link="start">
+            <span class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span>
+            <span class="tile__big">390+</span>
+            <h3>Practice by skill</h3>
+            <p>Grade 1 to Algebra 1, endless new questions and a SmartScore for each skill.</p>
+            <span class="tile__go">Start practising →</span>
+          </a>
+          <a class="tile tile--blue reveal" href="#practice" data-link="start">
+            <span class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="11" rx="5"/><path d="M8 11v3m-1.5-1.5h3M15.5 12h.01M17.5 14h.01"/></svg></span>
+            <span class="tile__big">10</span>
+            <h3>Brain games</h3>
+            <p>Speed, logic and number sense — practice that feels like play.</p>
+            <span class="tile__go">Play →</span>
+          </a>
+          <a class="tile tile--amber reveal" href="#practice" data-link="start">
+            <span class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="m9 12 2 2 4-4M9 7h6"/></svg></span>
+            <h3>Quizzes &amp; review tests</h3>
+            <p>Short checks that show what has stuck and what needs another look.</p>
+            <span class="tile__go">Take a quiz →</span>
+          </a>
+          <a class="tile tile--blue reveal" href="#practice" data-link="start">
+            <span class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg></span>
+            <h3>Video lessons</h3>
+            <p>Re-watch any explanation, any time, at your own pace.</p>
+            <span class="tile__go">Watch →</span>
+          </a>
+          <a class="tile tile--teal reveal" href="#" data-link="book" target="_blank" rel="noopener">
+            <span class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 13l3-3 2 2 4-4"/></svg></span>
+            <h3>Live lesson board</h3>
+            <p>Work through problems together, one-to-one, on a shared board.</p>
+            <span class="tile__go">Book a lesson →</span>
+          </a>
+          <a class="tile tile--amber reveal" href="#progress" data-scroll-to>
+            <span class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/></svg></span>
+            <h3>Badges &amp; certificates</h3>
+            <p>Celebrate milestones and keep motivation high.</p>
+            <span class="tile__go">See progress →</span>
+          </a>
         </div>
       </div>
     </section>
 
-    <!-- ============ 6. PLATFORM — bento with 3D tilt ============ -->
-    <section class="platform" id="platform" aria-label="Learning platform">
-      <header class="section-head">
-        <p class="eyebrow reveal">Between lessons</p>
-        <h2 class="display display--md reveal">A whole platform,<br /><em>built for one student.</em></h2>
-      </header>
-      <div class="bento">
-        <article class="bento__item bento__item--wide tilt reveal">
-          <span class="bento__big">390+</span>
-          <h3>Practice skills</h3>
-          <p>Grade 1 to Algebra 1, with endless freshly generated questions — never the same worksheet twice.</p>
-        </article>
-        <article class="bento__item tilt reveal">
-          <span class="bento__icon">◆</span>
-          <h3>Brain games</h3>
-          <p>Speed, logic and number sense — practice that feels like play.</p>
-        </article>
-        <article class="bento__item tilt reveal">
-          <span class="bento__icon">✓</span>
-          <h3>Quizzes &amp; review tests</h3>
-          <p>Short checks that show what has stuck and what needs another look.</p>
-        </article>
-        <article class="bento__item tilt reveal">
-          <span class="bento__icon">▶</span>
-          <h3>Video lessons</h3>
-          <p>Re-watch any explanation, any time, at your own pace.</p>
-        </article>
-        <article class="bento__item tilt reveal">
-          <span class="bento__icon">✎</span>
-          <h3>Live lesson board</h3>
-          <p>Work through problems together on a shared board.</p>
-        </article>
-        <article class="bento__item bento__item--wide tilt reveal">
-          <span class="bento__icon">↗</span>
-          <h3>Progress parents can see</h3>
-          <p>Badges, certificates, assignment results and recent mistakes — a clear picture of growth, week by week.</p>
-        </article>
-      </div>
-    </section>
-
-    <!-- ============ 7. TOPICS MARQUEE ============ -->
-    <section class="marquee" aria-label="Topics">
-      <div class="marquee__row" data-marquee="1">
-        <span>Place value</span><i>✦</i><span>Fractions</span><i>✦</i><span>Decimals</span><i>✦</i><span>Times tables</span><i>✦</i><span>Word problems</span><i>✦</i><span>Geometry</span><i>✦</i>
-      </div>
-      <div class="marquee__row marquee__row--alt" data-marquee="-1">
-        <span>Ratios</span><i>✦</i><span>Percents</span><i>✦</i><span>Integers</span><i>✦</i><span>Linear equations</span><i>✦</i><span>Functions</span><i>✦</i><span>Quadratics</span><i>✦</i>
-      </div>
-    </section>
-
-    <!-- ============ 8. CTA ============ -->
-    <section class="cta" id="contact" aria-label="Book a lesson">
-      <div class="cta__glow" aria-hidden="true"></div>
-      <p class="eyebrow eyebrow--center reveal">Your first step</p>
-      <h2 class="display reveal">Let’s make math<br /><em>their favourite subject.</em></h2>
-      <p class="lede lede--center reveal">Message Ms. Maksudova to book a one-to-one lesson or a level check. Lessons are online, so you can join from anywhere.</p>
-      <div class="cta-row cta-row--center reveal">
-        <a class="btn btn--gold btn--lg magnetic" data-link="book" href="#" target="_blank" rel="noopener">Book a lesson</a>
-        <a class="btn btn--ghost btn--lg magnetic" data-link="telegram" href="#" target="_blank" rel="noopener">Telegram</a>
+    <!-- ================= CTA ================= -->
+    <section class="section section--cta" id="contact">
+      <div class="container">
+        <div class="cta reveal">
+          <div class="cta__shapes" aria-hidden="true">
+            <span class="cta__cube"></span><span class="cta__tri"></span><span class="cta__dot"></span>
+          </div>
+          <div class="cta__copy">
+            <h2 class="h-section">Ready to make math <span class="cta__em">their favourite subject?</span></h2>
+            <p>Book a one-to-one lesson or a level check. Lessons are online — join from anywhere.</p>
+          </div>
+          <div class="btn-row">
+            <a href="#" class="btn btn--white btn--lg" data-link="book" target="_blank" rel="noopener">Book a Lesson</a>
+            <a href="#practice" class="btn btn--glass btn--lg" data-link="start">Start Learning</a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <span class="footer__brand"><span class="nav__mono">M</span> Tutor Maksudova</span>
-    <span class="footer__meta">Online math tutoring · Grades 1–8 · Algebra 1 · Since 2018</span>
-    <span class="footer__meta">© <span id="year">2026</span> maksudova.com</span>
+    <div class="container footer__inner">
+      <a href="#top" class="brand" data-scroll-to>
+        <span class="brand__mark" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="9" fill="url(#bm2)"/><path d="M9 22V11l7 7 7-7v11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="bm2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14b8a6"/><stop offset="1" stop-color="#0284c7"/></linearGradient></defs></svg></span>
+        <span class="brand__name">Tutor Maksudova</span>
+      </a>
+      <p>Online math tutoring · Grade 1 to Algebra 1 · Since 2018</p>
+      <p><a href="#" data-link="telegram" target="_blank" rel="noopener">Telegram</a> · © <span id="year">2026</span> maksudova.com</p>
+    </div>
   </footer>
-
-  <noscript><style>.preloader{display:none}body.is-loading{overflow:auto}.reveal,.reveal-line{opacity:1!important;transform:none!important}</style></noscript>
 
   <script src="vendor/gsap.min.js" defer></script>
   <script src="vendor/ScrollTrigger.min.js" defer></script>
   <script src="vendor/lenis.min.js" defer></script>
-  <script src="js/scroll-cinematic.js" defer></script>
-  <script src="js/app.js" defer></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
