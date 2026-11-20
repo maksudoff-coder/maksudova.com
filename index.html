@@ -5182,25 +5182,25 @@ var Store = (function(){
     if(h < 17) return { t:"Good afternoon", i:"🌤️" };
     return { t:"Good evening", i:"🌙" };
   }
-  /* a little owl on the sign-in form: watches the login being typed, hides its eyes for the password */
-  function owlSVG(){
-    return '<svg class="owl" id="owl" viewBox="0 0 140 130" aria-hidden="true">'+
-      '<defs><linearGradient id="owlB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b8cff"/><stop offset="1" stop-color="#2f5bf0"/></linearGradient></defs>'+
-      '<ellipse class="o-shadow" cx="70" cy="124" rx="34" ry="4" fill="rgba(31,48,110,.12)"/>'+
+  /* a little fox sitting on the chalkboard: watches the login being typed, covers its eyes for the password */
+  function foxSVG(){
+    return '<svg class="owl fox" id="owl" viewBox="0 0 140 132" aria-hidden="true">'+
+      '<defs><linearGradient id="foxB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffab4d"/><stop offset="1" stop-color="#ff7417"/></linearGradient></defs>'+
       '<g class="o-head">'+
-        '<path d="M34 46 L30 22 L50 36 Z M106 46 L110 22 L90 36 Z" fill="#2f5bf0"/>'+
-        '<ellipse cx="70" cy="74" rx="42" ry="44" fill="url(#owlB)"/>'+
-        '<ellipse cx="70" cy="94" rx="25" ry="20" fill="#e3ebff"/>'+
-        '<path d="M58 90 q4 4 8 0 M66 98 q4 4 8 0 M74 90 q4 4 8 0" fill="none" stroke="#b9c9f5" stroke-width="2" stroke-linecap="round"/>'+
-        '<g class="o-cap"><path d="M40 32 L70 20 L100 32 L70 44 Z" fill="#1a2140"/><path d="M52 37 v8 q18 8 36 0 v-8" fill="#1a2140"/><path d="M100 32 v14" stroke="#ffb23f" stroke-width="2.5" stroke-linecap="round"/><circle cx="100" cy="48" r="3.5" fill="#ffb23f"/></g>'+
-        '<g class="o-eye o-eyeL"><circle cx="52" cy="66" r="15" fill="#fff"/><g class="o-pupil"><circle cx="52" cy="66" r="7" fill="#1a2140"/><circle cx="54.5" cy="63.5" r="2.2" fill="#fff"/></g><path class="o-happy" d="M42 68 q10 -10 20 0" fill="none" stroke="#1a2140" stroke-width="3.5" stroke-linecap="round"/></g>'+
-        '<g class="o-eye o-eyeR"><circle cx="88" cy="66" r="15" fill="#fff"/><g class="o-pupil"><circle cx="88" cy="66" r="7" fill="#1a2140"/><circle cx="90.5" cy="63.5" r="2.2" fill="#fff"/></g><path class="o-happy" d="M78 68 q10 -10 20 0" fill="none" stroke="#1a2140" stroke-width="3.5" stroke-linecap="round"/></g>'+
-        '<path class="o-brow o-browL" d="M41 56 L61 49" stroke="#1a2140" stroke-width="3.5" stroke-linecap="round"/><path class="o-brow o-browR" d="M99 56 L79 49" stroke="#1a2140" stroke-width="3.5" stroke-linecap="round"/>'+
-        '<path d="M64 78 L76 78 L70 88 Z" fill="#ff9a2e" stroke="#e8780f" stroke-width="1.5" stroke-linejoin="round"/>'+
-        '<circle class="o-blush" cx="40" cy="84" r="5" fill="#ff8fb1" opacity=".55"/><circle class="o-blush" cx="100" cy="84" r="5" fill="#ff8fb1" opacity=".55"/>'+
+        '<path d="M31 62 L37 12 L66 38 Z M109 62 L103 12 L74 38 Z" fill="url(#foxB)" stroke="#e8650f" stroke-width="1.5" stroke-linejoin="round"/>'+
+        '<path d="M39 50 L41 24 L57 39 Z M101 50 L99 24 L83 39 Z" fill="#3a2630"/>'+
+        '<path d="M70 30 C99 30 117 46 117 66 C117 87 96 103 70 118 C44 103 23 87 23 66 C23 46 41 30 70 30 Z" fill="url(#foxB)"/>'+
+        '<path class="f-shine" d="M44 44 q12 -8 26 -6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="5" stroke-linecap="round"/>'+
+        '<path d="M70 118 C55 109 36 97 29 79 C44 86 58 84 70 93 C82 84 96 86 111 79 C104 97 85 109 70 118 Z" fill="#fff6ec"/>'+
+        '<circle class="o-blush" cx="40" cy="81" r="5.5" fill="#ff8fb1" opacity=".55"/><circle class="o-blush" cx="100" cy="81" r="5.5" fill="#ff8fb1" opacity=".55"/>'+
+        '<g class="o-eye o-eyeL"><g class="o-pupil"><ellipse cx="54" cy="66" rx="6.5" ry="8" fill="#2a1d24"/><circle cx="56.5" cy="62.5" r="2.4" fill="#fff"/></g><path class="o-happy" d="M46 68 q8 -9 16 0" fill="none" stroke="#2a1d24" stroke-width="3.5" stroke-linecap="round"/></g>'+
+        '<g class="o-eye o-eyeR"><g class="o-pupil"><ellipse cx="86" cy="66" rx="6.5" ry="8" fill="#2a1d24"/><circle cx="88.5" cy="62.5" r="2.4" fill="#fff"/></g><path class="o-happy" d="M78 68 q8 -9 16 0" fill="none" stroke="#2a1d24" stroke-width="3.5" stroke-linecap="round"/></g>'+
+        '<path class="o-brow o-browL" d="M45 55 L62 50" stroke="#2a1d24" stroke-width="3.5" stroke-linecap="round"/><path class="o-brow o-browR" d="M95 55 L78 50" stroke="#2a1d24" stroke-width="3.5" stroke-linecap="round"/>'+
+        '<ellipse cx="70" cy="92" rx="7.5" ry="5.5" fill="#2a1d24"/><circle cx="67.5" cy="90.5" r="1.8" fill="#fff" opacity=".7"/>'+
+        '<path class="f-mouth" d="M70 97.5 q-4 5 -9 2.5 M70 97.5 q4 5 9 2.5" fill="none" stroke="#2a1d24" stroke-width="2.2" stroke-linecap="round"/>'+
       '</g>'+
-      '<path class="o-wing o-wingL" d="M30 80 q-16 14 -6 38 q14 -4 22 -22 z" fill="#2549d6"/>'+
-      '<path class="o-wing o-wingR" d="M110 80 q16 14 6 38 q-14 -4 -22 -22 z" fill="#2549d6"/>'+
+      '<g class="o-wing o-wingL"><ellipse cx="50" cy="121" rx="13" ry="9.5" fill="#4a2f2a"/><path d="M44 117 v5 M50 116 v6 M56 117 v5" stroke="#6d4a40" stroke-width="2" stroke-linecap="round"/></g>'+
+      '<g class="o-wing o-wingR"><ellipse cx="90" cy="121" rx="13" ry="9.5" fill="#4a2f2a"/><path d="M84 117 v5 M90 116 v6 M96 117 v5" stroke="#6d4a40" stroke-width="2" stroke-linecap="round"/></g>'+
     '</svg>';
   }
   function owlBind(root){
@@ -5208,11 +5208,11 @@ var Store = (function(){
     var login = root.querySelector("#s-login"), pass = root.querySelector("#s-pass"), sub = root.querySelector(".mc-hello span"), sub0 = sub ? sub.textContent : "";
     var pupils = owl.querySelectorAll(".o-pupil"), blinkT = null;
     function look(dx, dy){ pupils.forEach(function(p){ p.style.transform = "translate(" + dx + "px," + dy + "px)"; }); }
-    function mode(m){ owl.classList.remove("cover", "peek", "sad", "happy"); if(m) owl.classList.add(m); }
+    function mode(m){ owl.classList.remove("cover", "peek", "sad", "happy", "look"); if(m) owl.classList.add(m); }
     function track(){ var n = login.value.length, r = Math.min(1, n / 22); look(-6 + 12 * r, 5);
       if(sub){ var nm = login.value.trim(); sub.textContent = nm ? "Nice to see you, " + nm.charAt(0).toUpperCase() + nm.slice(1, 20) + "!" : sub0; } }
     function passMode(){ mode(pass.type === "text" ? "peek" : "cover"); }
-    if(login){ login.addEventListener("focus", function(){ mode(""); track(); }); login.addEventListener("input", function(){ mode(""); track(); }); login.addEventListener("blur", function(){ look(0, 0); }); }
+    if(login){ login.addEventListener("focus", function(){ mode("look"); track(); }); login.addEventListener("input", function(){ mode("look"); track(); }); login.addEventListener("blur", function(){ look(0, 0); owl.classList.remove("look"); }); }
     if(pass){
       pass.addEventListener("focus", passMode); pass.addEventListener("input", passMode);
       pass.addEventListener("blur", function(){ setTimeout(function(){ if(document.activeElement !== pass){ owl.classList.remove("cover", "peek"); } }, 0); look(0, 0); });
@@ -5257,24 +5257,13 @@ var Store = (function(){
 
   function rememberPref(){ try{ return localStorage.getItem("tm-remember") !== "0"; }catch(e){ return true; } }
   function savedLogin(){ try{ return localStorage.getItem("tm-last-login") || ""; }catch(e){ return ""; } }
-  /* ---------- sign-in card: the chalkboard (chalk underline, wooden ledge, chalk dust while typing) ---------- */
+  /* ---------- sign-in card: a glass gradient card with the logo on top and the fox sitting on its edge ---------- */
   function signinLook(){
     var f = document.getElementById("lp-signin"); if(!f || f.dataset.look) return;
-    f.dataset.look = "board"; f.classList.add("look-board");
-    var h2 = f.querySelector(".t-form-h h2");
-    if(h2) h2.insertAdjacentHTML("afterend", '<svg class="bd-line" viewBox="0 0 180 16" aria-hidden="true"><path d="M4 10 C 40 3, 80 14, 120 7 S 165 6, 176 9"/></svg>');
-    f.insertAdjacentHTML("beforeend", '<div class="bd-ledge" aria-hidden="true"><i class="ck1"></i><i class="ck2"></i><i class="er"></i></div>');
-    if("IntersectionObserver" in window){ var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ f.classList.add("seen"); io.disconnect(); } }); }, { threshold:.35 }); io.observe(f); }
-    else f.classList.add("seen");
-    if(REDUCED) return;
-    f.querySelectorAll("input[type=text],input[type=password]").forEach(function(inp){ inp.addEventListener("input", function(){
-      var field = inp.closest(".field"); if(!field) return;
-      var x = Math.min(inp.clientWidth - 40, 46 + inp.value.length * (inp.type === "password" ? 12 : 11));
-      for(var i=0;i<3;i++){ var d = document.createElement("i"); d.className = "chalk-p";
-        d.style.left = (x + Math.random()*8) + "px"; d.style.top = (inp.offsetTop + inp.offsetHeight - 10) + "px";
-        d.style.setProperty("--dx", (Math.random()*18 - 9) + "px"); d.style.setProperty("--dy", (16 + Math.random()*18) + "px");
-        field.appendChild(d); setTimeout(function(n){ return function(){ n.remove(); }; }(d), 950); }
-    }); });
+    f.dataset.look = "glass"; f.classList.add("look-glass");
+    if(!S.teacherSetup) f.insertAdjacentHTML("afterbegin", foxSVG());
+    var b = f.querySelector(".t-form-b");
+    if(b) b.insertAdjacentHTML("afterbegin", '<div class="gl-logo"><img src="'+LOGO_BADGE+'" alt="Tutor Maksudova"></div>');
   }
   async function viewEntry(fresh0){
     var d = fresh0 || entrySaved() || { p:{}, posts:[], reviews:[] };
@@ -5298,8 +5287,8 @@ var Store = (function(){
     if(!setup){
       form = '<p class="bd-sub mc-hello"><span>Use the login and password from your teacher</span></p>'+
         '<div class="login-fields">'+
-        field("s-login", "Login", "text", USER_I, 'autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="30" placeholder="your login"')+
-        field("s-pass", "Password", "password", LOCK_I, 'autocomplete="current-password" maxlength="30" placeholder="your password"')+
+        field("s-login", "Login", "text", USER_I, 'autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="30" placeholder="Login"')+
+        field("s-pass", "Password", "password", LOCK_I, 'autocomplete="current-password" maxlength="30" placeholder="Password"')+
         '<div class="remember-row"><label class="check remember"><input type="checkbox" id="l-remember"'+(rememberPref() ? " checked" : "")+'> Remember me</label>'+
         '<span class="muted">Forgot it? Ask your teacher.</span></div></div>'+
         '<div class="err" id="l-err" role="alert"></div><button class="btn gold block big" id="l-go">Sign in</button>';
@@ -9251,33 +9240,36 @@ html body .mc-ask{color:#ffd38a !important;margin-top:18px;}
 @media (prefers-reduced-motion:reduce){ .ph-live i{animation:none;} }
 @media (max-width:1000px){ html body .mc-art{min-height:560px;} }
 
-/* ---------- interactive owl on the sign-in form ---------- */
-.mc-hello .owl{width:118px;height:110px;display:block;margin:0 auto 6px;overflow:visible;}
+/* ---------- the fox sitting on top of the sign-in chalkboard ---------- */
+.look-glass .fox{position:absolute;left:50%;top:-126px;width:140px;height:132px;margin-left:-70px;overflow:visible;z-index:3;pointer-events:none;filter:drop-shadow(0 8px 10px rgba(14,22,58,.18));}
 .owl .o-pupil{transition:transform .18s ease-out;}
 .owl .o-eye{transform-box:fill-box;transform-origin:center;transition:transform .12s;}
 .owl.blink .o-eye{transform:scaleY(.1);}
 .owl .o-happy{opacity:0;}
-.owl .o-brow{opacity:0;transition:opacity .2s,transform .2s;transform-box:fill-box;transform-origin:center;}
-.owl .o-wing{transform-box:fill-box;transform-origin:50% 100%;transition:transform .35s cubic-bezier(.3,1.4,.5,1);}
+.owl .o-brow{opacity:0;transition:opacity .2s;}
+.owl .o-wing{transform-box:fill-box;transform-origin:50% 50%;transition:transform .38s cubic-bezier(.3,1.4,.5,1);}
 .owl .o-head{transform-box:fill-box;transform-origin:50% 100%;transition:transform .3s;}
-/* password hidden: wings cover the eyes */
-.owl.cover .o-wingL{transform:translate(29px,-46px) rotate(-24deg) scale(1.2);}
-.owl.cover .o-wingR{transform:translate(-29px,-46px) rotate(24deg) scale(1.2);}
-/* password shown: one wing drops, the owl peeks */
-.owl.peek .o-wingL{transform:translate(29px,-46px) rotate(-24deg) scale(1.2);}
-.owl.peek .o-wingR{transform:translate(-8px,-14px) rotate(40deg);}
-.owl.peek .o-eyeR .o-pupil{transform:translate(-3px,4px);}
-/* wrong login: sad brows and a head shake */
+/* typing the login: the fox leans toward the text */
+.owl.look .o-head{transform:rotate(-3deg);}
+/* password hidden: both paws cover the eyes */
+.owl.cover .o-wingL{transform:translate(4px,-55px) rotate(14deg) scale(1.18);}
+.owl.cover .o-wingR{transform:translate(-4px,-55px) rotate(-14deg) scale(1.18);}
+.owl.cover .o-head{transform:translateY(3px);}
+/* password shown: one paw slips down, the fox peeks */
+.owl.peek .o-wingL{transform:translate(4px,-55px) rotate(14deg) scale(1.18);}
+.owl.peek .o-wingR{transform:translate(-2px,-27px) rotate(-26deg) scale(1.08);}
+.owl.peek .o-eyeR .o-pupil{transform:translate(-2px,3px);}
+/* wrong login: worried brows and a head shake */
 .owl.sad .o-brow{opacity:1;}
-
 .owl.sad .o-head{animation:owlNo .5s ease-in-out;}
 @keyframes owlNo{0%,100%{transform:rotate(0)}20%{transform:rotate(-7deg)}40%{transform:rotate(7deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(4deg)}}
-/* signed in: happy eyes, a little hop */
-.owl.happy .o-pupil, .owl.happy .o-eye circle{opacity:0;}
+/* signed in: happy eyes, paws up, a little hop */
+.owl.happy .o-pupil{opacity:0;}
 .owl.happy .o-happy{opacity:1;}
 .owl.happy{animation:owlHop .55s cubic-bezier(.3,1.6,.5,1);}
-.owl.happy .o-wingL{transform:rotate(-38deg);} .owl.happy .o-wingR{transform:rotate(38deg);}
+.owl.happy .o-wingL{transform:translate(-8px,-16px) rotate(-24deg);} .owl.happy .o-wingR{transform:translate(8px,-16px) rotate(24deg);}
 @keyframes owlHop{0%{transform:translateY(0)}40%{transform:translateY(-12px)}100%{transform:translateY(0)}}
+@media (max-width:560px){ .look-glass .fox{width:108px;height:102px;margin-left:-54px;top:-98px;} }
 html body .mc-form .login-panel.shake{animation:formShake .42s ease-in-out;}
 @keyframes formShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
 html body .mc-form #l-go.ok{background:linear-gradient(180deg,#36cf86,#16a864) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 24px rgba(22,168,100,.35) !important;}
@@ -9289,58 +9281,50 @@ html body .mc-form .field input:focus + .f-eye, html body .mc-form .field:focus-
 html body .mc-form #l-go.ok:disabled{opacity:1 !important;cursor:default;}
 
 /* =====================================================================
-   SIGN-IN CHALKBOARD in the site's colours: a deep blue board in a soft
-   white frame, chalk writing, a ledge with blue, orange and white chalk
+   SIGN-IN GLASS CARD: a soft gradient card in the site's colours
+   (violet, blue, a warm orange glow), the logo in a round frosted badge,
+   underline fields, a gradient button; the fox sits on the top edge
    ===================================================================== */
-html body .mc-form{background:transparent !important;box-shadow:none !important;-webkit-backdrop-filter:none;backdrop-filter:none;padding:10px 10px 46px !important;}
-html body .mc-form .t-form.look-board{width:100%;max-width:470px;margin:0 !important;padding:28px 30px 34px !important;position:relative;
-  border:12px solid transparent !important;border-radius:26px !important;
-  background:radial-gradient(120% 90% at 20% 8%,#2c3d7a 0%,#1f2c62 50%,#18234f 100%) padding-box,
-    linear-gradient(145deg,#ffffff 0%,#e8edff 45%,#d9e1fb 100%) border-box !important;
-  box-shadow:inset 0 0 50px rgba(5,10,40,.55),0 30px 60px rgba(31,48,110,.22),0 0 0 1px rgba(31,48,110,.06) !important;}
-html body .mc-form .t-form.look-board::before{display:block !important;content:"";position:absolute;inset:0;border-radius:14px;background-image:var(--doodle);background-size:420px 420px;opacity:.07;pointer-events:none;}
-html body .mc-form .t-form.look-board::after{display:block !important;content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
-  background:radial-gradient(60% 40% at 72% 88%,rgba(255,255,255,.08),transparent 70%),radial-gradient(40% 30% at 18% 55%,rgba(255,255,255,.05),transparent 70%);}
-html body .mc-form .look-board .bd-ledge{display:block !important;left:-26px;right:-26px;bottom:-40px;height:16px;border-radius:8px;background:linear-gradient(180deg,#ffffff,#d5dcf5);box-shadow:0 10px 18px rgba(31,48,110,.18),inset 0 -2px 0 rgba(31,48,110,.08);}
-html body .mc-form .look-board .bd-ledge .ck1{background:linear-gradient(180deg,#ffffff,#e4e8f5);}
-html body .mc-form .look-board .bd-ledge .ck2{left:33%;background:linear-gradient(180deg,#ffd38a,#ffb23f);}
-html body .mc-form .look-board .bd-ledge .er{background:linear-gradient(180deg,#8fb0ff 0 45%,#2f4fb8 45%);}
-html body .mc-form .look-board .t-form-h{display:block !important;text-align:center;background:none !important;padding:0 !important;position:relative;z-index:1;}
-html body .mc-form .look-board .t-form-h h2{font-family:'Caveat',cursive !important;font-weight:700 !important;font-size:56px !important;line-height:1 !important;letter-spacing:.5px !important;color:#f6f8ff !important;text-shadow:0 0 1px rgba(255,255,255,.7),0 0 14px rgba(255,255,255,.1);margin:0 !important;}
-html body .mc-form .look-board .bd-line{display:block !important;width:190px;height:16px;margin:2px auto 0;}
-html body .mc-form .look-board .bd-line path{stroke:#ffb23f;}
-html body .mc-form .look-board .bd-sub{margin:10px 0 4px;text-align:center;font-family:'Caveat',cursive;font-size:23px;line-height:1.2;color:#c9d4fb;}
-html body .mc-form .look-board .t-form-b{padding:8px 2px 0 !important;position:relative;z-index:1;}
-html body .mc-form .look-board .t-form-b label{font-family:'Caveat',cursive !important;font-weight:600 !important;font-size:25px !important;color:#dfe6ff !important;margin:14px 0 2px !important;}
-html body .mc-form .look-board .field input, html body .mc-form .look-board .field input:focus{height:52px !important;background:transparent !important;border:0 !important;border-bottom:2.5px dashed rgba(230,236,255,.45) !important;border-radius:0 !important;
-  padding:0 44px 0 34px !important;font:600 28px 'Caveat',cursive !important;letter-spacing:.5px;color:#fbfcff !important;-webkit-text-fill-color:#fbfcff !important;caret-color:#ffd38a !important;box-shadow:none !important;}
-html body .mc-form .look-board .field input:focus{border-bottom:2.5px solid #ffb23f !important;filter:drop-shadow(0 6px 10px rgba(255,178,63,.18));}
-html body .mc-form .look-board .field input::placeholder{color:rgba(230,236,255,.34) !important;-webkit-text-fill-color:rgba(230,236,255,.34) !important;}
-html body .mc-form .look-board .field input:-webkit-autofill{-webkit-box-shadow:0 0 0 60px #1f2c62 inset !important;-webkit-text-fill-color:#fbfcff !important;}
-html body .mc-form .look-board .f-ico{left:2px !important;color:#ffb23f !important;}
-html body .mc-form .look-board .f-eye{color:#dfe6ff !important;}
-html body .mc-form .look-board .remember-row{margin-top:16px !important;}
-html body .mc-form .look-board .remember-row .check, html body .mc-form .look-board .remember{font-family:'Caveat',cursive !important;font-size:22px !important;font-weight:600 !important;color:#dfe6ff !important;-webkit-text-fill-color:#dfe6ff !important;}
-html body .mc-form .look-board .remember-row .muted{font-family:'Caveat',cursive !important;font-size:20px !important;color:#a9b7e8 !important;}
-html body .mc-form .look-board .check input{appearance:none !important;-webkit-appearance:none !important;width:20px !important;height:20px !important;border:2px solid #f0f3ff !important;border-radius:4px 6px 3px 5px !important;background:none !important;position:relative;}
-html body .mc-form .look-board .check input::after{display:none !important;}
-html body .mc-form .look-board .check input:checked::after{display:block !important;content:"✓";position:absolute;left:1px;top:-9px;font:700 24px 'Caveat',cursive;color:#ffb23f;}
-html body .mc-form .look-board .err{font-family:'Caveat',cursive !important;font-size:22px !important;color:#ffb3b5 !important;}
-html body .mc-form .look-board #l-go{height:60px !important;margin-top:22px !important;border-radius:60px 46px 64px 50px / 48px 62px 44px 58px !important;
-  background:transparent !important;border:2.5px solid #f0f3ff !important;color:#f6f8ff !important;font:700 32px 'Caveat',cursive !important;box-shadow:none !important;
-  transition:transform .25s cubic-bezier(.3,1.5,.5,1),background-color .2s,border-color .2s !important;}
-html body .mc-form .look-board #l-go:hover{background:rgba(255,178,63,.14) !important;border-color:#ffb23f !important;transform:rotate(-1deg) scale(1.02);}
-html body .mc-form .look-board #l-go.ok{background:rgba(54,207,134,.18) !important;border-color:#36cf86 !important;color:#c9f5df !important;}
-html body .mc-form .look-board .caps-warn{font-family:'Caveat',cursive;font-size:20px;color:#ffd38a;}
-html body .mc-form .look-board .chalk-p{background:rgba(240,243,255,.8);}
-@media (max-width:760px){ html body .mc-form{padding:6px 6px 44px !important;} html body .mc-form .t-form.look-board{padding:22px 18px 28px !important;} html body .mc-form .look-board .t-form-h h2{font-size:46px !important;} }
-html:root[data-theme="dark"] body .mc-form .t-form.look-board{background:radial-gradient(120% 90% at 20% 8%,#2c3d7a 0%,#1f2c62 50%,#18234f 100%) padding-box,linear-gradient(145deg,#4a5a96 0%,#34427a 50%,#2a3568 100%) border-box !important;box-shadow:inset 0 0 50px rgba(5,10,40,.55),0 30px 60px rgba(0,0,0,.4) !important;}
-html:root[data-theme="dark"] body .mc-form .look-board .bd-ledge{background:linear-gradient(180deg,#4a5a96,#2a3568);}
-@media (prefers-color-scheme: dark){
-  html:root:not([data-theme="light"]) body .mc-form .t-form.look-board{background:radial-gradient(120% 90% at 20% 8%,#2c3d7a 0%,#1f2c62 50%,#18234f 100%) padding-box,linear-gradient(145deg,#4a5a96 0%,#34427a 50%,#2a3568 100%) border-box !important;box-shadow:inset 0 0 50px rgba(5,10,40,.55),0 30px 60px rgba(0,0,0,.4) !important;}
-  html:root:not([data-theme="light"]) body .mc-form .look-board .bd-ledge{background:linear-gradient(180deg,#4a5a96,#2a3568);}
-}
-
+html body .mc-form{background:transparent !important;box-shadow:none !important;-webkit-backdrop-filter:none;backdrop-filter:none;padding:130px 10px 20px !important;}
+html body .mc-form .t-form.look-glass{width:100%;max-width:460px;margin:0 !important;padding:40px 44px 46px !important;position:relative;border:0 !important;border-radius:46px !important;
+  background:
+    radial-gradient(70% 42% at 50% 0%,rgba(255,138,31,.55),rgba(255,138,31,0) 70%),
+    radial-gradient(60% 55% at 0% 35%,rgba(123,79,214,.75),rgba(123,79,214,0) 70%),
+    radial-gradient(85% 60% at 100% 100%,#a9c0ff 0%,rgba(169,192,255,0) 72%),
+    linear-gradient(165deg,#2b1f5e 0%,#3b2c86 38%,#4a5fd4 78%,#7f9cff 100%) !important;
+  box-shadow:0 34px 70px rgba(43,31,94,.32),inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.08) !important;}
+html body .mc-form .look-glass .t-form-h{display:none !important;}
+html body .mc-form .look-glass .t-form-b{padding:0 !important;position:relative;z-index:1;}
+.look-glass .gl-logo{width:124px;height:124px;margin:0 auto 6px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 12px 30px rgba(20,10,60,.25);}
+.look-glass .gl-logo img{width:96px;height:96px;border-radius:50%;object-fit:cover;box-shadow:0 4px 14px rgba(20,10,60,.3);}
+html body .mc-form .look-glass .mc-hello{margin:12px 0 4px;text-align:center;}
+html body .mc-form .look-glass .mc-hello span{font:500 15px 'Onest',sans-serif;color:rgba(255,255,255,.78);}
+html body .mc-form .look-glass .t-form-b label:not(.check){position:absolute !important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0 !important;}
+html body .mc-form .look-glass .field{margin-top:22px;}
+html body .mc-form .look-glass .field input, html body .mc-form .look-glass .field input:focus{height:54px !important;background:transparent !important;border:0 !important;border-bottom:1.5px solid rgba(255,255,255,.72) !important;border-radius:0 !important;
+  padding:0 44px 0 52px !important;font:500 19px 'Onest',sans-serif !important;letter-spacing:.02em;color:#fff !important;-webkit-text-fill-color:#fff !important;caret-color:#ffd38a !important;box-shadow:none !important;transition:border-color .2s !important;}
+html body .mc-form .look-glass .field input:focus{border-bottom:2px solid #ffc46b !important;}
+html body .mc-form .look-glass .field input::placeholder{color:rgba(255,255,255,.82) !important;-webkit-text-fill-color:rgba(255,255,255,.82) !important;}
+html body .mc-form .look-glass .field input:-webkit-autofill{-webkit-box-shadow:0 0 0 60px #3b2c86 inset !important;-webkit-text-fill-color:#fff !important;}
+html body .mc-form .look-glass .f-ico{left:6px !important;width:21px;height:21px;color:#fff !important;}
+html body .mc-form .look-glass .field:focus-within .f-ico{color:#ffc46b !important;}
+html body .mc-form .look-glass .f-eye{color:rgba(255,255,255,.85) !important;}
+html body .mc-form .look-glass .remember-row{margin-top:26px !important;}
+html body .mc-form .look-glass .remember-row .check, html body .mc-form .look-glass .remember{font:500 15px 'Onest',sans-serif !important;color:rgba(255,255,255,.88) !important;-webkit-text-fill-color:rgba(255,255,255,.88) !important;}
+html body .mc-form .look-glass .remember-row .muted{font:italic 400 14px 'Onest',sans-serif !important;color:rgba(255,255,255,.66) !important;}
+html body .mc-form .look-glass .check input{appearance:none !important;-webkit-appearance:none !important;width:20px !important;height:20px !important;border:0 !important;border-radius:4px !important;background:rgba(20,10,50,.55) !important;position:relative;flex:none;cursor:pointer;}
+html body .mc-form .look-glass .check input:checked::after{display:block !important;content:"";position:absolute;left:7px;top:3px;width:5px;height:10px;border:solid #fff;border-width:0 2.4px 2.4px 0;transform:rotate(45deg);}
+html body .mc-form .look-glass .err{font:600 14px 'Onest',sans-serif !important;color:#ffd0d2 !important;margin-top:14px !important;}
+html body .mc-form .look-glass .caps-warn{color:#ffd38a;}
+html body .mc-form .look-glass #l-go{height:62px !important;margin-top:30px !important;border-radius:22px !important;border:0 !important;
+  background:linear-gradient(90deg,#3a1458 0%,#3d2a96 45%,#5568e6 80%,#7f97ff 100%) !important;color:#fff !important;
+  font:700 17px 'Onest',sans-serif !important;letter-spacing:.24em;text-transform:uppercase;
+  box-shadow:0 14px 30px rgba(30,15,80,.35),inset 0 1px 0 rgba(255,255,255,.18) !important;transition:transform .2s,box-shadow .2s,filter .2s !important;}
+html body .mc-form .look-glass #l-go:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 18px 36px rgba(30,15,80,.42),inset 0 1px 0 rgba(255,255,255,.2) !important;}
+html body .mc-form .look-glass #l-go.ok{background:linear-gradient(90deg,#16a864,#36cf86) !important;}
+@media (max-width:560px){ html body .mc-form{padding:104px 4px 10px !important;} html body .mc-form .t-form.look-glass{padding:30px 24px 34px !important;border-radius:36px !important;} .look-glass .gl-logo{width:104px;height:104px;} .look-glass .gl-logo img{width:80px;height:80px;} }
+html:root:not(#x) body .mc-form .look-glass .field input, html:root:not(#x) body .mc-form .look-glass .field input:focus{background:transparent !important;}
+html:root:not(#x) body .mc-form .look-glass .field input:focus + .f-eye{color:#ffc46b !important;}
 </style>
 <style id="navx">
 /* ===== top menu: see-through glass with a sliding highlight ===== */
