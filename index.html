@@ -4997,10 +4997,16 @@ var Store = (function(){
   document.addEventListener("click", function(e){
     var t = e.target.closest && e.target.closest(".d-nav .d-tab[data-stab], .d-nav .d-tab[data-tab], .d-stat[data-tab], .d-cta[data-stab], .d-cta[data-tab], .d-me[data-stab]");
     var nav = document.querySelector(".d-nav"); if(!t || !nav) return;
+    if(t.dataset.tmGo){ delete t.dataset.tmGo; return; }   // the delayed click below, let it through
     var sel = t.dataset.stab ? '[data-stab="'+t.dataset.stab+'"]' : '[data-tab="'+t.dataset.tab+'"]', btn = nav.querySelector(".d-tab" + sel);
     if(!btn || btn.classList.contains("active")) return;
     nav.querySelectorAll(".d-tab.active").forEach(function(b){ b.classList.remove("active"); }); btn.classList.add("active"); navInd();
-    var m = document.querySelector(".d-main"); if(m) m.classList.add("busy");
+    var m = document.querySelector(".d-main"); if(!m) return;
+    if(REDUCED){ m.classList.add("busy"); return; }
+    // the highlight glides to the new item while the page softly fades out, then the next page fades in
+    e.preventDefault(); e.stopImmediatePropagation();
+    m.classList.add("d-leaving");
+    setTimeout(function(){ if(!t.isConnected) return; t.dataset.tmGo = "1"; t.click(); }, 170);
   }, true);
   function stagger(root){
     var kids = $$(".d-stats > .d-stat").concat($$(".d-content > *:not(script):not(style)"));
@@ -8360,7 +8366,7 @@ button.d-me:hover{background:rgba(255,240,220,.13);transform:translateY(-1px);}
 .d-nav{position:relative;display:flex;flex-direction:column;gap:3px;margin-top:2px;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;}
 .d-nav::-webkit-scrollbar{display:none;}
 .d-ind{position:absolute;left:0;top:0;width:0;height:0;border-radius:14px;background:var(--warm-grad);box-shadow:0 10px 24px rgba(232,113,90,.38);
-  transition:transform .5s cubic-bezier(.3,1.3,.4,1),width .5s cubic-bezier(.3,1.3,.4,1),height .5s cubic-bezier(.3,1.3,.4,1),opacity .3s;z-index:0;pointer-events:none;}
+  transition:transform .42s cubic-bezier(.22,.8,.24,1),width .42s cubic-bezier(.22,.8,.24,1),height .42s cubic-bezier(.22,.8,.24,1),opacity .3s;z-index:0;pointer-events:none;}
 .d-ind::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);background-size:250% 100%;animation:dSheen 3.6s ease-in-out infinite;}
 @keyframes dSheen{0%{background-position:120% 0}60%,100%{background-position:-120% 0}}
 .d-tab{position:relative;z-index:1;display:flex;align-items:center;gap:12px;width:100%;padding:11px 14px;border-radius:14px;border:0;background:none;color:#E6D2BC;font:800 14.5px 'Nunito',system-ui,sans-serif;cursor:pointer;text-align:left;transition:color .25s,background-color .25s;}
@@ -8479,8 +8485,10 @@ button.d-me:hover{background:rgba(255,240,220,.13);transform:translateY(-1px);}
 @keyframes dPing{0%{box-shadow:0 0 0 0 rgba(232,113,90,.55)}70%{box-shadow:0 0 0 11px rgba(232,113,90,0)}100%{box-shadow:0 0 0 0 rgba(232,113,90,0)}}
 
 /* entrance */
-@keyframes dRise{from{opacity:0;transform:translateY(18px) scale(.985);}to{opacity:1;transform:none;}}
-.rise{animation:dRise .6s cubic-bezier(.2,.9,.3,1) both;}
+@keyframes dRise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.rise{animation:dRise .5s cubic-bezier(.22,.8,.24,1) both;}
+.d-main{transition:opacity .17s ease,transform .17s ease;}
+.d-main.d-leaving{opacity:0;transform:translateY(6px);}
 
 /* ---------- content inside the dashboard ---------- */
 .dash .card{border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:var(--glass-shadow);}
