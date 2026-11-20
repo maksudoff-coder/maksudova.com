@@ -5204,8 +5204,8 @@ var Store = (function(){
     '</svg>';
   }
   function owlBind(root){
-    var owl = root.querySelector("#owl"); if(!owl) return null;
-    var login = root.querySelector("#s-login"), pass = root.querySelector("#s-pass"), sub = root.querySelector(".mc-hello p"), sub0 = sub ? sub.textContent : "";
+    var owl = root.querySelector("#owl") || document.createElement("i");
+    var login = root.querySelector("#s-login"), pass = root.querySelector("#s-pass"), sub = root.querySelector(".mc-hello span"), sub0 = sub ? sub.textContent : "";
     var pupils = owl.querySelectorAll(".o-pupil"), blinkT = null;
     function look(dx, dy){ pupils.forEach(function(p){ p.style.transform = "translate(" + dx + "px," + dy + "px)"; }); }
     function mode(m){ owl.classList.remove("cover", "peek", "sad", "happy"); if(m) owl.classList.add(m); }
@@ -5296,7 +5296,7 @@ var Store = (function(){
       '</section>';
     var setup = !!S.teacherSetup, form;
     if(!setup){
-      form = '<div class="mc-hello">'+owlSVG()+'<h2>'+esc(greeting().t)+'!</h2><p>Enter the login and password your teacher gave you</p></div>'+
+      form = '<p class="bd-sub mc-hello"><span>Use the login and password from your teacher</span></p>'+
         '<div class="login-fields">'+
         field("s-login", "Login", "text", USER_I, 'autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="30" placeholder="your login"')+
         field("s-pass", "Password", "password", LOCK_I, 'autocomplete="current-password" maxlength="30" placeholder="your password"')+
@@ -5348,7 +5348,7 @@ var Store = (function(){
             (tgUser ? '<a class="mc-ask" href="https://t.me/'+esc(tgUser)+'" target="_blank" rel="noopener">No login yet? Ask on Telegram</a>' : "")+
           '</div>'+
         '</div>'+
-        '<div class="mc-form"><div class="t-form" id="lp-signin"><div class="t-form-b login-panel">'+form+'</div></div></div>'+
+        '<div class="mc-form"><div class="t-form" id="lp-signin"><div class="t-form-h"><h2>'+(setup ? "Teacher setup" : esc(greeting().t) + "!")+'</h2></div><div class="t-form-b login-panel">'+form+'</div></div></div>'+
       '</section>'+
       /* hero: the tutor in her classroom */
       '<section class="pg-hero" id="lp-intro"><div class="lp-in pg-hero-in">'+
@@ -5421,6 +5421,7 @@ var Store = (function(){
     if($("#to-blog")) $("#to-blog").onclick = function(){ go("blog"); };
     if($("#bs-all")) $("#bs-all").onclick = function(){ go("blog"); };
     on("[data-bpost]", "click", function(e){ e.preventDefault(); S.postId = this.dataset.bpost; go("post"); });
+    signinLook();
     var OWL = owlBind(document);
     function err(m){ $("#l-err").textContent = m; if(OWL) OWL.sad(); }
     on(".login-panel input", "input", function(){ var e = $("#l-err"); if(e && e.textContent) e.textContent = ""; });
@@ -9293,6 +9294,59 @@ html body .mc-form #l-go.ok{background:linear-gradient(180deg,#36cf86,#16a864) !
 html body .mc-form .field input:focus + .f-eye, html body .mc-form .field:focus-within .f-ico{color:var(--mc-blue) !important;}
 @media (prefers-reduced-motion:reduce){ .owl *, .owl{transition:none !important;animation:none !important;} html body .mc-form .login-panel.shake{animation:none;} }
 html body .mc-form #l-go.ok:disabled{opacity:1 !important;cursor:default;}
+
+/* =====================================================================
+   SIGN-IN CHALKBOARD in the site's colours: a deep blue board in a soft
+   white frame, chalk writing, a ledge with blue, orange and white chalk
+   ===================================================================== */
+html body .mc-form{background:transparent !important;box-shadow:none !important;-webkit-backdrop-filter:none;backdrop-filter:none;padding:10px 10px 46px !important;}
+html body .mc-form .t-form.look-board{width:100%;max-width:470px;margin:0 !important;padding:28px 30px 34px !important;position:relative;
+  border:12px solid transparent !important;border-radius:26px !important;
+  background:radial-gradient(120% 90% at 20% 8%,#2c3d7a 0%,#1f2c62 50%,#18234f 100%) padding-box,
+    linear-gradient(145deg,#ffffff 0%,#e8edff 45%,#d9e1fb 100%) border-box !important;
+  box-shadow:inset 0 0 50px rgba(5,10,40,.55),0 30px 60px rgba(31,48,110,.22),0 0 0 1px rgba(31,48,110,.06) !important;}
+html body .mc-form .t-form.look-board::before{display:block !important;content:"";position:absolute;inset:0;border-radius:14px;background-image:var(--doodle);background-size:420px 420px;opacity:.07;pointer-events:none;}
+html body .mc-form .t-form.look-board::after{display:block !important;content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
+  background:radial-gradient(60% 40% at 72% 88%,rgba(255,255,255,.08),transparent 70%),radial-gradient(40% 30% at 18% 55%,rgba(255,255,255,.05),transparent 70%);}
+html body .mc-form .look-board .bd-ledge{display:block !important;left:-26px;right:-26px;bottom:-40px;height:16px;border-radius:8px;background:linear-gradient(180deg,#ffffff,#d5dcf5);box-shadow:0 10px 18px rgba(31,48,110,.18),inset 0 -2px 0 rgba(31,48,110,.08);}
+html body .mc-form .look-board .bd-ledge .ck1{background:linear-gradient(180deg,#ffffff,#e4e8f5);}
+html body .mc-form .look-board .bd-ledge .ck2{left:33%;background:linear-gradient(180deg,#ffd38a,#ffb23f);}
+html body .mc-form .look-board .bd-ledge .er{background:linear-gradient(180deg,#8fb0ff 0 45%,#2f4fb8 45%);}
+html body .mc-form .look-board .t-form-h{display:block !important;text-align:center;background:none !important;padding:0 !important;position:relative;z-index:1;}
+html body .mc-form .look-board .t-form-h h2{font-family:'Caveat',cursive !important;font-weight:700 !important;font-size:56px !important;line-height:1 !important;letter-spacing:.5px !important;color:#f6f8ff !important;text-shadow:0 0 1px rgba(255,255,255,.7),0 0 14px rgba(255,255,255,.1);margin:0 !important;}
+html body .mc-form .look-board .bd-line{display:block !important;width:190px;height:16px;margin:2px auto 0;}
+html body .mc-form .look-board .bd-line path{stroke:#ffb23f;}
+html body .mc-form .look-board .bd-sub{margin:10px 0 4px;text-align:center;font-family:'Caveat',cursive;font-size:23px;line-height:1.2;color:#c9d4fb;}
+html body .mc-form .look-board .t-form-b{padding:8px 2px 0 !important;position:relative;z-index:1;}
+html body .mc-form .look-board .t-form-b label{font-family:'Caveat',cursive !important;font-weight:600 !important;font-size:25px !important;color:#dfe6ff !important;margin:14px 0 2px !important;}
+html body .mc-form .look-board .field input, html body .mc-form .look-board .field input:focus{height:52px !important;background:transparent !important;border:0 !important;border-bottom:2.5px dashed rgba(230,236,255,.45) !important;border-radius:0 !important;
+  padding:0 44px 0 34px !important;font:600 28px 'Caveat',cursive !important;letter-spacing:.5px;color:#fbfcff !important;-webkit-text-fill-color:#fbfcff !important;caret-color:#ffd38a !important;box-shadow:none !important;}
+html body .mc-form .look-board .field input:focus{border-bottom:2.5px solid #ffb23f !important;filter:drop-shadow(0 6px 10px rgba(255,178,63,.18));}
+html body .mc-form .look-board .field input::placeholder{color:rgba(230,236,255,.34) !important;-webkit-text-fill-color:rgba(230,236,255,.34) !important;}
+html body .mc-form .look-board .field input:-webkit-autofill{-webkit-box-shadow:0 0 0 60px #1f2c62 inset !important;-webkit-text-fill-color:#fbfcff !important;}
+html body .mc-form .look-board .f-ico{left:2px !important;color:#ffb23f !important;}
+html body .mc-form .look-board .f-eye{color:#dfe6ff !important;}
+html body .mc-form .look-board .remember-row{margin-top:16px !important;}
+html body .mc-form .look-board .remember-row .check, html body .mc-form .look-board .remember{font-family:'Caveat',cursive !important;font-size:22px !important;font-weight:600 !important;color:#dfe6ff !important;-webkit-text-fill-color:#dfe6ff !important;}
+html body .mc-form .look-board .remember-row .muted{font-family:'Caveat',cursive !important;font-size:20px !important;color:#a9b7e8 !important;}
+html body .mc-form .look-board .check input{appearance:none !important;-webkit-appearance:none !important;width:20px !important;height:20px !important;border:2px solid #f0f3ff !important;border-radius:4px 6px 3px 5px !important;background:none !important;position:relative;}
+html body .mc-form .look-board .check input::after{display:none !important;}
+html body .mc-form .look-board .check input:checked::after{display:block !important;content:"✓";position:absolute;left:1px;top:-9px;font:700 24px 'Caveat',cursive;color:#ffb23f;}
+html body .mc-form .look-board .err{font-family:'Caveat',cursive !important;font-size:22px !important;color:#ffb3b5 !important;}
+html body .mc-form .look-board #l-go{height:60px !important;margin-top:22px !important;border-radius:60px 46px 64px 50px / 48px 62px 44px 58px !important;
+  background:transparent !important;border:2.5px solid #f0f3ff !important;color:#f6f8ff !important;font:700 32px 'Caveat',cursive !important;box-shadow:none !important;
+  transition:transform .25s cubic-bezier(.3,1.5,.5,1),background-color .2s,border-color .2s !important;}
+html body .mc-form .look-board #l-go:hover{background:rgba(255,178,63,.14) !important;border-color:#ffb23f !important;transform:rotate(-1deg) scale(1.02);}
+html body .mc-form .look-board #l-go.ok{background:rgba(54,207,134,.18) !important;border-color:#36cf86 !important;color:#c9f5df !important;}
+html body .mc-form .look-board .caps-warn{font-family:'Caveat',cursive;font-size:20px;color:#ffd38a;}
+html body .mc-form .look-board .chalk-p{background:rgba(240,243,255,.8);}
+@media (max-width:760px){ html body .mc-form{padding:6px 6px 44px !important;} html body .mc-form .t-form.look-board{padding:22px 18px 28px !important;} html body .mc-form .look-board .t-form-h h2{font-size:46px !important;} }
+html:root[data-theme="dark"] body .mc-form .t-form.look-board{background:radial-gradient(120% 90% at 20% 8%,#2c3d7a 0%,#1f2c62 50%,#18234f 100%) padding-box,linear-gradient(145deg,#4a5a96 0%,#34427a 50%,#2a3568 100%) border-box !important;box-shadow:inset 0 0 50px rgba(5,10,40,.55),0 30px 60px rgba(0,0,0,.4) !important;}
+html:root[data-theme="dark"] body .mc-form .look-board .bd-ledge{background:linear-gradient(180deg,#4a5a96,#2a3568);}
+@media (prefers-color-scheme: dark){
+  html:root:not([data-theme="light"]) body .mc-form .t-form.look-board{background:radial-gradient(120% 90% at 20% 8%,#2c3d7a 0%,#1f2c62 50%,#18234f 100%) padding-box,linear-gradient(145deg,#4a5a96 0%,#34427a 50%,#2a3568 100%) border-box !important;box-shadow:inset 0 0 50px rgba(5,10,40,.55),0 30px 60px rgba(0,0,0,.4) !important;}
+  html:root:not([data-theme="light"]) body .mc-form .look-board .bd-ledge{background:linear-gradient(180deg,#4a5a96,#2a3568);}
+}
 
 </style>
 <style id="navx">
