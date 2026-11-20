@@ -9529,6 +9529,47 @@ html:root[data-theme="dark"] body .t-nav-r .theme-btn{background:transparent !im
   html:root:not([data-theme="light"]) body .t-nav-r .theme-btn{background:transparent !important;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.2) !important;}
 }
 html:root:not(#x) body:not(.scrolled) .t-nav{background:transparent !important;border-color:transparent !important;box-shadow:none !important;}
+
+/* ===== menu, look 1: floating island ===== */
+@font-face{font-family:'Fredoka';font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/fredoka-latin-600-normal.woff2) format('woff2');}
+/* the wordmark: rounded, friendly, a little tighter */
+html:root:not(#x) body .t-logo span{font-family:'Fredoka','Onest',sans-serif !important;font-weight:600 !important;font-size:23px !important;letter-spacing:-.005em !important;color:#1a2140 !important;}
+html:root:not(#x) body .t-foot-logo span{font-family:'Fredoka','Onest',sans-serif !important;font-weight:600 !important;letter-spacing:-.005em;}
+/* links sit in a white floating pill; the active one is a solid blue pill */
+html:root:not(#x) body .t-links{background:rgba(255,255,255,.86) !important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:5px !important;border-radius:999px !important;
+  box-shadow:0 8px 24px rgba(31,48,110,.10),inset 0 0 0 1px rgba(255,255,255,.9) !important;gap:2px !important;}
+html:root:not(#x) body .t-links button{color:#4a5378 !important;font-weight:500 !important;border-radius:999px !important;}
+html:root:not(#x) body .t-links button.on{color:#fff !important;}
+html:root:not(#x) body .t-links button:not(.on):hover{color:#2f6bff !important;}
+html:root:not(#x) body .nav-ind{border-radius:999px;background:linear-gradient(180deg,#4d82ff,#2f6bff);box-shadow:0 6px 14px rgba(47,107,255,.35),inset 0 1px 0 rgba(255,255,255,.35);}
+html:root:not(#x) body .nav-hov{border-radius:999px;background:rgba(47,107,255,.08);}
+/* right side: white moon button, solid orange and solid navy pills */
+html:root:not(#x) body .t-nav-r .theme-btn{background:#fff !important;box-shadow:0 4px 14px rgba(31,48,110,.10) !important;border:0 !important;}
+html:root:not(#x) body .t-nav-r .t-btn-book{background:#ff8a1f !important;color:#fff !important;box-shadow:0 8px 18px rgba(255,138,31,.35) !important;border:0 !important;}
+html:root:not(#x) body .t-nav-r .t-btn-book:hover{background:#ff7a0a !important;}
+html:root:not(#x) body .t-nav-r .t-btn-p{background:#1a2140 !important;color:#fff !important;box-shadow:0 8px 18px rgba(26,33,64,.22) !important;border:0 !important;}
+html:root:not(#x) body .t-nav-r .t-btn-p:hover{background:#26305a !important;}
+/* no panel behind the menu; a soft glass strip only once the page scrolls */
+html:root:not(#x) body .t-nav{background:transparent !important;border-color:transparent !important;box-shadow:none !important;}
+html:root:not(#x) body.scrolled .t-nav{background:rgba(244,245,248,.9) !important;-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border-color:rgba(255,255,255,.7) !important;box-shadow:0 8px 24px rgba(31,48,110,.08) !important;}
+html:root:not(#x) body.scrolled .t-links{box-shadow:inset 0 0 0 1px rgba(31,48,110,.06) !important;}
+/* night */
+html:root:not(#x)[data-theme="dark"] body .t-logo span{color:#f2f5ff !important;}
+html:root:not(#x)[data-theme="dark"] body .t-links{background:rgba(26,34,72,.82) !important;box-shadow:0 8px 24px rgba(0,0,0,.3),inset 0 0 0 1px rgba(255,255,255,.08) !important;}
+html:root:not(#x)[data-theme="dark"] body .t-links button{color:#aeb8de !important;}
+html:root:not(#x)[data-theme="dark"] body .t-links button.on{color:#fff !important;}
+html:root:not(#x)[data-theme="dark"] body .t-nav-r .theme-btn{background:rgba(26,34,72,.9) !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1) !important;}
+html:root:not(#x)[data-theme="dark"] body .t-nav-r .t-btn-p{background:#2f6bff !important;}
+html:root:not(#x)[data-theme="dark"] body.scrolled .t-nav{background:rgba(14,20,48,.9) !important;border-color:rgba(255,255,255,.08) !important;}
+@media (prefers-color-scheme: dark){
+  html:root:not(#x):not([data-theme="light"]) body .t-logo span{color:#f2f5ff !important;}
+  html:root:not(#x):not([data-theme="light"]) body .t-links{background:rgba(26,34,72,.82) !important;box-shadow:0 8px 24px rgba(0,0,0,.3),inset 0 0 0 1px rgba(255,255,255,.08) !important;}
+  html:root:not(#x):not([data-theme="light"]) body .t-links button{color:#aeb8de !important;}
+  html:root:not(#x):not([data-theme="light"]) body .t-links button.on{color:#fff !important;}
+  html:root:not(#x):not([data-theme="light"]) body .t-nav-r .theme-btn{background:rgba(26,34,72,.9) !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1) !important;}
+  html:root:not(#x):not([data-theme="light"]) body .t-nav-r .t-btn-p{background:#2f6bff !important;}
+  html:root:not(#x):not([data-theme="light"]) body.scrolled .t-nav{background:rgba(14,20,48,.9) !important;border-color:rgba(255,255,255,.08) !important;}
+}
 </style>
 <script id="navx-js">
 /* top menu: a blue pill slides to the active section, a soft pill follows the mouse */
