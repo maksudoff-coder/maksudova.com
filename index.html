@@ -4423,13 +4423,18 @@ var Store = (function(){
       login = String(login).trim().toLowerCase();
       try{
         // Remember me: stay signed in on this device; otherwise only until the tab is closed
-        await auth.setPersistence(remember === false ? firebase.auth.Auth.Persistence.SESSION : firebase.auth.Auth.Persistence.LOCAL);
-        var s = await site();
+        // persistence, the teacher login name and the student's login card are fetched together, not one after another
+        var got = await Promise.all([
+          auth.setPersistence(remember === false ? firebase.auth.Auth.Persistence.SESSION : firebase.auth.Auth.Persistence.LOCAL),
+          site().catch(function(){ return {}; }),
+          db.doc("logins/" + login).get().catch(function(){ return null; })
+        ]);
+        var s = got[1] || {}, l = got[2];
         if(login === (s.teacherLogin || "teacher")){
           try{ await auth.signInWithEmailAndPassword(TEACHER_EMAIL, pass); currentSid = null; return { role:"teacher" }; }
           catch(e){ if(isBadLogin(e)) return null; throw e; }
         }
-        var l = await db.doc("logins/" + login).get();
+        if(!l) l = await db.doc("logins/" + login).get();
         if(!l.exists) return null;
         try{ await auth.signInWithEmailAndPassword(l.data().email, pass); }
         catch(e){ if(isBadLogin(e)) return null; throw e; }
@@ -5223,7 +5228,7 @@ var Store = (function(){
     if(!REDUCED){ (function blink(){ blinkT = setTimeout(function(){ if(!owl.isConnected) return; owl.classList.add("blink"); setTimeout(function(){ owl.classList.remove("blink"); blink(); }, 160); }, 2600 + Math.random() * 2600); })(); }
     return {
       sad: function(){ mode("sad"); look(0, 0); var f = root.querySelector(".login-panel"); if(f){ f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); } setTimeout(function(){ if(owl.classList.contains("sad")) mode(""); }, 1800); },
-      happy: function(){ mode("happy"); var b = root.querySelector("#l-go"); if(b){ b.classList.add("ok"); b.innerHTML = "✓ Welcome!"; } return new Promise(function(r){ setTimeout(r, REDUCED ? 0 : 650); }); }
+      happy: function(){ mode("happy"); var b = root.querySelector("#l-go"); if(b){ b.classList.add("ok"); b.innerHTML = "✓ Welcome!"; } return new Promise(function(r){ setTimeout(r, REDUCED ? 0 : 280); }); }
     };
   }
   function helloBlock(title, sub){
@@ -5407,10 +5412,11 @@ var Store = (function(){
     function err(m){ $("#l-err").textContent = m; if(OWL) OWL.sad(); }
     on(".login-panel input", "input", function(){ var e = $("#l-err"); if(e && e.textContent) e.textContent = ""; });
     async function openPanel(){
-      if(OWL) await OWL.happy();
       var rem = $("#l-remember") ? $("#l-remember").checked : rememberPref();
-      Store.setSession({ role:"teacher" }, rem);
-      S.teacherSetup = null; S.teacher = true; S.tTab = "students"; S.tStudent = null; go("teacher");
+      await Store.setSession({ role:"teacher" }, rem);
+      warmTeacher();
+      if(OWL) await OWL.happy();
+      S.teacherSetup = null; S.teacher = true; S.tTab = "students"; S.tStudent = null; enterVeil(); go("teacher");
     }
     async function submit(){
       if(setup){
@@ -5430,9 +5436,11 @@ var Store = (function(){
       if(r && r.role === "teacher") return openPanel();
       if(!r) return err("Login or password is not correct. Ask your teacher if you forgot them.");
       var st = r.student;
-      if(OWL) await OWL.happy();
       S.sid = st.id; S.homeGrade = st.grade; S.sTab = "todo";
       await Store.setSession({ role:"student", sid:st.id }, remember);
+      warmStudent(st.id);
+      if(OWL) await OWL.happy();
+      enterVeil();
       return go("student-home");
     }
     on("[data-eye]", "click", function(){
@@ -5451,6 +5459,17 @@ var Store = (function(){
     on(".login-panel input", "keydown", function(e){ if(e.key === "Enter") guarded(); });
     var li = $("#s-login"); if(li && !li.value && rememberPref()) li.value = savedLogin();
     // no automatic focus here: the page should open at the top, not jump down to the form
+  }
+  /* start the first panel reads right after signing in, so they run while the welcome shows */
+  function warmTeacher(){ [Store.listStudents(), Store.listAssignments(), Store.listConsents(), Store.listBookings(), Store.listReviews(true)].forEach(function(p){ p.catch(function(){}); });
+    Store.listStudents().then(function(l){ l.forEach(function(x){ Store.getProgress(x.id).catch(function(){}); Store.getActivity(x.id).catch(function(){}); }); }).catch(function(){}); }
+  function warmStudent(sid){ [Store.getNotifyConfig(), Store.getConsent(sid), Store.getStudent(sid), Store.getProgress(sid), Store.listTopics(), Store.listAssignments(), Store.getActivity(sid), Store.getGames(sid), Store.getReviewResults(sid), Store.getWallet(sid)].forEach(function(p){ p.catch(function(){}); });
+    Store.listQuizzes().then(function(all){ all.filter(function(q){ return quizFor(q, sid); }).forEach(function(q){ Store.getMyQuizResult(q.id, sid).catch(function(){}); }); }).catch(function(){}); }
+  function enterVeil(){
+    document.body.classList.add("tm-entering");
+    var done = function(){ document.body.classList.remove("tm-entering"); mo.disconnect(); clearTimeout(t); };
+    var mo = new MutationObserver(function(){ if(!document.getElementById("lp-signin")) done(); });
+    mo.observe(app, { childList:true }); var t = setTimeout(done, 8000);
   }
   function viewRole(){ return viewEntry(); }
   function viewStudentLogin(){ S.loginAs = "student"; return viewEntry(); }
@@ -5554,10 +5573,11 @@ var Store = (function(){
       return Promise.all(mq.map(function(q){ return Store.getMyQuizResult(q.id, sid0); })).then(function(r){ return [mq, r]; }); }));
     var pExtra = quiet(Promise.all([Store.getActivity(sid0).catch(function(){ return {}; }), Store.getGames(sid0).catch(function(){ return { plays:{} }; }),
       Store.getReviewResults(sid0).catch(function(){ return {}; }), Store.getWallet(sid0).catch(function(){ return {}; })]));
+    var pCons = consentNeeded({ id: sid0 });   // checked alongside the other reads, not after them
     var st = await pSt;
     if(!st){ S.sid = null; await Store.setSession(null); return go("role"); }
     S.student = st;
-    if(await consentNeeded(st)) return viewConsentGate();
+    if(await pCons) return viewConsentGate();
     var res = await pBase;
     var prog = res[0], topics = res[1], asg = res[2];
     var qq = await pQuiz, myQuizzes = qq[0], myQRes = qq[1];
@@ -7270,7 +7290,7 @@ var Store = (function(){
   var TABS = [["students","Students"],["messages","💬 Messages"],["assignments","Assignments"],["skills","Skills"],["sets","My practice sets"],["quizzes","📝 Quizzes"],["games","🎮 Games"],["bookings","📅 Requests"],["payments","💵 Payments"],["reviews","⭐ Feedback"],["blog","📰 Blog"],["settings","Settings"]];
   async function viewTeacher(){
     if(!S.teacher) return go("teacher-login");
-    var prof = await getProfile(), gr = greeting(), overview = S.tTab === "students" && !S.tStudent;
+    var saved0 = entrySaved(), prof = saved0 ? fixProfile(saved0.p) : await getProfile(), gr = greeting(), overview = S.tTab === "students" && !S.tStudent;
     var tfirst = (function(n){ var f = String(n || "").trim().split(/\s+/)[0]; return (/^tutor$/i.test(f) || !f) ? "teacher" : f; })(prof.name);
     var TNAV = { students:["Students","students"], messages:["Messages","chat"], assignments:["Assignments","clip"], skills:["Skills","layers"], sets:["Practice sets","folder"],
       quizzes:["Quizzes","quiz"], games:["Games","game"], bookings:["Requests","cal"], payments:["Payments","wallet"], reviews:["Feedback","star"], blog:["Blog","blog"], settings:["Settings","gear"] };
@@ -7280,19 +7300,22 @@ var Store = (function(){
         return navBtn("data-tab", t[0], m[0], m[1], S.tTab === t[0], t[0]==="messages" ? '<span class="count" id="tmsg-count" style="display:none">0</span>' : t[0]==="bookings" ? '<span class="count" id="tbk-count" style="display:none">0</span>' : t[0]==="reviews" ? '<span class="count" id="trv-count" style="display:none">0</span>' : ""); }).join("") + '</nav>'+
       '<div class="d-side-foot">'+themeBtn()+'<button id="t-out" class="d-link" title="Sign out">'+navIcon("out")+'<span>Sign out</span></button></div></aside><main class="d-main">';
     if(overview){
-      var studs0 = await Store.listStudents().catch(function(){ return []; }), today0 = dayKey();
-      var act0 = studs0.filter(function(x){ return x.lastActive && dayKey(x.lastActive) === today0; }).length;
+      var pStuds = Store.listStudents().catch(function(){ return []; }), today0 = dayKey();
+      var studs0 = await Promise.race([pStuds, new Promise(function(r){ setTimeout(function(){ r(null); }, 120); })]);
+      var actOf = function(l){ return l.filter(function(x){ return x.lastActive && dayKey(x.lastActive) === today0; }).length; };
+      var act0 = studs0 ? actOf(studs0) : 0;
+      if(!studs0) pStuds.then(function(l){ var b1 = document.querySelector("#th-st b"), b2 = document.querySelector("#th-act b"); if(b1) b1.textContent = l.length; if(b2) b2.textContent = actOf(l); var a = document.getElementById("th-act"); if(a) a.classList.toggle("hot", actOf(l) > 0); });
       var unread0 = Object.keys(S.chats || {}).reduce(function(sum, k){ return sum + ((S.chats[k] || {}).unreadTeacher || 0); }, 0);
       th += '<section class="d-hero t">'+floaters()+'<div class="d-hero-txt"><span class="d-date">'+gr.i+' '+esc(todayLabel())+'</span>'+
         '<h2>'+gr.t+', '+esc(tfirst)+'! <span class="d-wave" aria-hidden="true">👋</span></h2>'+
         '<p>Your class at a glance: students, homework, quizzes and messages, all in one place.</p>'+
         '<div class="d-hero-cta"><button class="btn d-cta" id="q-add">+ Add a student</button><button class="btn d-cta alt" data-tab="assignments">📌 Give homework</button><button class="btn d-cta alt" id="class-board">🖊 Class board</button></div></div>'+
         '<div class="d-hero-art" aria-hidden="true"><div class="d-card-stack"><span class="dcs c1">a² + b² = c²</span><span class="dcs c2">⅔ + ⅙ = ⅚</span><span class="dcs c3">7 × 8 = 56</span></div></div></section>'+
-        '<div class="d-stats">'+dStat("students", studs0.length, "students", "s-q", ' data-tab="students" role="button" tabindex="0"')+dStat("flame", act0, "active today", "s-fire"+(act0 ? " hot" : ""))+
+        '<div class="d-stats">'+dStat("students", studs0 ? studs0.length : "…", "students", "s-q", ' id="th-st" data-tab="students" role="button" tabindex="0"')+dStat("flame", studs0 ? act0 : "…", "active today", "s-fire"+(act0 ? " hot" : ""), ' id="th-act"')+
         dStat("chat", unread0, "unread messages", "s-coin"+(unread0 ? " lit" : ""), ' id="th-msg" data-tab="messages" role="button" tabindex="0"')+
         dStat("cal", 0, "new requests", "s-cert", ' id="th-bk" data-tab="bookings" role="button" tabindex="0"')+dStat("star", 0, "reviews to approve", "s-time", ' id="th-rv" data-tab="reviews" role="button" tabindex="0"')+'</div>';
     }
-    app.innerHTML = th + '<div id="tab-body" class="d-content"></div></main></div>';
+    app.innerHTML = th + '<div id="tab-body" class="d-content"><div class="d-wait" aria-live="polite"><i></i><i></i><i></i></div></div></main></div>';
     if($("#q-add")) $("#q-add").onclick = function(){ S.tTab = "students"; S.tStudent = null; S.addOpen = true; render(); };
     if(!S.tWarm){ S.tWarm = true; setTimeout(function(){
       [function(){ return Store.listStudents(); }, function(){ return Store.listAssignments(); }, function(){ return Store.listQuizzes(); }, function(){ return Store.listTopics(); },
@@ -9372,6 +9395,18 @@ html:root:not(#x)[data-theme="dark"] body .mc-form .look-glass .check input{back
 }
 html:root:not(#x)[data-theme="dark"] body .mc-form .look-glass .field input:focus{border-bottom:2px solid #7ea2ff !important;}
 @media (prefers-color-scheme: dark){ html:root:not(#x):not([data-theme="light"]) body .mc-form .look-glass .field input:focus{border-bottom:2px solid #7ea2ff !important;} }
+/* ---------- signing in: a soft veil with a spinner until the panel draws; dots while a tab loads ---------- */
+body.tm-entering::before{content:"";position:fixed;inset:0;z-index:9998;background:rgba(244,245,248,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:veilIn .25s ease both;}
+body.tm-entering::after{content:"";position:fixed;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;z-index:9999;border-radius:50%;border:4px solid rgba(47,107,255,.18);border-top-color:#2f6bff;animation:veilSpin .8s linear infinite,veilIn .25s ease both;}
+@keyframes veilIn{from{opacity:0}to{opacity:1}}
+@keyframes veilSpin{to{transform:rotate(360deg)}}
+html:root[data-theme="dark"] body.tm-entering::before{background:rgba(14,20,48,.55);}
+@media (prefers-color-scheme: dark){ html:root:not([data-theme="light"]) body.tm-entering::before{background:rgba(14,20,48,.55);} }
+.d-wait{display:flex;justify-content:center;gap:8px;padding:60px 0;}
+.d-wait i{width:10px;height:10px;border-radius:50%;background:#2f6bff;opacity:.35;animation:dWait 1s ease-in-out infinite;}
+.d-wait i:nth-child(2){animation-delay:.15s;} .d-wait i:nth-child(3){animation-delay:.3s;}
+@keyframes dWait{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-8px);opacity:1}}
+@media (prefers-reduced-motion:reduce){ body.tm-entering::after{animation:none;} .d-wait i{animation:none;opacity:.6;} }
 </style>
 <style id="navx">
 /* ===== top menu: see-through glass with a sliding highlight ===== */
