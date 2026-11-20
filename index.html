@@ -9295,5 +9295,87 @@ html body .mc-form .field input:focus + .f-eye, html body .mc-form .field:focus-
 html body .mc-form #l-go.ok:disabled{opacity:1 !important;cursor:default;}
 
 </style>
+<style id="navx">
+/* ===== top menu: see-through glass with a sliding highlight ===== */
+html body .t-nav, html body.in-world .t-nav{
+  background:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.22)) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.8);backdrop-filter:blur(22px) saturate(1.8);
+  border:1px solid rgba(255,255,255,.7) !important;
+  box-shadow:0 1px 0 rgba(255,255,255,.75) inset,0 10px 30px rgba(31,48,110,.08) !important;
+  transition:background .35s,box-shadow .35s,top .35s,width .35s,border-color .35s;
+  animation:navIn .7s cubic-bezier(.2,1,.3,1) both;
+}
+html body.scrolled .t-nav, html body.in-world.scrolled .t-nav{
+  background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.55)) !important;
+  box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 14px 40px rgba(31,48,110,.14) !important;
+}
+@keyframes navIn{from{opacity:0;transform:translateY(-18px) scale(.98)}to{opacity:1;transform:none}}
+html body .t-nav::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 45%,transparent 60%) -150% 0/250% 100% no-repeat;animation:navGlint 9s ease-in-out 1.2s infinite;}
+@keyframes navGlint{0%,70%{background-position:-150% 0}100%{background-position:250% 0}}
+
+/* links: no grey box, a blue pill slides to the active section, a soft pill follows the mouse */
+html body .t-links{position:relative;background:transparent !important;box-shadow:none !important;padding:4px !important;gap:2px !important;}
+html body .t-links button, html body.in-world .t-links button{position:relative;z-index:2;background:transparent !important;box-shadow:none !important;transition:color .25s !important;}
+html body .t-links button.on, html body.in-world .t-links button.on{background:transparent !important;box-shadow:none !important;color:#fff !important;}
+.nav-ind,.nav-hov{position:absolute;left:0;top:0;height:0;border-radius:11px;pointer-events:none;will-change:transform,width;}
+.nav-ind{z-index:1;background:linear-gradient(180deg,#4d82ff,#2f6bff);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 16px rgba(47,107,255,.35);transition:transform .45s cubic-bezier(.3,1.25,.4,1),width .45s cubic-bezier(.3,1.25,.4,1),opacity .2s;}
+.nav-hov{z-index:0;background:rgba(47,107,255,.10);opacity:0;transition:transform .3s cubic-bezier(.2,1,.3,1),width .3s cubic-bezier(.2,1,.3,1),opacity .2s;}
+.t-links.hovering .nav-hov{opacity:1;}
+html body .t-links button:not(.on):hover{color:var(--mc-blue-d) !important;}
+
+/* logo and buttons */
+html body .t-logo img, html body .t-logo svg{transition:transform .5s cubic-bezier(.3,1.5,.5,1);}
+html body .t-logo:hover img, html body .t-logo:hover svg{transform:rotate(-12deg) scale(1.08);}
+html body .t-nav-r .t-btn{transition:transform .2s cubic-bezier(.3,1.5,.5,1),box-shadow .2s,filter .2s !important;}
+html body .t-nav-r .t-btn:hover{transform:translateY(-2px);}
+html body .t-nav-r .t-btn:active{transform:translateY(0) scale(.97);}
+html body .t-nav-r .t-btn-book{position:relative;overflow:hidden;}
+html body .t-nav-r .t-btn-book::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:bookShine 5s ease-in-out 2s infinite;}
+@keyframes bookShine{0%,78%{left:-60%}100%{left:130%}}
+html body .t-nav-r .theme-btn{background:rgba(255,255,255,.45) !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.7) !important;transition:transform .4s cubic-bezier(.3,1.5,.5,1) !important;}
+html body .t-nav-r .theme-btn:hover{transform:rotate(-20deg);}
+
+/* night */
+html:root[data-theme="dark"] body .t-nav{background:linear-gradient(135deg,rgba(22,30,64,.5),rgba(22,30,64,.3)) !important;border-color:rgba(255,255,255,.10) !important;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 10px 30px rgba(0,0,0,.25) !important;}
+html:root[data-theme="dark"] body.scrolled .t-nav{background:linear-gradient(135deg,rgba(22,30,64,.82),rgba(22,30,64,.7)) !important;}
+html:root[data-theme="dark"] body .t-nav::before{opacity:.25;}
+html:root[data-theme="dark"] body .t-nav-r .theme-btn{background:rgba(255,255,255,.08) !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12) !important;}
+html:root[data-theme="dark"] body .nav-hov{background:rgba(126,162,255,.14);}
+html:root[data-theme="dark"] body .t-links button:not(.on):hover{color:#fff !important;}
+@media (prefers-color-scheme: dark){
+  html:root:not([data-theme="light"]) body .t-nav{background:linear-gradient(135deg,rgba(22,30,64,.5),rgba(22,30,64,.3)) !important;border-color:rgba(255,255,255,.10) !important;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 10px 30px rgba(0,0,0,.25) !important;}
+  html:root:not([data-theme="light"]) body.scrolled .t-nav{background:linear-gradient(135deg,rgba(22,30,64,.82),rgba(22,30,64,.7)) !important;}
+  html:root:not([data-theme="light"]) body .t-nav::before{opacity:.25;}
+  html:root:not([data-theme="light"]) body .t-nav-r .theme-btn{background:rgba(255,255,255,.08) !important;}
+  html:root:not([data-theme="light"]) body .nav-hov{background:rgba(126,162,255,.14);}
+  html:root:not([data-theme="light"]) body .t-links button:not(.on):hover{color:#fff !important;}
+}
+@media (prefers-reduced-motion:reduce){ html body .t-nav, html body .t-nav::before, .nav-ind, .nav-hov, html body .t-nav-r .t-btn-book::after{animation:none !important;transition:none !important;} }
+
+</style>
+<script id="navx-js">
+/* top menu: a blue pill slides to the active section, a soft pill follows the mouse */
+(function(){
+  "use strict";
+  function setup(links){
+    if(links.dataset.slide) return; links.dataset.slide = "1";
+    var ind = document.createElement("span"), hov = document.createElement("span");
+    ind.className = "nav-ind"; hov.className = "nav-hov"; links.prepend(hov); links.prepend(ind);
+    function place(el, b){ if(!b){ el.style.opacity = "0"; return; } el.style.width = b.offsetWidth + "px"; el.style.height = b.offsetHeight + "px"; el.style.transform = "translate(" + b.offsetLeft + "px," + b.offsetTop + "px)"; }
+    function sync(){ var on = links.querySelector("button.on"); place(ind, on); if(on) ind.style.opacity = "1"; }
+    ind.style.transition = "none"; sync(); void ind.offsetWidth; ind.style.transition = "";
+    new MutationObserver(sync).observe(links, { subtree:true, attributes:true, attributeFilter:["class"] });
+    links.addEventListener("mouseover", function(e){ var b = e.target.closest("button"); if(!b || !links.contains(b)) return; place(hov, b); links.classList.add("hovering"); });
+    links.addEventListener("mouseleave", function(){ links.classList.remove("hovering"); });
+    window.addEventListener("resize", sync);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+  }
+  function scan(){ document.querySelectorAll(".t-nav .t-links").forEach(setup); }
+  new MutationObserver(scan).observe(document.body, { childList:true, subtree:true });
+  scan();
+})();
+
+</script>
 </body>
 </html>
