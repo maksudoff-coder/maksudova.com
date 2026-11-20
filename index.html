@@ -5018,6 +5018,8 @@ var Store = (function(){
     var now = animKey();
     if(!prev || prev.v !== now.v){
       replay(app, "page-in");
+      // the entrance plays once; keeping the class would replay it on every redraw (a flash when switching tabs)
+      clearTimeout(afterRender._pin); afterRender._pin = setTimeout(function(){ app.classList.remove("page-in"); }, 1100);
       countUp();
       if(document.querySelector(".dash")) stagger();
       if(S.view === "role" || S.view === "student-login" || S.view === "teacher-login") setupReveal();
