@@ -5296,17 +5296,11 @@ var Store = (function(){
       /* sign in (like "book a seat") */
       '<section class="mc-auth" id="lp-top">'+
         '<div class="mc-art">'+
-          '<div class="mc-stage" aria-hidden="true">'+
-            '<span class="mc-tile t-or" style="left:4%;top:6%;--r:-10deg;--d:0">+</span><span class="mc-tile t-bl" style="left:80%;top:0;--r:12deg;--d:1.2">×</span>'+
-            '<span class="mc-tile t-vi" style="left:88%;top:70%;--r:-8deg;--d:2.4">÷</span>'+
-            '<div class="mc-q"><div class="mc-qtop"><span class="mc-dot"></span><span>Fractions · Grade 5</span><span class="mc-sp"></span><span class="mc-coin">⭐ 120</span></div>'+
-              '<div class="mc-qnum">¾ + ⅛</div><div class="mc-qopts"><span>⅝</span><span class="ok">⅞</span><span>1 ⅛</span></div><div class="mc-qbar"><i></i></div></div>'+
-            '<div class="mc-badge">🔥 <b>7</b> days in a row</div>'+
-            '<div class="mc-ring"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="17" fill="none" stroke="#e8ecf7" stroke-width="6"/><circle cx="22" cy="22" r="17" fill="none" stroke="url(#mcrg)" stroke-width="6" stroke-linecap="round" stroke-dasharray="91 107" transform="rotate(-90 22 22)"/><defs><linearGradient id="mcrg"><stop offset="0" stop-color="#2d8cff"/><stop offset="1" stop-color="#8a3fe6"/></linearGradient></defs></svg><div><b>85%</b><small>SmartScore</small></div></div>'+
-          '</div>'+
+          '<div class="ph-live" aria-hidden="true"><i></i>Live lesson</div>'+
+          '<div class="ph-msg" aria-hidden="true"><img src="'+LOGO_BADGE_SM+'" alt=""><div><b>Ms. Dilobar</b><span>Great work on fractions today! ⭐</span></div></div>'+
           '<div class="mc-copy"><h1>Practice math, one skill at a time</h1>'+
             '<p>Homework, quizzes and certificates from your teacher, all in one place.</p>'+
-            '<div class="mc-pills"><span>🎯 3,000+ skills</span><span>🏁 Section tests</span><span>📲 Results for parents</span></div>'+
+            '<ul class="ph-list"><li>3,000+ skills from Grade 1 to Algebra 1</li><li>A short test at the end of every section</li><li>Results go straight to parents</li></ul>'+
             (tgUser ? '<a class="mc-ask" href="https://t.me/'+esc(tgUser)+'" target="_blank" rel="noopener">No login yet? Ask on Telegram</a>' : "")+
           '</div>'+
         '</div>'+
@@ -9195,6 +9189,25 @@ html body .code-lg{background:linear-gradient(180deg,#4d82ff,#2f6bff) !important
 html body .app input:not([type=checkbox]):not([type=radio]):focus, html body .app select:focus, html body .app textarea:focus{border-color:var(--mc-blue) !important;box-shadow:0 0 0 4px rgba(47,107,255,.12) !important;outline:none !important;}
 html body .app input.ans, html body .app .ans-in{font-family:'Onest',sans-serif !important;}
 html body .app:not(.landing):not(.dash-app) :is(.topbar,.entry-top) :is(.whoami button,.theme-btn,.blog-btn){background:var(--mc-field2) !important;color:var(--mc-ink) !important;border:0 !important;box-shadow:inset 0 0 0 1px var(--mc-line) !important;}
+
+/* ---------- sign-in art panel: real photo with its own overlays ---------- */
+html body .mc-art{background:linear-gradient(180deg,rgba(14,22,58,0) 38%,rgba(14,22,58,.55) 58%,rgba(14,22,58,.92) 100%),url(/img/signin-photo.webp) 60% 0%/cover no-repeat,#cfd6e6 !important;filter:none !important;justify-content:flex-end;padding:36px 40px 40px;}
+html body .mc-art::before, html body .mc-art::after{display:none !important;}
+.ph-live{position:absolute;left:28px;top:26px;display:inline-flex;align-items:center;gap:8px;padding:8px 14px 8px 12px;border-radius:99px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#1a2140;font-weight:700;font-size:13.5px;box-shadow:0 8px 20px rgba(14,22,58,.18);}
+.ph-live i{width:9px;height:9px;border-radius:50%;background:#f0484e;box-shadow:0 0 0 0 rgba(240,72,78,.6);animation:phPulse 1.8s ease-out infinite;}
+@keyframes phPulse{0%{box-shadow:0 0 0 0 rgba(240,72,78,.55)}80%,100%{box-shadow:0 0 0 9px rgba(240,72,78,0)}}
+.ph-msg{position:absolute;left:28px;top:84px;display:flex;align-items:center;gap:11px;max-width:290px;padding:11px 16px 11px 11px;border-radius:18px 18px 18px 6px;background:#fff;color:#1a2140;box-shadow:0 18px 36px rgba(14,22,58,.22);}
+.ph-msg img{width:38px;height:38px;border-radius:50%;flex:none;}
+.ph-msg b{display:block;font-size:13px;font-weight:700;color:#6b7394;margin-bottom:1px;}
+.ph-msg span{display:block;font-size:14.5px;font-weight:600;line-height:1.35;}
+html body .mc-copy h1{color:#fff !important;text-shadow:0 2px 18px rgba(0,0,0,.25);}
+html body .mc-copy p{color:#e3e8fb !important;}
+.ph-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:7px;}
+.ph-list li{position:relative;padding-left:28px;color:#fff;font-size:15px;font-weight:600;}
+.ph-list li::before{content:"";position:absolute;left:0;top:1px;width:19px;height:19px;border-radius:50%;background:#ffb23f url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/13px no-repeat;}
+html body .mc-ask{color:#ffd38a !important;margin-top:18px;}
+@media (prefers-reduced-motion:reduce){ .ph-live i{animation:none;} }
+@media (max-width:1000px){ html body .mc-art{min-height:560px;} }
 
 </style>
 </body>
