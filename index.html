@@ -9424,6 +9424,14 @@ html:root:not(#x)[data-theme="dark"] body .mc-form .look-glass .field input:-web
   html:root:not(#x):not([data-theme="light"]) body .mc-form .look-glass .field input:-webkit-autofill:hover,
   html:root:not(#x):not([data-theme="light"]) body .mc-form .look-glass .field input:-webkit-autofill:focus{-webkit-text-fill-color:#f2f5ff !important;color:#f2f5ff !important;}
 }
+/* ---------- real photos behind the blue banners (Higgsfield) ---------- */
+html:root:not(#x) body .d-hero.t{background:linear-gradient(90deg,rgba(18,32,96,.6) 0%,rgba(18,32,96,.45) 50%,rgba(18,32,96,0) 72%),url(/img/bg-chalk.webp) 0% 40%/120% auto no-repeat,#1c2f6e !important;}
+html:root:not(#x) body .d-hero.t::before, html:root:not(#x) body .d-hero.t .d-float, html:root:not(#x) body .d-hero.t .d-hero-art{display:none !important;}
+html:root:not(#x) body .d-hero.t h2, html:root:not(#x) body .d-hero.t p{text-shadow:0 2px 14px rgba(10,20,80,.35);}
+@media (max-width:760px){ html:root:not(#x) body .d-hero.t{background:linear-gradient(180deg,rgba(18,32,96,.72),rgba(18,32,96,.6)),url(/img/bg-chalk.webp) 80% center/cover no-repeat,#1c2f6e !important;} }
+html:root:not(#x) body .pg-board{background:radial-gradient(70% 70% at 50% 50%,rgba(16,26,80,.35),rgba(16,26,80,0) 80%),url(/img/bg-board.webp) center/cover no-repeat,#24356f !important;}
+html:root:not(#x) body .pg-board::before{display:none !important;}
+html:root:not(#x) body .pg-chalk .chalk, html:root:not(#x) body .pg-chalk h3{text-shadow:0 2px 18px rgba(8,14,50,.45) !important;}
 </style>
 <style id="navx">
 /* ===== top menu: see-through glass with a sliding highlight ===== */
