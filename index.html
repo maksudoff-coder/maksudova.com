@@ -5331,7 +5331,7 @@ var Store = (function(){
       /* navbar */
       '<nav class="t-nav"><div class="lp-in t-nav-in">'+
         '<button class="t-logo" data-jump="lp-top">'+mascotSVG(46)+'<span>Tutor Maksudova</span></button>'+
-        '<div class="t-links"><button class="on" data-jump="lp-top">Home</button><button data-jump="lp-learn">Learning</button><button data-jump="lp-tutor">About</button><button data-jump="lp-level">Level test</button><button data-jump="lp-reviews">Reviews</button>'+
+        '<div class="t-links"><button class="on" data-jump="lp-top">Home</button><button data-jump="lp-intro">About</button><button data-jump="lp-learn">Learning</button><button data-jump="lp-level">Level test</button><button data-jump="lp-reviews">Reviews</button>'+
           '<button '+(posts.length ? 'data-jump="lp-blog"' : 'id="to-blog"')+'>Blog'+(fresh ? ' <span class="blog-new">'+fresh+'</span>' : "")+'</button><button data-jump="lp-contact">Contact</button></div>'+
         '<div class="t-nav-r"><button class="lp-blog-m" id="to-blog-m" aria-label="Blog">📰<span>Blog</span></button>'+themeBtn()+
           (bookOn(p) ? '<button class="t-btn t-btn-book" data-book>📅 Book a lesson</button>' : "")+
@@ -5358,7 +5358,7 @@ var Store = (function(){
           '<p class="pg-lead">Friendly one-to-one lessons from home. Every lesson is built around your child: their level, their pace, their questions.</p>'+
           '<div class="pg-cta">'+(bookOn(p) ? '<button class="t-btn t-btn-book" data-book>📅 Book a lesson</button>' : (tgUser ? '<a class="t-btn t-btn-book" href="https://t.me/'+esc(tgUser)+'" target="_blank" rel="noopener">📅 Book a lesson</a>' : ""))+
             '<button class="t-btn pg-btn-line" data-jump="lp-level">Free level test</button></div>'+
-          (facts.length ? '<div class="pg-facts">'+facts.slice(0, 4).map(function(f){ return '<span>'+(f.i ? '<i>'+esc(f.i)+'</i>' : "")+esc(f.t)+'</span>'; }).join("")+'</div>' : "")+
+          (facts.length ? '<div class="pg-facts">'+facts.map(function(f){ return '<span>'+(f.i ? '<i>'+esc(f.i)+'</i>' : "")+esc(f.t)+'</span>'; }).join("")+'</div>' : "")+
         '</div>'+
         '<figure class="pg-hero-pic"><img src="'+esc(photo)+'" alt="'+esc(p.name)+', online math tutor" fetchpriority="high">'+
           '<figcaption class="pg-hi">Hi! I\'m '+esc((function(n){ n = String(n || "").trim(); var f = n.split(" ")[0]; return (/^tutor$/i.test(f) || !f) ? (n || "your tutor") : f; })(p.name))+' 👋</figcaption></figure>'+
@@ -5369,13 +5369,6 @@ var Store = (function(){
         '<p class="t-p center pg-sub">One place for lessons, homework and practice, from the first lesson to the certificate.</p>'+
         '<div class="pg-feats">'+feats.map(function(f){ return '<div class="pg-feat"><span class="fs-ico">'+featIcon(f[0])+'</span><h3>'+f[1]+'</h3><p>'+f[2]+'</p></div>'; }).join("")+'</div>'+
       '</div></section>'+
-      /* about the tutor */
-      '<section class="t-sec pg-about" id="lp-tutor"><div class="lp-in pg-about-in pg-about-solo">'+
-        '<div class="pg-about-card"><p class="pg-note">Your tutor</p><h2 class="t-h">'+esc(p.name)+'</h2>'+
-          (p.about ? '<p class="t-p">'+esc(p.about).replace(/\n/g, "<br>")+'</p>' : "")+
-          (facts.length ? '<div class="pg-facts">'+facts.map(function(f){ return '<span>'+(f.i ? '<i>'+esc(f.i)+'</i>' : "")+esc(f.t)+'</span>'; }).join("")+'</div>' : "")+
-          '<div class="pg-cta">'+(bookOn(p) ? '<button class="t-btn t-btn-book" data-book>📅 Book a lesson</button>' : "")+(tgUser ? '<a class="t-btn pg-btn-line" href="https://t.me/'+esc(tgUser)+'" target="_blank" rel="noopener">Message on Telegram</a>' : "")+'</div>'+
-        '</div></div></section>'+
       /* the chalkboard: free level test */
       '<section class="t-sec pg-level" id="lp-level"><div class="lp-in">'+
         '<div class="pg-board"><div class="board pg-chalk" aria-live="polite">'+
@@ -5400,7 +5393,7 @@ var Store = (function(){
       '<footer class="t-foot" id="lp-contact"><div class="lp-in t-foot-in">'+
         '<div><div class="t-foot-logo">'+mascotSVG(48)+'<span>Tutor Maksudova</span></div><p>'+esc(p.about || "")+'</p><div class="t-socs">'+social+'</div></div>'+
         '<div><h3>Get In Touch</h3>'+(contacts ? '<div class="contacts">'+contacts+'</div>' : "<p>Contact details will appear here soon.</p>")+'</div>'+
-        '<div><h3>Quick Links</h3><div class="t-qlinks"><button data-jump="lp-top">Home</button><button data-jump="lp-learn">Learning</button><button data-jump="lp-tutor">About</button>'+
+        '<div><h3>Quick Links</h3><div class="t-qlinks"><button data-jump="lp-top">Home</button><button data-jump="lp-intro">About</button><button data-jump="lp-learn">Learning</button>'+
           '<button data-jump="lp-level">Level test</button><button data-jump="lp-signin" data-focus="1">Sign in</button><button id="foot-blog">Blog</button><button data-privacy>Privacy Policy</button>'+installBtn("t-inst")+'</div></div>'+
       '</div><div class="lp-in t-copy">© '+new Date().getFullYear()+' <b>Tutor Maksudova</b>. All Rights Reserved. <button class="t-plink" data-privacy>Privacy Policy</button></div></footer>';
 
@@ -8178,7 +8171,7 @@ body.in-world .t-book.pg-first{padding-top:40px;}
 <script>
 /* Home page helpers: warm landing styles, menu highlight that follows the scroll, chalkboard that writes itself when seen */
 (function(){
-  var SPY = ["lp-top","lp-learn","lp-tutor","lp-level","lp-reviews","lp-blog","lp-contact"], spyOn = null, ticking = false;
+  var SPY = ["lp-top","lp-intro","lp-learn","lp-level","lp-reviews","lp-blog","lp-contact"], spyOn = null, ticking = false;
   function onLanding(){ return !!document.querySelector(".pg-hero"); }
   function update(){
     ticking = false;
