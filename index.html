@@ -9434,6 +9434,11 @@ html:root:not(#x) body .d-hero.t h2, html:root:not(#x) body .d-hero.t p{text-sha
 html:root:not(#x) body .pg-board{background:radial-gradient(70% 70% at 50% 50%,rgba(16,26,80,.35),rgba(16,26,80,0) 80%),url(/img/bg-board.webp) center/cover no-repeat,#24356f !important;}
 html:root:not(#x) body .pg-board::before{display:none !important;}
 html:root:not(#x) body .pg-chalk .chalk, html:root:not(#x) body .pg-chalk h3{text-shadow:0 2px 18px rgba(8,14,50,.45) !important;}
+/* ---------- home page: a faint hand-drawn math pattern (seamless tile) behind everything ---------- */
+html:root:not(#x) body.in-world{background:url(/img/math-bg.webp) 0 0/900px 900px repeat,radial-gradient(900px 520px at 0% 0%,rgba(47,107,255,.10),transparent 70%),radial-gradient(800px 520px at 100% 0%,rgba(123,79,214,.10),transparent 70%),radial-gradient(900px 600px at 85% 100%,rgba(255,138,31,.08),transparent 70%),var(--mc-bg) !important;background-attachment:fixed !important;}
+html:root:not(#x)[data-theme="dark"] body.in-world{background:url(/img/math-bg-dark.webp) 0 0/900px 900px repeat,radial-gradient(900px 520px at 0% 0%,#1d2c6e 0,transparent 70%),radial-gradient(800px 520px at 100% 0%,#3a2470 0,transparent 70%),radial-gradient(900px 600px at 85% 100%,#4a2a24 0,transparent 70%),#0e1430 !important;background-attachment:fixed !important;}
+@media (prefers-color-scheme: dark){ html:root:not(#x):not([data-theme="light"]) body.in-world{background:url(/img/math-bg-dark.webp) 0 0/900px 900px repeat,radial-gradient(900px 520px at 0% 0%,#1d2c6e 0,transparent 70%),radial-gradient(800px 520px at 100% 0%,#3a2470 0,transparent 70%),radial-gradient(900px 600px at 85% 100%,#4a2a24 0,transparent 70%),#0e1430 !important;background-attachment:fixed !important;} }
+@media (max-width:760px){ html:root:not(#x) body.in-world{background-size:680px 680px,auto,auto,auto,auto !important;} }
 </style>
 <style id="navx">
 /* ===== top menu: see-through glass with a sliding highlight ===== */
