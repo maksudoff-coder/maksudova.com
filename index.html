@@ -9288,10 +9288,10 @@ html body .mc-form #l-go.ok:disabled{opacity:1 !important;cursor:default;}
 html body .mc-form{background:transparent !important;box-shadow:none !important;-webkit-backdrop-filter:none;backdrop-filter:none;padding:130px 10px 20px !important;}
 html body .mc-form .t-form.look-glass{width:100%;max-width:460px;margin:0 !important;padding:40px 44px 46px !important;position:relative;border:0 !important;border-radius:46px !important;
   background:
-    radial-gradient(70% 42% at 50% 0%,rgba(255,138,31,.55),rgba(255,138,31,0) 70%),
-    radial-gradient(60% 55% at 0% 35%,rgba(123,79,214,.75),rgba(123,79,214,0) 70%),
-    radial-gradient(85% 60% at 100% 100%,#a9c0ff 0%,rgba(169,192,255,0) 72%),
-    linear-gradient(165deg,#2b1f5e 0%,#3b2c86 38%,#4a5fd4 78%,#7f9cff 100%) !important;
+    radial-gradient(70% 40% at 50% 0%,rgba(255,160,80,.55),rgba(255,160,80,0) 70%),
+    radial-gradient(60% 55% at 0% 35%,rgba(160,120,240,.6),rgba(160,120,240,0) 70%),
+    radial-gradient(85% 60% at 100% 100%,#bccdff 0%,rgba(188,205,255,0) 72%),
+    linear-gradient(165deg,#5a45c2 0%,#6457d8 35%,#6f86f0 72%,#a3bbff 100%) !important;
   box-shadow:0 34px 70px rgba(43,31,94,.32),inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.08) !important;}
 html body .mc-form .look-glass .t-form-h{display:none !important;}
 html body .mc-form .look-glass .t-form-b{padding:0 !important;position:relative;z-index:1;}
@@ -9305,7 +9305,7 @@ html body .mc-form .look-glass .field input, html body .mc-form .look-glass .fie
   padding:0 44px 0 52px !important;font:500 19px 'Onest',sans-serif !important;letter-spacing:.02em;color:#fff !important;-webkit-text-fill-color:#fff !important;caret-color:#ffd38a !important;box-shadow:none !important;transition:border-color .2s !important;}
 html body .mc-form .look-glass .field input:focus{border-bottom:2px solid #ffc46b !important;}
 html body .mc-form .look-glass .field input::placeholder{color:rgba(255,255,255,.82) !important;-webkit-text-fill-color:rgba(255,255,255,.82) !important;}
-html body .mc-form .look-glass .field input:-webkit-autofill{-webkit-box-shadow:0 0 0 60px #3b2c86 inset !important;-webkit-text-fill-color:#fff !important;}
+html body .mc-form .look-glass .field input:-webkit-autofill{-webkit-text-fill-color:#fff !important;}
 html body .mc-form .look-glass .f-ico{left:6px !important;width:21px;height:21px;color:#fff !important;}
 html body .mc-form .look-glass .field:focus-within .f-ico{color:#ffc46b !important;}
 html body .mc-form .look-glass .f-eye{color:rgba(255,255,255,.85) !important;}
@@ -9317,7 +9317,7 @@ html body .mc-form .look-glass .check input:checked::after{display:block !import
 html body .mc-form .look-glass .err{font:600 14px 'Onest',sans-serif !important;color:#ffd0d2 !important;margin-top:14px !important;}
 html body .mc-form .look-glass .caps-warn{color:#ffd38a;}
 html body .mc-form .look-glass #l-go{height:62px !important;margin-top:30px !important;border-radius:22px !important;border:0 !important;
-  background:linear-gradient(90deg,#3a1458 0%,#3d2a96 45%,#5568e6 80%,#7f97ff 100%) !important;color:#fff !important;
+  background:linear-gradient(90deg,#4a2590 0%,#5a48d0 45%,#6f86f0 80%,#94adff 100%) !important;color:#fff !important;
   font:700 17px 'Onest',sans-serif !important;letter-spacing:.24em;text-transform:uppercase;
   box-shadow:0 14px 30px rgba(30,15,80,.35),inset 0 1px 0 rgba(255,255,255,.18) !important;transition:transform .2s,box-shadow .2s,filter .2s !important;}
 html body .mc-form .look-glass #l-go:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 18px 36px rgba(30,15,80,.42),inset 0 1px 0 rgba(255,255,255,.2) !important;}
@@ -9325,6 +9325,15 @@ html body .mc-form .look-glass #l-go.ok{background:linear-gradient(90deg,#16a864
 @media (max-width:560px){ html body .mc-form{padding:104px 4px 10px !important;} html body .mc-form .t-form.look-glass{padding:30px 24px 34px !important;border-radius:36px !important;} .look-glass .gl-logo{width:104px;height:104px;} .look-glass .gl-logo img{width:80px;height:80px;} }
 html:root:not(#x) body .mc-form .look-glass .field input, html:root:not(#x) body .mc-form .look-glass .field input:focus{background:transparent !important;}
 html:root:not(#x) body .mc-form .look-glass .field input:focus + .f-eye{color:#ffc46b !important;}
+/* browser autofill: keep the field see-through on the glass card (no coloured box) */
+html:root:not(#x) body .mc-form .look-glass .field input:-webkit-autofill,
+html:root:not(#x) body .mc-form .look-glass .field input:-webkit-autofill:hover,
+html:root:not(#x) body .mc-form .look-glass .field input:-webkit-autofill:focus,
+html:root:not(#x) body .mc-form .look-glass .field input:autofill{-webkit-box-shadow:0 0 0 0 transparent inset !important;box-shadow:none !important;background:transparent !important;background-clip:text !important;-webkit-background-clip:text !important;-webkit-text-fill-color:#fff !important;caret-color:#ffd38a !important;transition:background-color 99999s ease-out 0s,border-color .2s !important;}
+/* full-screen first view: the menu and the sign-in area use the whole width */
+html body .t-nav, html body.in-world .t-nav{width:calc(100% - 48px) !important;max-width:none !important;}
+.mc-auth{width:calc(100% - 48px);gap:24px;min-height:calc(100vh - 118px);min-height:calc(100dvh - 118px);}
+@media (max-width:760px){ html body .t-nav, html body.in-world .t-nav{width:calc(100% - 20px) !important;} .mc-auth{width:calc(100% - 20px);min-height:0;} }
 </style>
 <style id="navx">
 /* ===== top menu: see-through glass with a sliding highlight ===== */
@@ -9384,6 +9393,37 @@ html:root[data-theme="dark"] body .t-links button:not(.on):hover{color:#fff !imp
 }
 @media (prefers-reduced-motion:reduce){ html body .t-nav, html body .t-nav::before, .nav-ind, .nav-hov, html body .t-nav-r .t-btn-book::after{animation:none !important;transition:none !important;} }
 
+/* ===== see-through menu: no panel, buttons are clear pills with a coloured outline ===== */
+html body .t-nav, html body.in-world .t-nav{background:transparent !important;border:1px solid transparent !important;box-shadow:none !important;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:999px !important;}
+html body.scrolled .t-nav, html body.in-world.scrolled .t-nav{background:rgba(255,255,255,.28) !important;-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);border-color:rgba(255,255,255,.55) !important;box-shadow:0 8px 24px rgba(31,48,110,.08) !important;}
+html body .t-nav::before{display:none;}
+html body .t-links button.on, html body.in-world .t-links button.on{color:#2f6bff !important;}
+.nav-ind{border-radius:999px;background:rgba(47,107,255,.08);box-shadow:inset 0 0 0 1.5px rgba(47,107,255,.6);}
+.nav-hov{border-radius:999px;background:rgba(47,107,255,.06);}
+html body .t-nav-r .t-btn, html body .t-nav-r .theme-btn{border-radius:999px !important;}
+html body .t-nav-r .t-btn-book{background:transparent !important;color:#e9720b !important;box-shadow:inset 0 0 0 1.5px #ff8a1f !important;text-shadow:none !important;}
+html body .t-nav-r .t-btn-book:hover{background:rgba(255,138,31,.1) !important;}
+html body .t-nav-r .t-btn-book::after{display:none;}
+html body .t-nav-r .t-btn-p{background:transparent !important;color:#2f6bff !important;box-shadow:inset 0 0 0 1.5px #2f6bff !important;text-shadow:none !important;}
+html body .t-nav-r .t-btn-p:hover{background:rgba(47,107,255,.09) !important;}
+html body .t-nav-r .theme-btn{background:transparent !important;box-shadow:inset 0 0 0 1.5px rgba(31,48,110,.22) !important;}
+html:root[data-theme="dark"] body .t-nav{background:transparent !important;box-shadow:none !important;}
+html:root[data-theme="dark"] body.scrolled .t-nav{background:rgba(22,30,64,.45) !important;border-color:rgba(255,255,255,.1) !important;}
+html:root[data-theme="dark"] body .t-links button.on{color:#9db8ff !important;}
+html:root[data-theme="dark"] body .nav-ind{background:rgba(126,162,255,.1);box-shadow:inset 0 0 0 1.5px rgba(126,162,255,.6);}
+html:root[data-theme="dark"] body .t-nav-r .t-btn-book{color:#ffb066 !important;}
+html:root[data-theme="dark"] body .t-nav-r .t-btn-p{color:#9db8ff !important;box-shadow:inset 0 0 0 1.5px #7ea2ff !important;}
+html:root[data-theme="dark"] body .t-nav-r .theme-btn{background:transparent !important;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.2) !important;}
+@media (prefers-color-scheme: dark){
+  html:root:not([data-theme="light"]) body .t-nav{background:transparent !important;box-shadow:none !important;}
+  html:root:not([data-theme="light"]) body.scrolled .t-nav{background:rgba(22,30,64,.45) !important;border-color:rgba(255,255,255,.1) !important;}
+  html:root:not([data-theme="light"]) body .t-links button.on{color:#9db8ff !important;}
+  html:root:not([data-theme="light"]) body .nav-ind{background:rgba(126,162,255,.1);box-shadow:inset 0 0 0 1.5px rgba(126,162,255,.6);}
+  html:root:not([data-theme="light"]) body .t-nav-r .t-btn-book{color:#ffb066 !important;}
+  html:root:not([data-theme="light"]) body .t-nav-r .t-btn-p{color:#9db8ff !important;box-shadow:inset 0 0 0 1.5px #7ea2ff !important;}
+  html:root:not([data-theme="light"]) body .t-nav-r .theme-btn{background:transparent !important;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.2) !important;}
+}
+html:root:not(#x) body:not(.scrolled) .t-nav{background:transparent !important;border-color:transparent !important;box-shadow:none !important;}
 </style>
 <script id="navx-js">
 /* top menu: a blue pill slides to the active section, a soft pill follows the mouse */
