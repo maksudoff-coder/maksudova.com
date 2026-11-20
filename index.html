@@ -9351,7 +9351,7 @@ html:root:not(#x) body .mc-form .look-glass .field input:focus + .f-eye{color:#f
 html:root:not(#x) body .mc-form .look-glass .field input:-webkit-autofill,
 html:root:not(#x) body .mc-form .look-glass .field input:-webkit-autofill:hover,
 html:root:not(#x) body .mc-form .look-glass .field input:-webkit-autofill:focus,
-html:root:not(#x) body .mc-form .look-glass .field input:autofill{-webkit-box-shadow:0 0 0 0 transparent inset !important;box-shadow:none !important;background:transparent !important;background-clip:text !important;-webkit-background-clip:text !important;-webkit-text-fill-color:#fff !important;caret-color:#ffd38a !important;transition:background-color 99999s ease-out 0s,border-color .2s !important;}
+html:root:not(#x) body .mc-form .look-glass .field input:autofill{-webkit-box-shadow:0 0 0 0 transparent inset !important;box-shadow:none !important;background:transparent !important;background-clip:text !important;-webkit-background-clip:text !important;-webkit-text-fill-color:#1a2140 !important;color:#1a2140 !important;caret-color:#2f6bff !important;transition:background-color 99999s ease-out 0s,border-color .2s !important;}
 /* full-screen first view: the menu and the sign-in area use the whole width */
 html body .t-nav, html body.in-world .t-nav{width:calc(100% - 48px) !important;max-width:none !important;}
 .mc-auth{width:calc(100% - 48px);gap:24px;min-height:calc(100vh - 118px);min-height:calc(100dvh - 118px);}
@@ -9407,6 +9407,15 @@ html:root[data-theme="dark"] body.tm-entering::before{background:rgba(14,20,48,.
 .d-wait i:nth-child(2){animation-delay:.15s;} .d-wait i:nth-child(3){animation-delay:.3s;}
 @keyframes dWait{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-8px);opacity:1}}
 @media (prefers-reduced-motion:reduce){ body.tm-entering::after{animation:none;} .d-wait i{animation:none;opacity:.6;} }
+/* night: autofilled text stays light, also on hover and focus */
+html:root:not(#x)[data-theme="dark"] body .mc-form .look-glass .field input:-webkit-autofill,
+html:root:not(#x)[data-theme="dark"] body .mc-form .look-glass .field input:-webkit-autofill:hover,
+html:root:not(#x)[data-theme="dark"] body .mc-form .look-glass .field input:-webkit-autofill:focus{-webkit-text-fill-color:#f2f5ff !important;color:#f2f5ff !important;}
+@media (prefers-color-scheme: dark){
+  html:root:not(#x):not([data-theme="light"]) body .mc-form .look-glass .field input:-webkit-autofill,
+  html:root:not(#x):not([data-theme="light"]) body .mc-form .look-glass .field input:-webkit-autofill:hover,
+  html:root:not(#x):not([data-theme="light"]) body .mc-form .look-glass .field input:-webkit-autofill:focus{-webkit-text-fill-color:#f2f5ff !important;color:#f2f5ff !important;}
+}
 </style>
 <style id="navx">
 /* ===== top menu: see-through glass with a sliding highlight ===== */
