@@ -9440,6 +9440,11 @@ html:root:not(#x) body.in-world{background:url(/img/math-bg.webp) 0 0/900px 900p
 html:root:not(#x)[data-theme="dark"] body.in-world{background:url(/img/math-bg-dark.webp) 0 0/900px 900px repeat,radial-gradient(900px 520px at 0% 0%,#1d2c6e 0,transparent 70%),radial-gradient(800px 520px at 100% 0%,#3a2470 0,transparent 70%),radial-gradient(900px 600px at 85% 100%,#4a2a24 0,transparent 70%),#0e1430 !important;background-attachment:fixed !important;}
 @media (prefers-color-scheme: dark){ html:root:not(#x):not([data-theme="light"]) body.in-world{background:url(/img/math-bg-dark.webp) 0 0/900px 900px repeat,radial-gradient(900px 520px at 0% 0%,#1d2c6e 0,transparent 70%),radial-gradient(800px 520px at 100% 0%,#3a2470 0,transparent 70%),radial-gradient(900px 600px at 85% 100%,#4a2a24 0,transparent 70%),#0e1430 !important;background-attachment:fixed !important;} }
 @media (max-width:760px){ html:root:not(#x) body.in-world{background-size:680px 680px,auto,auto,auto,auto !important;} }
+/* ---------- panels use the whole screen width ---------- */
+@media (min-width:761px){
+  html:root:not(#x) body .app.dash-app{max-width:none !important;width:100% !important;margin:0 !important;padding-left:24px !important;padding-right:24px !important;}
+  html:root:not(#x) body .app.dash-app .dash{max-width:none !important;width:100% !important;}
+}
 </style>
 <style id="navx">
 /* ===== top menu: see-through glass with a sliding highlight ===== */
