@@ -8513,7 +8513,7 @@ var Store = (function(){
   /* =====================================================================
      TEACHER PANEL
      ===================================================================== */
-  var TABS = [["students","Students"],["messages","💬 Messages"],["assignments","Assignments"],["skills","Skills"],["sets","My practice sets"],["quizzes","📝 Quizzes"],["games","🎮 Games"],["bookings","📅 Requests"],["payments","💵 Payments"],["reviews","⭐ Feedback"],["blog","📰 Blog"],["settings","Settings"]];
+  var TABS = [["students","Students"],["messages","💬 Messages"],["skills","Skills"],["sets","My practice sets"],["quizzes","📝 Quizzes"],["games","🎮 Games"],["bookings","📅 Requests"],["payments","💵 Payments"],["reviews","⭐ Feedback"],["blog","📰 Blog"],["settings","Settings"]];
   async function viewTeacher(){
     if(!S.teacher) return go("teacher-login");
     var saved0 = entrySaved(), prof = saved0 ? fixProfile(saved0.p) : await getProfile(), gr = greeting(), overview = S.tTab === "students" && !S.tStudent;
@@ -8535,7 +8535,7 @@ var Store = (function(){
       th += '<section class="d-hero t">'+floaters()+'<div class="d-hero-txt"><span class="d-date">'+gr.i+' '+esc(todayLabel())+'</span>'+
         '<h2>'+gr.t+', '+esc(tfirst)+'! <span class="d-wave" aria-hidden="true">👋</span></h2>'+
         '<p>Your class at a glance: students, homework, quizzes and messages, all in one place.</p>'+
-        '<div class="d-hero-cta"><button class="btn d-cta" id="q-add">+ Add a student</button><button class="btn d-cta alt" data-tab="assignments">📌 Give homework</button><button class="btn d-cta alt" id="class-board">🖊 Class board</button></div></div>'+
+        '<div class="d-hero-cta"><button class="btn d-cta" id="q-add">+ Add a student</button><button class="btn d-cta alt" data-tab="skills">📌 Give homework</button><button class="btn d-cta alt" id="class-board">🖊 Class board</button></div></div>'+
         '<div class="d-hero-art" aria-hidden="true"><div class="d-card-stack"><span class="dcs c1">a² + b² = c²</span><span class="dcs c2">⅔ + ⅙ = ⅚</span><span class="dcs c3">7 × 8 = 56</span></div></div></section>'+
         '<div class="d-stats">'+dStat("students", studs0 ? studs0.length : "…", "students", "s-q", ' id="th-st" data-tab="students" role="button" tabindex="0"')+dStat("flame", studs0 ? act0 : "…", "active today", "s-fire"+(act0 ? " hot" : ""), ' id="th-act"')+
         dStat("chat", unread0, "unread messages", "s-coin"+(unread0 ? " lit" : ""), ' id="th-msg" data-tab="messages" role="button" tabindex="0"')+
@@ -8562,7 +8562,7 @@ var Store = (function(){
     if(S.tTab === "reviews") return tabReviews(body);
     if(S.tTab === "payments") return tabPayments(body);
     if(S.tTab === "quizzes") return S.qDraft ? tabQuizEditor(body) : S.qView ? tabQuizResults(body) : tabQuizzes(body);
-    if(S.tTab === "assignments") return tabAssignments(body);
+    if(S.tTab === "assignments"){ S.tTab = "skills"; }
     if(S.tTab === "skills") return tabSkills(body);
     if(S.tTab === "sets") return S.draft ? tabSetEditor(body) : tabSets(body);
     if(S.tTab === "games") return tabGames(body);
@@ -8967,100 +8967,98 @@ var Store = (function(){
   }
 
   /* ----- Assignments ----- */
-  async function tabAssignments(el){
-    var r = await Promise.all([Store.listStudents(), Store.listTopics(), Store.listAssignments()]);
-    var studs = r[0].sort(function(a,b){ return a.name.localeCompare(b.name); }), topics = r[1], asg = r[2];
-    var progs = {}; (await Promise.all(studs.map(function(s){ return Store.getProgress(s.id); }))).forEach(function(p, i){ progs[studs[i].id] = p; });
-    var ad = S.ad = S.ad || { studentId:"all", grade:"3", skills:[], target:80, due:"" };
-    var sets = topics.filter(function(t){ return t.questions && t.questions.length; });
-
-    var h = '<div class="card" style="margin-bottom:24px;"><h2 style="font-size:20px;margin-bottom:4px;">New assignment</h2>'+
-      '<p class="muted">Choose skills and a target SmartScore. Students see it in their To do list.</p>'+
-      '<div class="form-grid"><div><label for="a-st">Student</label><select id="a-st"><option value="all">All students</option>'+
-        studs.map(function(s){ return '<option value="'+s.id+'"'+(ad.studentId===s.id?" selected":"")+'>'+esc(s.name)+'</option>'; }).join("")+'</select></div>'+
-      '<div><label for="a-target">Target SmartScore</label><select id="a-target">'+[70,80,90,100].map(function(t){ return '<option'+(ad.target===t?" selected":"")+'>'+t+'</option>'; }).join("")+'</select></div>'+
-      '<div><label for="a-due">Due date (optional)</label><input id="a-due" type="date" value="'+esc(ad.due)+'"></div></div>'+
-      '<label>Skills</label>' + gradeChips(ad.grade, "data-agrade", true) + '<div class="check-list ck-cols">';
-    TM.gradeById(ad.grade).cats.forEach(function(cat){
-      h += '<section class="sk-sec"><h3 class="sk-h"><span>'+cat.letter+'.</span> '+esc(cat.name)+'</h3>'; var last = null;
-      cat.skills.forEach(function(sk){
-        if(sk.topic && sk.topic !== last && sk.topic !== cat.name) h += '<div class="topic-h">'+esc(sk.topic)+'</div>';
-        last = sk.topic;
-        var no = String(sk.code).replace(/^.*\./, "");
-        if(!sk.g){ h += '<label class="check off"><input type="checkbox" disabled><span class="code">'+no+'</span><span class="ck-t">'+esc(sk.t)+' <span class="pill soon">Coming soon</span></span></label>'; return; }
-        h += '<label class="check"><input type="checkbox" data-sk="'+sk.id+'"'+(ad.skills.indexOf(sk.id)>=0?" checked":"")+'><span class="code">'+no+'</span><span class="ck-t">'+esc(sk.t)+'</span></label>';
-      });
-      h += '</section>';
-    });
-    if(sets.length){
-      h += '<section class="sk-sec"><h3 class="sk-h"><span>★</span> My practice sets</h3>';
-      sets.forEach(function(t){ h += '<label class="check"><input type="checkbox" data-sk="c:'+t.id+'"'+(ad.skills.indexOf("c:"+t.id)>=0?" checked":"")+'><span class="code">★</span><span class="ck-t">'+esc(t.title)+'</span></label>'; });
-      h += '</section>';
-    }
-    h += '</div><div class="sel-count" id="a-count">'+ad.skills.length+' skill'+(ad.skills.length===1?"":"s")+' selected</div>'+
-      '<div class="err" id="a-err" role="alert"></div><button class="btn plum" id="a-create">Create assignment</button></div>';
-
-    h += '<h2 style="font-size:20px;margin-bottom:12px;">Current assignments</h2>';
-    if(!asg.length) h += '<div class="card empty"><p class="muted">No assignments yet. Create one above.</p></div>';
-    asg.slice().sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); }).forEach(function(a){
+  /* ----- Skills: preview any skill, pick skills and give them as homework ----- */
+  function homeworkList(asg, studs, progs, topics){
+    if(!asg.length) return '<p class="muted">No homework yet. Tick skills above and press "Give homework".</p>';
+    return asg.slice().sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); }).map(function(a){
       var who = a.studentId === "all" ? studs : studs.filter(function(s){ return s.id === a.studentId; });
       var forName = a.studentId === "all" ? "All students" : (who[0] ? who[0].name : "Removed student");
-      var due = dueInfo(a.due);
-      h += '<div class="card a-item"><div class="assign-head"><b>'+esc(forName)+': reach '+a.target+'</b><span class="due '+due.cls+'">'+due.text+'</span></div>'+
-        (function(){
-          var ks = a.skills.filter(function(k){ return skillInfo(k, topics); });
-          if(!who.length) return '<p class="muted">No students yet.</p>';
-          var t = '<div class="table-wrap"><table class="t-table res-table"><thead><tr><th>Student</th>'+
-            ks.map(function(k){ var info = skillInfo(k, topics); return '<th title="'+esc(info.title)+'">'+esc(info.title)+'</th>'; }).join("")+'<th>Done</th></tr></thead><tbody>';
-          who.forEach(function(s){
-            var p = progs[s.id] || {}, done = 0;
-            t += '<tr><td><b>'+esc(s.name)+'</b></td>' + ks.map(function(k){
-              var r = p[k]; if(!r || !r.answered) return '<td><span class="muted">–</span></td>';
-              var b = r.best || 0; if(b >= a.target){ done++; return '<td><span class="cell-ok">🎓 '+b+'</span></td>'; }
-              return '<td><span class="pill"><i style="--w:'+b+'%"></i><em>'+b+'</em></span></td>';
-            }).join("") + '<td class="num">'+(done === ks.length ? '<span class="ok">✓ '+done+'/'+ks.length+'</span>' : done+'/'+ks.length)+'</td></tr>';
-          });
-          return t + '</tbody></table></div>';
-        })()+
+      var due = dueInfo(a.due), ks = a.skills.filter(function(k){ return skillInfo(k, topics); }), t = "";
+      if(!who.length) t = '<p class="muted">No students yet.</p>';
+      else {
+        t = '<div class="table-wrap"><table class="t-table res-table"><thead><tr><th>Student</th>'+
+          ks.map(function(k){ var info = skillInfo(k, topics); return '<th title="'+esc(info.title)+'">'+esc(info.title)+'</th>'; }).join("")+'<th>Done</th></tr></thead><tbody>';
+        who.forEach(function(s){
+          var p = progs[s.id] || {}, done = 0;
+          t += '<tr><td><b>'+esc(s.name)+'</b></td>' + ks.map(function(k){
+            var r = p[k]; if(!r || !r.answered) return '<td><span class="muted">–</span></td>';
+            var b = r.best || 0; if(b >= a.target){ done++; return '<td><span class="cell-ok">🎓 '+b+'</span></td>'; }
+            return '<td><span class="pill"><i style="--w:'+b+'%"></i><em>'+b+'</em></span></td>';
+          }).join("") + '<td class="num">'+(done === ks.length ? '<span class="ok">✓ '+done+'/'+ks.length+'</span>' : done+'/'+ks.length)+'</td></tr>';
+        });
+        t += '</tbody></table></div>';
+      }
+      return '<div class="card a-item"><div class="assign-head"><b>'+esc(forName)+': reach '+a.target+'</b><span class="due '+due.cls+'">'+due.text+'</span></div>'+t+
         '<div class="btn-row" style="margin-top:10px;"><button class="btn ghost sm" data-adel="'+a.id+'">Delete</button></div></div>';
-    });
-    el.innerHTML = h;
-
-    $("#a-st").onchange = function(){ ad.studentId = this.value; };
-    $("#a-target").onchange = function(){ ad.target = +this.value; };
-    $("#a-due").onchange = function(){ ad.due = this.value; };
-    on("[data-agrade]", "click", function(){ ad.grade = this.dataset.agrade; render(); });
-    on("[data-sk]", "change", function(){
-      var k = this.dataset.sk, i = ad.skills.indexOf(k);
-      if(this.checked && i < 0) ad.skills.push(k); if(!this.checked && i >= 0) ad.skills.splice(i, 1);
-      $("#a-count").textContent = ad.skills.length + " skill" + (ad.skills.length===1?"":"s") + " selected";
-    });
-    $("#a-create").onclick = async function(){
-      if(!ad.skills.length){ $("#a-err").textContent = "Choose at least one skill."; return; }
-      var created = await Store.saveAssignment({ studentId:ad.studentId, skills:ad.skills.slice(), target:ad.target, due:ad.due });
-      var names = created.skills.map(function(k){ var inf = skillInfo(k, topics); return inf ? "• " + inf.title : ""; }).filter(Boolean).join("\n");
-      Store.queueNotice({ sid: created.studentId, kind: "new_homework", refId: created.id, createdAt: Date.now(),
-        text: names + "\n\n🎯 Goal: SmartScore " + created.target + (created.due ? "\n📅 " + dueInfo(created.due).text : "") }).catch(function(){});
-      S.ad = { studentId:ad.studentId, grade:ad.grade, skills:[], target:ad.target, due:"" };
-      toast("Assignment created."); render();
-    };
-    $$("[data-adel]").forEach(function(b){ armConfirm(b, async function(){ await Store.deleteAssignment(b.dataset.adel); toast("Assignment deleted."); render(); }); });
+    }).join("");
   }
-
-  /* ----- Skills (preview) ----- */
-  function tabSkills(el){
+  async function tabSkills(el){
     S.wsCount = S.wsCount || 12;
-    var h = '<p class="muted" style="margin:0 0 12px;">Try any skill the way your students see it, or print worksheets with answer keys. Every worksheet has new numbers.</p>' + gradeChips(S.tGrade, "data-tgrade") +
+    var ad = S.ad = S.ad || { studentId:"all", skills:[], target:80, due:"" };
+    var r = await Promise.all([Store.listStudents(), Store.listTopics(), Store.listAssignments()]);
+    var studs = r[0].sort(function(a,b){ return a.name.localeCompare(b.name); }), topics = r[1], asg = r[2];
+    var sets = topics.filter(function(t){ return t.questions && t.questions.length; });
+    function countText(){ var n = ad.skills.length; return n ? n + " skill" + (n === 1 ? "" : "s") + " selected" : "No skills selected"; }
+
+    var h = '<p class="muted" style="margin:0 0 12px;">Point at a skill to see a sample question. Click it to try it the way your students see it. Tick the box next to a skill to give it as homework.</p>' + gradeChips(S.tGrade, "data-tgrade") +
       '<div class="card rv-strip"><span class="dc-ico">🖨</span><div><b>Worksheets for '+esc(gradeName(S.tGrade))+'</b><small>Press 🖨 next to a topic, or print a mixed review of the whole grade. In the print window choose “Save as PDF” to keep a file.</small></div>'+
       '<label class="ws-n-l">Questions <select id="ws-n"><option'+(S.wsCount === 8 ? " selected" : "")+'>8</option><option'+(S.wsCount === 12 ? " selected" : "")+'>12</option><option'+(S.wsCount === 20 ? " selected" : "")+'>20</option></select></label>'+
       '<button class="btn gold" data-ws="">🖨 Whole-grade review</button></div>';
-    h += '<div class="sk-cols">';
+    h += '<div class="sk-cols sk-pickable">';
     TM.gradeById(S.tGrade).cats.forEach(function(cat){
       h += '<section class="sk-sec"><h3 class="sk-h"><span>'+cat.letter+'.</span> '+esc(cat.name)+'</h3><div class="sk-list">'+
         topicRows(cat, function(){ return ''; }, function(tk){ return '<button class="topic-rv" data-ws="'+esc(tk)+'">🖨 Worksheet</button>'; })+'</div></section>';
     });
+    if(sets.length){
+      h += '<section class="sk-sec"><h3 class="sk-h"><span>★</span> My practice sets</h3><div class="sk-list">'+
+        sets.map(function(t){ return '<label class="sk-pick sk-set"><input type="checkbox" data-sk="c:'+t.id+'"'+(ad.skills.indexOf("c:"+t.id) >= 0 ? " checked" : "")+' aria-label="Give as homework"><span>'+esc(t.title)+'</span></label>'; }).join("")+'</div></section>';
+    }
     h += '</div>';
+    h += '<div class="hw-bar card" id="hw-bar"><div class="hw-count"><b id="a-count">'+countText()+'</b><button class="link-btn" id="a-clear"'+(ad.skills.length ? "" : " hidden")+'>Clear</button></div>'+
+      '<label>Student<select id="a-st"><option value="all">All students</option>'+studs.map(function(s){ return '<option value="'+s.id+'"'+(ad.studentId === s.id ? " selected" : "")+'>'+esc(s.name)+'</option>'; }).join("")+'</select></label>'+
+      '<label>Target SmartScore<select id="a-target">'+[70,80,90,100].map(function(t){ return '<option'+(ad.target === t ? " selected" : "")+'>'+t+'</option>'; }).join("")+'</select></label>'+
+      '<label>Due date<input id="a-due" type="date" value="'+esc(ad.due)+'"></label>'+
+      '<button class="btn plum" id="a-create"'+(ad.skills.length ? "" : " disabled")+'>📌 Give<span class="hw-long"> homework</span></button></div>';
+    h += '<details class="hw-list" id="hw-list"'+(S.hwOpen ? " open" : "")+'><summary><h2>Homework given</h2><span class="hw-n">'+asg.length+'</span></summary><div id="hw-body"><p class="muted">Loading…</p></div></details>';
     el.innerHTML = h;
+
+    // a tick box next to every skill that has questions
+    $$(".sk-pickable .skill-row[data-skill]").forEach(function(btn){
+      if(btn.querySelector(".pill.soon")) return;
+      var k = btn.dataset.skill, w = document.createElement("div"), cb = document.createElement("input");
+      w.className = "sk-pick"; cb.type = "checkbox"; cb.dataset.sk = k; cb.checked = ad.skills.indexOf(k) >= 0; cb.setAttribute("aria-label", "Give as homework");
+      btn.parentNode.insertBefore(w, btn); w.appendChild(cb); w.appendChild(btn);
+      if(cb.checked) w.classList.add("on");
+    });
+    function sync(){
+      $("#a-count").textContent = countText();
+      $("#a-clear").hidden = !ad.skills.length; $("#a-create").disabled = !ad.skills.length;
+      $("#hw-bar").classList.toggle("has", ad.skills.length > 0);
+    }
+    sync();
+    on("[data-sk]", "change", function(){
+      var k = this.dataset.sk, i = ad.skills.indexOf(k);
+      if(this.checked && i < 0) ad.skills.push(k); if(!this.checked && i >= 0) ad.skills.splice(i, 1);
+      if(this.parentNode.classList) this.parentNode.classList.toggle("on", this.checked);
+      sync();
+    });
+    $("#a-clear").onclick = function(){ ad.skills = []; $$("[data-sk]").forEach(function(c){ c.checked = false; if(c.parentNode.classList) c.parentNode.classList.remove("on"); }); sync(); };
+    $("#a-st").onchange = function(){ ad.studentId = this.value; };
+    $("#a-target").onchange = function(){ ad.target = +this.value; };
+    $("#a-due").onchange = function(){ ad.due = this.value; };
+    $("#a-create").onclick = async function(){
+      if(!ad.skills.length) return;
+      var btn = this; btn.disabled = true;
+      try {
+        var created = await Store.saveAssignment({ studentId:ad.studentId, skills:ad.skills.slice(), target:ad.target, due:ad.due });
+        var names = created.skills.map(function(k){ var inf = skillInfo(k, topics); return inf ? "• " + inf.title : ""; }).filter(Boolean).join("\n");
+        Store.queueNotice({ sid: created.studentId, kind: "new_homework", refId: created.id, createdAt: Date.now(),
+          text: names + "\n\n🎯 Goal: SmartScore " + created.target + (created.due ? "\n📅 " + dueInfo(created.due).text : "") }).catch(function(){});
+        var who = ad.studentId === "all" ? "all students" : ((studs.filter(function(s){ return s.id === ad.studentId; })[0] || {}).name || "the student");
+        S.ad = { studentId:ad.studentId, skills:[], target:ad.target, due:"" }; S.hwOpen = true;
+        toast("Homework given to " + who + "."); render();
+      } catch(e){ btn.disabled = false; toast("Could not save. Please try again."); }
+    };
     $("#ws-n").onchange = function(){ S.wsCount = +this.value; };
     on("[data-ws]", "click", function(e){
       e.stopPropagation(); var tk = this.dataset.ws, tps = gradeTopics(S.tGrade);
@@ -9068,7 +9066,19 @@ var Store = (function(){
       else openWorksheet(gradeName(S.tGrade) + " review", "Mixed questions from every topic", [].concat.apply([], tps.map(function(x){ return x.skills; })), S.wsCount);
     });
     on("[data-tgrade]", "click", function(){ S.tGrade = this.dataset.tgrade; render(); });
-    on("[data-skill]", "click", function(){ startPractice(this.dataset.skill, { preview:true }); });
+    on(".sk-pickable [data-skill]", "click", function(){ startPractice(this.dataset.skill, { preview:true }); });
+
+    // homework already given: progress per student
+    var list = $("#hw-list");
+    async function fillList(){
+      var progs = {}; (await Promise.all(studs.map(function(s){ return Store.getProgress(s.id); }))).forEach(function(p, i){ progs[studs[i].id] = p; });
+      if(!document.body.contains(list)) return;
+      $("#hw-body").innerHTML = homeworkList(asg, studs, progs, topics);
+      $$("[data-adel]").forEach(function(b){ armConfirm(b, async function(){ await Store.deleteAssignment(b.dataset.adel); toast("Homework deleted."); S.hwOpen = true; render(); }); });
+    }
+    var filled = false;
+    list.addEventListener("toggle", function(){ S.hwOpen = list.open; if(list.open && !filled){ filled = true; fillList(); } });
+    if(list.open){ filled = true; fillList(); }
   }
 
   /* ----- My practice sets ----- */
@@ -10818,6 +10828,45 @@ html:root:not(#x)[data-theme="dark"] body.scrolled .t-nav{background:rgba(14,20,
 
 </script>
 <style id="skprev">
+/* skills tab: tick skills and give homework */
+html:root:not(#x) .sk-pick{display:grid;grid-template-columns:22px 1fr;align-items:start;gap:2px;break-inside:avoid;border-radius:8px;}
+html:root:not(#x) .sk-pick > input{width:17px;height:17px;margin:7px 0 0 4px;accent-color:#2f6bff;cursor:pointer;}
+html:root:not(#x) .sk-pick .skill-row::before{display:none;}
+html:root:not(#x) .sk-pick .skill-row{grid-template-columns:auto 1fr auto;}
+html:root:not(#x) .sk-pick.on{background:rgba(47,107,255,.09);}
+html:root:not(#x) .sk-pick.on .skill-row b{color:#1f4fd6;}
+html:root:not(#x) .sk-set{align-items:center;padding:4px 0;font-weight:600;cursor:pointer;}
+html:root:not(#x) .sk-set > input{margin-top:0;}
+html:root:not(#x) .hw-bar{position:sticky;bottom:14px;z-index:30;display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px;margin:22px 0 18px;padding:14px 18px;border:1.5px solid var(--line,#d6dbea);box-shadow:0 10px 30px rgba(20,30,70,.12);}
+html:root:not(#x) .hw-bar.has{border-color:#2f6bff;}
+html:root:not(#x) .hw-bar label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700;color:var(--muted,#5b6480);margin:0;}
+html:root:not(#x) .hw-bar select,html:root:not(#x) .hw-bar input{min-width:150px;margin:0;}
+html:root:not(#x) .hw-count{display:flex;flex-direction:column;gap:2px;min-width:150px;margin-right:auto;align-self:center;}
+html:root:not(#x) .hw-count b{font-size:16px;}
+html:root:not(#x) .hw-bar.has .hw-count b{color:#1f4fd6;}
+html:root:not(#x) .link-btn{background:none;border:0;padding:0;color:#2f6bff;font:inherit;font-size:13px;cursor:pointer;text-align:left;text-decoration:underline;}
+html:root:not(#x) .hw-bar #a-create{margin:0;}
+@media (max-width:760px){ html:root:not(#x) .hw-long{display:none;} }
+html:root:not(#x) .hw-bar #a-create:disabled{opacity:.45;cursor:not-allowed;}
+html:root:not(#x) .hw-list{margin-top:8px;}
+html:root:not(#x) .hw-list summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;padding:6px 0 12px;}
+html:root:not(#x) .hw-list summary::-webkit-details-marker{display:none;}
+html:root:not(#x) .hw-list summary h2{font-size:20px;margin:0;}
+html:root:not(#x) .hw-list summary::after{content:"▾";font-size:16px;transition:transform .2s;color:var(--muted,#5b6480);}
+html:root:not(#x) .hw-list[open] summary::after{transform:rotate(180deg);}
+html:root:not(#x) .hw-n{background:rgba(47,107,255,.12);color:#1f4fd6;border-radius:20px;padding:2px 10px;font-weight:700;font-size:13px;}
+html:root:not(#x)[data-theme="dark"] .sk-pick.on{background:rgba(79,140,255,.16);}
+html:root:not(#x)[data-theme="dark"] .sk-pick.on .skill-row b,html:root:not(#x)[data-theme="dark"] .hw-bar.has .hw-count b{color:#8fb2ff;}
+@media (max-width:760px){ html:root:not(#x) .hw-bar{bottom:10px;padding:10px 12px;gap:8px;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;}
+ html:root:not(#x) .hw-count{grid-column:1 / 3;grid-row:1;min-width:0;}
+ html:root:not(#x) .hw-count b{font-size:15px;}
+ html:root:not(#x) .hw-bar #a-create{grid-column:3;grid-row:1;padding:9px 10px;font-size:14px;white-space:nowrap;}
+ html:root:not(#x) .hw-bar label{font-size:11px;gap:2px;min-width:0;}
+ html:root:not(#x) .hw-bar select,html:root:not(#x) .hw-bar input{min-width:0;width:100%;height:36px;padding:4px 6px;font-size:13px;}
+ html:root:not(#x) .hw-bar:not(.has) label{display:none;}
+ html:root:not(#x) .hw-bar:not(.has) .hw-count{grid-column:1 / 4;}
+ html:root:not(#x) .hw-bar:not(.has) #a-create{display:none;} }
+
 .skp{position:fixed;z-index:9000;width:min(440px,calc(100vw - 24px));max-height:min(520px,calc(100vh - 24px));overflow:hidden;background:var(--card,#fff);color:var(--ink,#1a2140);border:1px solid var(--line,#d6dbea);border-radius:16px;box-shadow:0 18px 50px rgba(20,30,70,.22);padding:0;opacity:0;transform:translateY(6px) scale(.98);transition:opacity .16s ease,transform .16s ease;pointer-events:none;font-family:inherit;}
 .skp.on{opacity:1;transform:none;}
 .skp-h{display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(90deg,#2f6bff,#4f8cff);color:#fff;font:600 13px/1.2 inherit;}
