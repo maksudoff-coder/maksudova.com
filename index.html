@@ -10817,5 +10817,57 @@ html:root:not(#x)[data-theme="dark"] body.scrolled .t-nav{background:rgba(14,20,
 })();
 
 </script>
+<style id="skprev">
+.skp{position:fixed;z-index:9000;width:min(440px,calc(100vw - 24px));max-height:min(520px,calc(100vh - 24px));overflow:hidden;background:var(--card,#fff);color:var(--ink,#1a2140);border:1px solid var(--line,#d6dbea);border-radius:16px;box-shadow:0 18px 50px rgba(20,30,70,.22);padding:0;opacity:0;transform:translateY(6px) scale(.98);transition:opacity .16s ease,transform .16s ease;pointer-events:none;font-family:inherit;}
+.skp.on{opacity:1;transform:none;}
+.skp-h{display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(90deg,#2f6bff,#4f8cff);color:#fff;font:600 13px/1.2 inherit;}
+.skp-h b{font-weight:700;letter-spacing:.2px}.skp-h span{opacity:.85;font-weight:500;margin-left:auto;font-size:12px}
+.skp-b{padding:14px 16px 16px;font-size:15.5px;line-height:1.45;}
+.skp-t{font-weight:700;font-size:13.5px;color:var(--muted,#5b6480);margin-bottom:8px;}
+.skp-q{margin-bottom:10px;}
+.skp-v{max-height:230px;overflow:hidden;margin:6px 0 10px;}
+.skp-v svg,.skp-v img{max-width:100%;height:auto;max-height:220px;}
+.skp-v .k-tbl td,.skp-v .k-tbl th{padding:5px 10px;font-size:14px;}
+.skp-o{display:flex;flex-wrap:wrap;gap:6px;}
+.skp-o span{border:1.5px solid var(--line,#d6dbea);border-radius:10px;padding:5px 10px;font-size:14px;}
+.skp-in{display:inline-block;width:110px;height:32px;border:1.5px solid var(--line,#c9d0e4);border-radius:8px;vertical-align:middle;}
+.skp .k-big{font-size:22px;}
+:root[data-theme="dark"] .skp{background:#1c2236;color:#eef1fa;border-color:#2e3654;}
+@media (hover:none),(pointer:coarse){.skp{display:none!important}}
+</style>
+<script id="skprev-js">
+(function(){
+  if(!window.matchMedia || !matchMedia("(hover:hover) and (pointer:fine)").matches) return;
+  var box = null, timer = null, cur = null;
+  function el(){ if(!box){ box = document.createElement("div"); box.className = "skp"; box.setAttribute("role", "tooltip"); document.body.appendChild(box); } return box; }
+  function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]; }); }
+  function hide(){ clearTimeout(timer); cur = null; if(box) box.classList.remove("on"); }
+  function show(row){
+    var key = row.getAttribute("data-skill"), sk = window.TM && TM.SKILLS && TM.SKILLS[key];
+    if(!sk || !sk.g) return;
+    var q; try { q = sk.g(); } catch(e){ return; }
+    if(!q || !q.q) return;
+    var ans = "";
+    if(q.a && q.a.kind === "mcq" && q.a.options) ans = '<div class="skp-o">'+q.a.options.map(function(o){ return "<span>"+o+"</span>"; }).join("")+'</div>';
+    else ans = '<span class="skp-in"></span>'+(q.unit ? ' <span>'+q.unit+'</span>' : "");
+    var b = el();
+    b.innerHTML = '<div class="skp-h"><b>Skill preview</b><span>Sample question</span></div><div class="skp-b"><div class="skp-t">'+esc(sk.t)+'</div><div class="skp-q">'+q.q+'</div>'+(q.vis ? '<div class="skp-v">'+q.vis+'</div>' : "")+ans+'</div>';
+    var r = row.getBoundingClientRect(), W = b.offsetWidth || 440, Hh = b.offsetHeight || 260, vw = innerWidth, vh = innerHeight, x, y;
+    x = r.right + 14; if(x + W > vw - 12) x = r.left - W - 14; if(x < 12) x = Math.min(Math.max(12, r.left), vw - W - 12);
+    y = r.top - 10; if(x === Math.min(Math.max(12, r.left), vw - W - 12) && x > r.left - W) y = r.bottom + 8;
+    if(y + Hh > vh - 12) y = Math.max(12, vh - Hh - 12);
+    b.style.left = Math.round(x)+"px"; b.style.top = Math.round(y)+"px";
+    requestAnimationFrame(function(){ if(cur === row) b.classList.add("on"); });
+  }
+  document.addEventListener("mouseover", function(e){
+    var row = e.target.closest && e.target.closest(".skill-row[data-skill]");
+    if(row === cur) return;
+    if(!row){ if(cur && !(e.relatedTarget && cur.contains(e.relatedTarget))) hide(); return; }
+    hide(); cur = row; timer = setTimeout(function(){ if(cur === row) show(row); }, 380);
+  });
+  document.addEventListener("mouseout", function(e){ if(cur && e.target.closest && e.target.closest(".skill-row[data-skill]") === cur && !(e.relatedTarget && cur.contains(e.relatedTarget))) hide(); });
+  ["scroll","mousedown","keydown"].forEach(function(t){ window.addEventListener(t, hide, true); });
+})();
+</script>
 </body>
 </html>
