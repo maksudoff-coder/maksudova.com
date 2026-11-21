@@ -1,5 +1,5 @@
 /* Tutor Maksudova — app shell cache (makes the site installable and quick to open) */
-const CACHE = "tm-1795205446";
+const CACHE = "tm-1795258049";
 const SHELL = ["/", "/fonts/onest.css", "/vendor/firebase-app-compat.js", "/vendor/firebase-auth-compat.js", "/vendor/firebase-firestore-compat.js", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

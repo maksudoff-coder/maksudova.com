@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>(function(){var t="light";try{if(localStorage.getItem("tm-theme")==="dark")t="dark"}catch(e){}document.documentElement.setAttribute("data-theme",t)})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tutor Maksudova — Online Math Tutor for Grades 1–8 and Algebra 1</title>
 <meta name="description" content="Friendly one-to-one online math lessons with Tutor Maksudova. Practice 3,000+ skills from Grade 1 to Algebra 1, brain games, quizzes and video lessons. Book a lesson today.">
 <link rel="canonical" href="https://maksudova.com/">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f4f5f8">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121110">
+<meta name="theme-color" content="#f4f5f8">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tutor Maksudova">
 <meta property="og:url" content="https://maksudova.com/">
@@ -4902,7 +4902,8 @@ var Store = (function(){
     var dark = currentTheme() === "dark";
     return '<button class="theme-btn" data-theme-toggle aria-label="'+(dark ? "Switch to day mode" : "Switch to night mode")+'" title="'+(dark ? "Day mode" : "Night mode")+'">'+themeBtnInner()+'</button>';
   }
-  try{ var savedTheme = localStorage.getItem("tm-theme"); if(savedTheme === "dark" || savedTheme === "light") document.documentElement.setAttribute("data-theme", savedTheme); }catch(e){}
+  // day mode unless the visitor picked night mode with the moon button (the device setting is not followed)
+  (function(){ var t = "light"; try{ if(localStorage.getItem("tm-theme") === "dark") t = "dark"; }catch(e){} document.documentElement.setAttribute("data-theme", t); })();
   document.addEventListener("click", function(e){
     var b = e.target.closest && e.target.closest("[data-theme-toggle]"); if(!b) return;
     var next = currentTheme() === "dark" ? "light" : "dark", root = document.documentElement;
