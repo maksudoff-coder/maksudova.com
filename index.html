@@ -1878,6 +1878,10 @@
 
 /* @@PLAYCSS_END */
 .skill-row.just-back{animation:jb 1.6s ease-out;}@keyframes jb{0%,40%{box-shadow:0 0 0 3px var(--sky,#3b82f6);}100%{box-shadow:0 0 0 0 transparent;}}
+.sk-h .sk-all{width:18px;height:18px;margin:0 8px 0 0;vertical-align:-2px;accent-color:#2f6bff;cursor:pointer;}
+.hw-acts{display:flex;flex-wrap:wrap;gap:4px 14px;}
+.qgen .q-vis svg{max-width:100%;height:auto;}
+.qgen-opts{display:flex;flex-wrap:wrap;gap:8px;} .qgen-opts span{border:1.5px solid var(--line,#d6dbea);border-radius:10px;padding:4px 12px;font-weight:700;} .qgen-opts span.ok{border-color:#2e9e5b;background:rgba(46,158,91,.12);}
 </style>
 <style id="gen3">
 /* precise skill generators: pictures and layouts */
@@ -12198,6 +12202,7 @@ var Store = (function(){
     var correct = qz.questions.map(function(q, i){
       var a = answers[i]; if(a === undefined || a === null || a === "") return false;
       if(q.type === "mcq") return +a === q.answerIndex;
+      if(q.type === "gen"){ if(q.a.kind === "mcq") return +a === q.a.correct; try{ return TM.check(q.a, String(a)).st === "ok"; }catch(e){ return false; } }
       return TM.check({ kind:"text", v:q.answer }, String(a)).st === "ok";
     });
     return { correct: correct, score: correct.filter(Boolean).length, total: qz.questions.length };
@@ -12206,8 +12211,8 @@ var Store = (function(){
   function quizMeta(qz){
     return qz.questions.length + " question" + (qz.questions.length === 1 ? "" : "s") + (qz.timeLimit ? ", " + qz.timeLimit + " min" : ", no time limit");
   }
-  function answerText(q, a){ if(a === undefined || a === null || a === "") return "(no answer)"; return q.type === "mcq" ? (q.options[+a] || "") : String(a); }
-  function correctText(q){ return q.type === "mcq" ? q.options[q.answerIndex] : q.answer; }
+  function answerText(q, a){ if(a === undefined || a === null || a === "") return "(no answer)"; if(q.type === "gen") return q.a.kind === "mcq" ? textOf(q.a.options[+a]) : String(a); return q.type === "mcq" ? (q.options[+a] || "") : String(a); }
+  function correctText(q){ return q.type === "gen" ? textOf(q.show) : q.type === "mcq" ? q.options[q.answerIndex] : q.answer; }
 
   async function openQuiz(qid){
     var qz = (await Store.listQuizzes()).filter(function(x){ return x.id === qid; })[0];
@@ -12247,8 +12252,11 @@ var Store = (function(){
     } else if(Q.state === "q"){
       var q = qz.questions[Q.idx], a = Q.answers[Q.idx];
       body = '<div class="quiz-dots">' + qz.questions.map(function(_, i){ var v = Q.answers[i]; return '<button class="qd'+(i===Q.idx?" on":"")+(v !== null && v !== "" ? " done" : "")+'" data-qi="'+i+'" aria-label="Question '+(i+1)+'">'+(i+1)+'</button>'; }).join("") + '</div>'+
-        '<div class="quiz-q"><span class="quiz-n">Question '+(Q.idx+1)+' of '+n+'</span><div class="q-prompt">'+esc(q.prompt).replace(/\n/g, "<br>")+'</div>'+
-        (q.type === "mcq"
+        '<div class="quiz-q"><span class="quiz-n">Question '+(Q.idx+1)+' of '+n+'</span><div class="q-prompt">'+qPromptHTML(q, true)+'</div>'+
+        (q.type === "gen"
+          ? (q.a.kind === "mcq" ? '<div class="options">' + q.a.options.map(function(o, i){ return '<button class="option'+(+a === i && a !== null ? " selected" : "")+'" data-qo="'+i+'">'+safeHTML(o)+'</button>'; }).join("") + '</div>'
+            : '<div class="ans-row">'+(q.pre ? '<span class="affix">'+esc(q.pre)+'</span>' : "")+'<input id="qz-ans" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="'+esc(a || "")+'" placeholder="Your answer" aria-label="Your answer">'+(q.unit ? '<span class="affix">'+esc(q.unit)+'</span>' : "")+'</div>')
+        : q.type === "mcq"
           ? '<div class="options">' + q.options.map(function(o, i){ return '<button class="option'+(+a === i && a !== null ? " selected" : "")+'" data-qo="'+i+'">'+esc(o)+'</button>'; }).join("") + '</div>'
           : '<div class="ans-row"><input id="qz-ans" type="text" autocomplete="off" value="'+esc(a || "")+'" placeholder="Your answer" aria-label="Your answer"></div>')+
         '</div><div class="btn-row quiz-nav">'+(Q.idx > 0 ? '<button class="btn ghost" id="qz-prev">‹ Back</button>' : "")+
@@ -12265,7 +12273,7 @@ var Store = (function(){
       if(qz.showAnswers !== false && r.correct){
         body += '<h3 style="font-size:18px;margin:18px 0 10px;">Your answers</h3>' + qz.questions.map(function(q, i){
           var ok = r.correct[i];
-          return '<div class="quiz-rev '+(ok?"qr-ok":"qr-no")+'"><span class="qr-ico">'+(ok?"✓":"✗")+'</span><div><div class="qr-q">'+(i+1)+'. '+esc(q.prompt)+'</div>'+
+          return '<div class="quiz-rev '+(ok?"qr-ok":"qr-no")+'"><span class="qr-ico">'+(ok?"✓":"✗")+'</span><div><div class="qr-q">'+(i+1)+'. '+qPromptHTML(q)+'</div>'+
             '<div class="qr-a">Your answer: <b>'+esc(answerText(q, (r.answers || [])[i]))+'</b>'+(ok ? "" : ' <span class="qr-c">Correct: <b>'+esc(correctText(q))+'</b></span>')+'</div></div></div>';
         }).join("");
       }
@@ -13951,6 +13959,15 @@ var Store = (function(){
       '<div><label for="qe-due">Due date (optional)</label><input id="qe-due" type="date" value="'+esc(d.due)+'"></div></div>'+
       '<label class="check" style="margin-top:12px;"><input type="checkbox" id="qe-show"'+(d.showAnswers !== false ? " checked" : "")+'> Show students the correct answers after they submit</label></div>';
     d.questions.forEach(function(q, qi){
+      if(q.type === "gen"){
+        var sk = TM.SKILLS[q.key] || {};
+        h += '<div class="card qedit qgen" style="margin-top:14px;"><div class="section-title" style="margin-bottom:6px;"><b>Question '+(qi+1)+' <span class="muted">('+esc((sk.code ? String(sk.code).replace(/^.*\./, "") + " " : "") + (sk.t || "skill"))+')</span></b>'+
+          '<span class="btn-row" style="margin:0;"><button class="btn ghost sm" data-qregen="'+qi+'">↻ Another question</button><button class="btn ghost sm" data-qqdel="'+qi+'">Remove</button></span></div>'+
+          '<div class="q-prompt" style="font-size:18px;margin-bottom:8px;">'+qPromptHTML(q, true)+'</div>'+
+          (q.a.kind === "mcq" ? '<div class="qgen-opts">'+q.a.options.map(function(o, oi){ return '<span class="'+(oi === q.a.correct ? "ok" : "")+'">'+safeHTML(o)+'</span>'; }).join("")+'</div>'
+            : '<p class="muted" style="margin:0;">Answer: <b>'+safeHTML(q.show)+'</b></p>')+'</div>';
+        return;
+      }
       h += '<div class="card qedit" style="margin-top:14px;"><div class="section-title" style="margin-bottom:4px;"><b>Question '+(qi+1)+' <span class="muted">('+(q.type==="mcq"?"multiple choice":"typed answer")+')</span></b>'+
         '<button class="btn ghost sm" data-qqdel="'+qi+'">Remove</button></div><label>Question</label><textarea data-q="'+qi+'" data-f="prompt">'+esc(q.prompt)+'</textarea>';
       if(q.type === "mcq"){
@@ -13975,6 +13992,7 @@ var Store = (function(){
     on("[data-o]", "input", function(){ d.questions[+this.dataset.q].options[+this.dataset.o] = this.value; });
     on("[data-correct]", "change", function(){ d.questions[+this.dataset.q].answerIndex = +this.dataset.correct; });
     on("[data-qqdel]", "click", function(){ d.questions.splice(+this.dataset.qqdel, 1); render(); });
+    on("[data-qregen]", "click", function(){ var i = +this.dataset.qregen, g = genQuizQ(d.questions[i].key); if(g){ d.questions[i] = g; render(); } });
     $("#qe-add-mc").onclick = function(){ d.questions.push(newQ("mcq")); render(); };
     $("#qe-add-in").onclick = function(){ d.questions.push(newQ("input")); render(); };
     $("#qe-save").onclick = async function(){
@@ -13983,6 +14001,7 @@ var Store = (function(){
       if(!d.questions.length) return err("Add at least one question.");
       for(var i=0;i<d.questions.length;i++){
         var q = d.questions[i], n = "Question " + (i+1) + ": ";
+        if(q.type === "gen") continue;
         if(!q.prompt.trim()) return err(n + "write the question.");
         if(q.type === "input" && !String(q.answer || "").trim()) return err(n + "add the correct answer.");
         if(q.type === "mcq"){
@@ -14021,7 +14040,7 @@ var Store = (function(){
     if(sub.length){
       h += '<h2 class="sec">Question by question</h2><div class="card" style="padding:10px 20px;">'+qz.questions.map(function(q, i){
         var ok = sub.filter(function(s){ return res[s.id].correct && res[s.id].correct[i]; }).length, pct = Math.round(100*ok/sub.length);
-        return '<div class="mistake"><div class="mq">'+(i+1)+'. '+esc(q.prompt)+'</div><span class="pill"><i style="--w:'+pct+'%"></i><em>'+pct+'%</em></span> <span class="muted" style="font-size:12.5px;">answered correctly ('+ok+' of '+sub.length+')</span></div>';
+        return '<div class="mistake"><div class="mq">'+(i+1)+'. '+qPromptHTML(q)+'</div><span class="pill"><i style="--w:'+pct+'%"></i><em>'+pct+'%</em></span> <span class="muted" style="font-size:12.5px;">answered correctly ('+ok+' of '+sub.length+')</span></div>';
       }).join("")+'</div>';
     }
     h += '<div id="qr-detail"></div>';
@@ -14031,7 +14050,7 @@ var Store = (function(){
       var s = studs.filter(function(x){ return x.id === this.dataset.qans; }.bind(this))[0], x = res[s.id];
       $("#qr-detail").innerHTML = '<h2 class="sec">'+esc(s.name)+'\u2019s answers</h2><div class="card" style="padding:14px 20px;">'+qz.questions.map(function(q, i){
         var ok = x.correct && x.correct[i];
-        return '<div class="quiz-rev '+(ok?"qr-ok":"qr-no")+'"><span class="qr-ico">'+(ok?"✓":"✗")+'</span><div><div class="qr-q">'+(i+1)+'. '+esc(q.prompt)+'</div>'+
+        return '<div class="quiz-rev '+(ok?"qr-ok":"qr-no")+'"><span class="qr-ico">'+(ok?"✓":"✗")+'</span><div><div class="qr-q">'+(i+1)+'. '+qPromptHTML(q)+'</div>'+
           '<div class="qr-a">Answer: <b>'+esc(answerText(q, (x.answers || [])[i]))+'</b>'+(ok ? "" : ' <span class="qr-c">Correct: <b>'+esc(correctText(q))+'</b></span>')+'</div></div></div>';
       }).join("")+'</div>';
       $("#qr-detail").scrollIntoView({ behavior:"smooth", block:"start" });
@@ -14079,7 +14098,8 @@ var Store = (function(){
       '<button class="btn gold" data-ws="">🖨 Whole-grade review</button></div>';
     h += '<div class="sk-cols sk-pickable">';
     TM.gradeById(S.tGrade).cats.forEach(function(cat){
-      h += '<section class="sk-sec"><h3 class="sk-h"><span>'+cat.letter+'.</span> '+esc(cat.name)+'</h3><div class="sk-list">'+
+      var ck = cat.skills.filter(function(x){ return x.g; }).map(function(x){ return x.id; });
+      h += '<section class="sk-sec"><h3 class="sk-h">'+(ck.length ? '<input type="checkbox" class="sk-all" data-cat="'+esc(ck.join(","))+'" aria-label="Select the whole section '+esc(cat.letter)+'"'+(ck.every(function(k){ return ad.skills.indexOf(k) >= 0; }) ? " checked" : "")+'>' : "")+'<span>'+cat.letter+'.</span> '+esc(cat.name)+'</h3><div class="sk-list">'+
         topicRows(cat, function(){ return ''; }, function(tk){ return '<button class="topic-rv" data-ws="'+esc(tk)+'">🖨 Worksheet</button>'; })+'</div></section>';
     });
     if(sets.length){
@@ -14087,7 +14107,7 @@ var Store = (function(){
         sets.map(function(t){ return '<label class="sk-pick sk-set"><input type="checkbox" data-sk="c:'+t.id+'"'+(ad.skills.indexOf("c:"+t.id) >= 0 ? " checked" : "")+' aria-label="Give as homework"><span>'+esc(t.title)+'</span></label>'; }).join("")+'</div></section>';
     }
     h += '</div>';
-    h += '<div class="hw-bar card" id="hw-bar"><div class="hw-count"><b id="a-count">'+countText()+'</b><button class="link-btn" id="a-clear"'+(ad.skills.length ? "" : " hidden")+'>Clear</button></div>'+
+    h += '<div class="hw-bar card" id="hw-bar"><div class="hw-count"><b id="a-count">'+countText()+'</b><span class="hw-acts" id="a-acts"'+(ad.skills.length ? "" : " hidden")+'><button class="link-btn" id="a-ws">🖨 Worksheet</button><button class="link-btn" id="a-quiz">📝 Make a quiz</button><button class="link-btn" id="a-clear">Clear</button></span></div>'+
       '<label>Student<select id="a-st"><option value="all">'+allLabel()+'</option>'+studs.map(function(s){ return '<option value="'+s.id+'"'+(ad.studentId === s.id ? " selected" : "")+'>'+esc(s.name)+'</option>'; }).join("")+'</select></label>'+
       '<label>Target SmartScore<select id="a-target">'+[70,80,90,100].map(function(t){ return '<option'+(ad.target === t ? " selected" : "")+'>'+t+'</option>'; }).join("")+'</select></label>'+
       '<label>Due date<input id="a-due" type="date" value="'+esc(ad.due)+'"></label>'+
@@ -14105,7 +14125,8 @@ var Store = (function(){
     });
     function sync(){
       $("#a-count").textContent = countText();
-      $("#a-clear").hidden = !ad.skills.length; $("#a-create").disabled = !ad.skills.length;
+      $("#a-acts").hidden = !ad.skills.length; $("#a-create").disabled = !ad.skills.length;
+      $$(".sk-all").forEach(function(c){ var ks = c.dataset.cat.split(","), n = ks.filter(function(k){ return ad.skills.indexOf(k) >= 0; }).length; c.checked = n === ks.length; c.indeterminate = n > 0 && n < ks.length; });
       $("#hw-bar").classList.toggle("has", ad.skills.length > 0);
     }
     sync();
@@ -14116,6 +14137,34 @@ var Store = (function(){
       sync();
     });
     $("#a-clear").onclick = function(){ ad.skills = []; $$("[data-sk]").forEach(function(c){ c.checked = false; if(c.parentNode.classList) c.parentNode.classList.remove("on"); }); sync(); };
+    // tick a whole section at once
+    on(".sk-all", "change", function(){
+      var ks = this.dataset.cat.split(","), want = this.checked;
+      ks.forEach(function(k){ var i = ad.skills.indexOf(k); if(want && i < 0) ad.skills.push(k); if(!want && i >= 0) ad.skills.splice(i, 1); });
+      $$("[data-sk]").forEach(function(c){ if(ks.indexOf(c.dataset.sk) >= 0){ c.checked = want; if(c.parentNode.classList) c.parentNode.classList.toggle("on", want); } });
+      sync();
+    });
+    // one mixed worksheet or quiz from everything that is ticked
+    function picked(){ return ad.skills.filter(function(k){ return TM.SKILLS[k] && TM.SKILLS[k].g; }); }
+    function pickedName(){
+      var cats = [], ks = picked();
+      ks.forEach(function(k){ var c = TM.SKILLS[k].cat; if(c && cats.indexOf(c) < 0) cats.push(c); });
+      return cats.length ? cats.join(", ") : ks.length + " skills";
+    }
+    function shortTitle(){
+      var parts = pickedName().split(", "), t = "Review: " + parts[0], i = 1;
+      while(i < parts.length && (t + ", " + parts[i]).length <= 70){ t += ", " + parts[i]; i++; }
+      return i < parts.length ? t + " + " + (parts.length - i) + " more" : t;
+    }
+    $("#a-ws").onclick = function(){
+      var ks = picked(); if(!ks.length) return toast("Tick skills from the list first. Your own practice sets can't go on a worksheet.");
+      openWorksheet("Mixed review", pickedName(), ks.map(function(k){ return { id:k }; }), S.wsCount);
+    };
+    $("#a-quiz").onclick = function(){
+      var ks = picked(); if(!ks.length) return toast("Tick skills from the list first. Your own practice sets can't go in a quiz.");
+      S.qDraft = { id:null, title:shortTitle(), studentId:ad.studentId || "all", timeLimit:0, due:ad.due || "", showAnswers:true, questions: genQuizQuestions(ks, S.wsCount) };
+      S.tTab = "quizzes"; S.qView = null; render();
+    };
     $("#a-st").onchange = function(){ ad.studentId = this.value; };
     $("#a-target").onchange = function(){ ad.target = +this.value; };
     $("#a-due").onchange = function(){ ad.due = this.value; };
@@ -14155,6 +14204,40 @@ var Store = (function(){
   }
 
   /* ----- My practice sets ----- */
+  /* quiz questions made by the question generator: frozen copies of a practice question */
+  function genQuizQ(key){
+    for(var t = 0; t < 4; t++){
+      var q = null; try{ q = TM.generate(key); }catch(e){}
+      if(!q) continue;
+      var g = { id:Store.uid("q"), type:"gen", key:key, q:q.q, vis:q.vis || "", a:q.a, show:q.show, pre:q.pre || "", unit:q.unit || "", prompt:textOf(q.q) };
+      if(q.ex && String(q.ex).length < 4000) g.ex = q.ex;
+      if(JSON.stringify(g).length < 24000) return g;
+    }
+    return null;
+  }
+  function genQuizQuestions(keys, count){
+    var list = [], out = [];
+    while(list.length < count && keys.length){ shuffled(keys).forEach(function(k){ if(list.length < count) list.push(k); }); }
+    list.forEach(function(k){ var g = genQuizQ(k); if(g) out.push(g); });
+    return out;
+  }
+  function textOf(html){ var d = document.createElement("div"); d.innerHTML = String(html || ""); return (d.textContent || "").replace(/\s+/g, " ").trim(); }
+  // stored question HTML is shown to students, so keep only harmless markup
+  function safeHTML(html){
+    var t = document.createElement("template"); t.innerHTML = String(html || "");
+    t.content.querySelectorAll("script,iframe,object,embed,link,meta,style,form,input,button,textarea,select,foreignObject").forEach(function(n){ n.remove(); });
+    t.content.querySelectorAll("*").forEach(function(n){
+      [].slice.call(n.attributes).forEach(function(a){
+        var nm = a.name.toLowerCase(), v = String(a.value).replace(/\s+/g, "").toLowerCase();
+        if(nm.indexOf("on") === 0 || ((nm === "href" || nm === "src" || nm === "xlink:href" || nm === "action") && /^(javascript|data:text|vbscript)/.test(v))) n.removeAttribute(a.name);
+      });
+    });
+    return t.innerHTML;
+  }
+  function qPromptHTML(q, withVis){
+    if(q.type !== "gen") return esc(q.prompt).replace(/\n/g, "<br>");
+    return safeHTML(q.q) + (withVis && q.vis ? '<div class="q-vis">'+safeHTML(q.vis)+'</div>' : "");
+  }
   function newQ(type){
     return type === "mcq" ? { id:Store.uid("q"), type:"mcq", prompt:"", options:["","","",""], answerIndex:0, explain:"" }
                           : { id:Store.uid("q"), type:"input", prompt:"", answer:"", explain:"" };
