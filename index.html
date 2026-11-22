@@ -1792,6 +1792,91 @@
     /* smooth day/night switch */
     html.theme-fade, html.theme-fade *{transition:background-color .45s ease, color .45s ease, border-color .45s ease, fill .45s ease !important;}
   }
+/* @@PLAYCSS */
+/* ---------- learning games ---------- */
+.pl-chart{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;max-width:560px;margin:0 auto 14px;padding:10px;border-radius:18px;background:#DDEFC4;box-shadow:inset 0 0 0 3px #A8CF7A;}
+.pl-cell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#FFB648;color:#3A2A20;border:none;font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(12px,2.6vw,19px);padding:0;user-select:none;}
+.pl-cell.alt{background:#7FCCEB;}
+.pl-cell.empty{background:#FFF8DC;box-shadow:inset 0 0 0 2px #E7D49A;cursor:pointer;}
+.pl-cell.empty.hover,.pl-cell.empty:hover{background:#FFE9A3;box-shadow:inset 0 0 0 3px #D9623F;}
+.pl-cell.glow{animation:plGlow 1s ease-in-out infinite;}
+.pl-cell.pop{animation:plPop .45s cubic-bezier(.3,1.6,.5,1);}
+.pl-cell.nope,.pl-bc.nope{animation:shake .35s;}
+@keyframes plGlow{0%,100%{box-shadow:inset 0 0 0 3px #2F9E5B;background:#E4F8EA;}50%{box-shadow:inset 0 0 0 3px #2F9E5B,0 0 14px #2F9E5B;background:#C7F0D3;}}
+@keyframes plPop{0%{transform:scale(.4);}100%{transform:scale(1);}}
+.pl-tray{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:64px;}
+.pl-tile{width:60px;height:56px;border-radius:14px;border:none;background:#4A3A32;color:#fff;font-family:'Nunito',sans-serif;font-weight:900;font-size:24px;cursor:grab;touch-action:none;box-shadow:0 4px 0 #2A1F1A;}
+.pl-tile.sel{background:#D9623F;box-shadow:0 4px 0 #A8432A,0 0 0 4px rgba(217,98,63,.3);}
+.pl-tile.ghost{position:fixed;z-index:9999;pointer-events:none;opacity:.92;transform:scale(1.08);cursor:grabbing;}
+.pl-color-wrap{display:flex;gap:16px;align-items:flex-start;justify-content:center;flex-wrap:wrap;}
+.pl-side{display:flex;flex-direction:column;gap:12px;align-items:center;}
+.pl-pal{display:grid;grid-template-columns:repeat(5,34px);gap:8px;padding:10px;border-radius:16px;background:var(--card-strong);border:1.5px solid var(--line);}
+.pl-sw{width:34px;height:34px;border-radius:50%;border:2px solid rgba(0,0,0,.18);cursor:pointer;}
+.pl-sw.on{box-shadow:0 0 0 3px var(--card-strong),0 0 0 6px #D9623F;}
+.pl-ranges,.pl-tools{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.pl-chart.color{background:var(--card-strong);box-shadow:inset 0 0 0 2px var(--line);flex:1;min-width:300px;}
+.pl-chart.color .pl-cell{background:#fff;border:1.5px solid #CDBFAE;cursor:pointer;touch-action:none;}
+.pl-ask{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-weight:800;font-size:20px;margin:0 0 14px;text-align:center;}
+.pl-ask b{font-family:'Nunito',sans-serif;font-size:26px;color:#D9623F;}
+.pl-say{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:var(--card-strong);font-size:20px;cursor:pointer;flex:none;}
+.pl-money-wrap{display:flex;gap:14px;align-items:stretch;justify-content:center;flex-wrap:wrap;}
+.pl-bank{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:16px;background:var(--card-strong);border:1.5px solid var(--line);}
+.pl-piece{display:flex;align-items:center;gap:10px;padding:4px 10px;border:none;background:none;cursor:pointer;border-radius:12px;color:var(--ink);font-weight:800;}
+.pl-piece:hover{background:rgba(226,193,138,.25);}
+.pl-piece small{font-size:13px;text-transform:capitalize;}
+.pl-box{flex:1;min-width:260px;max-width:460px;min-height:220px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px;padding:14px;border-radius:18px;background:#FBE7A1;box-shadow:inset 0 0 0 3px #E2C15A;}
+.pl-box-e{color:#7A6020;font-weight:800;font-size:14px;margin:auto;text-align:center;max-width:240px;}
+.pl-in{border:none;background:none;padding:0;cursor:pointer;line-height:0;}
+.pl-in:hover{transform:translateY(-2px);}
+.pl-row{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:14px;}
+.pl-hint{display:flex;align-items:center;gap:6px;font-weight:800;font-size:14px;color:var(--ink-soft);}
+.pl-total{font-weight:800;min-width:110px;}
+.pl-total b{font-family:'Nunito',sans-serif;font-size:20px;}
+.pl-clock-wrap{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap;}
+.pl-cface{width:270px;max-width:80vw;touch-action:none;cursor:pointer;}
+.pl-clock{width:100%;height:auto;display:block;}
+.pl-clock-btns{display:flex;flex-direction:column;gap:12px;}
+.pl-clock-btns > div{display:grid;grid-template-columns:56px 56px;gap:6px;}
+.pl-clock-btns small{grid-column:1/-1;font-weight:800;color:var(--ink-soft);}
+.pl-dot{display:inline-block;width:18px;height:5px;border-radius:3px;vertical-align:middle;margin-left:4px;}
+.pl-dot.hr{background:#3A2A20;} .pl-dot.mn{background:#2F6BFF;}
+.pl-garden{display:grid;grid-template-columns:repeat(5,64px);gap:8px;justify-content:center;padding:14px;border-radius:20px;background:linear-gradient(#9ED56C,#7DBB4F);max-width:max-content;margin:0 auto;box-shadow:inset 0 -6px 0 rgba(0,0,0,.08);}
+.pl-spot{width:64px;height:64px;border-radius:16px;border:none;background:rgba(255,255,255,.18);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.pl-spot:hover{background:rgba(255,255,255,.32);}
+.pl-soil{width:30px;height:14px;border-radius:50%;background:#8B5E3C;opacity:.75;}
+.pl-fl{font-size:38px;line-height:1;animation:plPop .35s cubic-bezier(.3,1.6,.5,1);}
+.pl-bingo-wrap{display:flex;gap:18px;align-items:flex-start;justify-content:center;flex-wrap:wrap;}
+.pl-callbox{padding:14px;border-radius:18px;background:var(--card-strong);border:1.5px solid var(--line);min-width:220px;max-width:320px;text-align:center;}
+.pl-pile{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:center;min-height:90px;}
+.pl-bingo{display:grid;grid-template-columns:repeat(4,76px);gap:8px;padding:12px;border-radius:18px;background:#4A3A32;}
+.pl-bc{height:66px;border-radius:12px;border:none;background:#FFF4D6;color:#3A2A20;font-family:'Nunito',sans-serif;font-weight:900;font-size:17px;cursor:pointer;}
+.pl-bc:hover{background:#FFE6A6;}
+.pl-bc.on{background:#D9623F;color:#fff;font-size:28px;cursor:default;}
+.pl-bc.win{background:#2F9E5B;animation:plPop .45s cubic-bezier(.3,1.6,.5,1);}
+.pl-house{max-width:520px;margin:0 auto;}
+.pl-roof{height:46px;margin:0 6%;background:#7A4A8C;clip-path:polygon(50% 0,100% 100%,0 100%);}
+.pl-wins{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px;border-radius:0 0 18px 18px;background:#9B6BAE;}
+.pl-win{height:78px;border-radius:12px 12px 4px 4px;border:4px solid #5E3A6E;background:#2C2140;color:#fff;font-family:'Nunito',sans-serif;font-weight:900;font-size:19px;cursor:pointer;}
+.pl-win.open{background:#FFF7E0;color:#3A2A20;}
+.pl-win.ans.open{background:#E0F1FF;}
+.pl-win.sel{box-shadow:0 0 0 4px #FFB648;}
+.pl-win.done{background:#C7F0D3;border-color:#2F9E5B;color:#1F6B3C;cursor:default;}
+.pl-stars .pl-st{font-style:normal;color:#ddd;} .pl-stars .pl-st.on{color:#F5B301;}
+.gl-sec{margin:0 0 26px;}
+.gl-sec > h3{font-size:20px;margin:0 0 4px;}
+.gc-acts{display:flex;gap:8px;flex-wrap:wrap;}
+.ghw-form{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:4px;padding-top:12px;border-top:1.5px dashed var(--line);}
+.ghw-form label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:800;color:var(--ink-soft);}
+.ghw-st{display:flex;flex-wrap:wrap;gap:6px;max-width:100%;}
+.ghw-row td .ok{font-weight:800;}
+@media (max-width:560px){
+  .pl-garden{grid-template-columns:repeat(5,52px);gap:6px;padding:10px;} .pl-spot{width:52px;height:52px;} .pl-fl{font-size:30px;}
+  .pl-bingo{grid-template-columns:repeat(4,64px);gap:6px;} .pl-bc{height:56px;font-size:14px;}
+  .pl-win{height:64px;font-size:15px;} .pl-tile{width:52px;height:50px;font-size:21px;}
+  .pl-bank{flex-direction:row;flex-wrap:wrap;justify-content:center;width:100%;} .pl-piece small{display:none;}
+}
+
+/* @@PLAYCSS_END */
 </style>
 <style id="gen3">
 /* precise skill generators: pictures and layouts */
@@ -9879,6 +9964,375 @@ var TMGames = (function(){
   };
 })();
 if(typeof module !== "undefined") module.exports = TMGames;
+/* @@PLAY */
+/* =====================================================================
+   LEARNING GAMES — early-grade math games a teacher can give as homework
+   TMPlay.mount(el, gameId, level, { onFinish(score, text), onExit() }) -> destroy()
+   ===================================================================== */
+var TMPlay = (function(){
+  "use strict";
+  function ri(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function cents(c){ return c < 100 ? c + "¢" : "$" + (c/100).toFixed(2); }
+  function dollars(c){ return "$" + (c/100).toFixed(2); }
+  function say(t){ try{ if(!window.speechSynthesis) return; speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(String(t).replace(/<[^>]+>/g, "")); u.lang = "en-US"; u.rate = 0.92; speechSynthesis.speak(u); }catch(e){} }
+  function hush(){ try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){} }
+
+  var GAMES = [
+    { id:"numchart", icon:"🔢", name:"Number Chart Puzzle", desc:"Put the missing numbers in the right places on the number chart.", better:"low", unit:"mistakes",
+      levels:{ "20":"To 20", "30":"To 30", "40":"To 40", "50":"To 50", "100":"To 100", "120":"To 120" } },
+    { id:"chart", icon:"🎨", name:"Color the Number Chart", desc:"Color the chart and find skip-counting patterns.", better:"low", unit:"checks",
+      levels:{ free:"Free coloring", "2":"Count by 2s", "5":"Count by 5s", "10":"Count by 10s" } },
+    { id:"coins", icon:"🪙", name:"Count the Coins", desc:"Put coins in the box to make the amount.", better:"high", unit:"of 8",
+      levels:{ "1":"Up to 50¢", "2":"Up to $1", "3":"Up to $2" } },
+    { id:"bills", icon:"💵", name:"Coins and Dollar Bills", desc:"Use coins and bills to make the amount.", better:"high", unit:"of 8",
+      levels:{ "1":"Up to $5", "2":"Up to $10", "3":"Up to $20" } },
+    { id:"clock", icon:"🕒", name:"Set the Clock", desc:"Move the clock hands to show the time.", better:"high", unit:"of 10",
+      levels:{ hour:"Hours", half:"Half hours", quarter:"Quarter hours", five:"5 minutes" } },
+    { id:"garden", icon:"🌷", name:"Flower Garden", desc:"Plant and pick flowers to add and subtract within 20.", better:"high", unit:"of 10",
+      levels:{ "10":"Within 10", "20":"Within 20" } },
+    { id:"bingo", icon:"🎯", name:"Money BINGO: Coins", desc:"Count the coins and find the amount. Get 4 in a row!", better:"low", unit:"mistakes",
+      levels:{ "1":"Pennies to dimes", "2":"All coins" } },
+    { id:"bingo2", icon:"💰", name:"Money BINGO: Coins & Dollars", desc:"Count the bills and coins and find the amount. Get 4 in a row!", better:"low", unit:"mistakes",
+      levels:{ "1":"Up to $5", "2":"Up to $10" } },
+    { id:"windows", icon:"🪟", name:"Window Match: Adding to 100", desc:"Match each sum with its answer behind the windows.", better:"low", unit:"mistakes",
+      levels:{ open:"Show all", memory:"Memory" } }
+  ];
+  function game(id){ return GAMES.filter(function(g){ return g.id === id; })[0]; }
+
+  /* ---------- shared bits ---------- */
+  var COIN = { 1:{ n:"penny", r:22, f:"#D08A55", s:"#9C5A2E", t:"#5B2F12" }, 5:{ n:"nickel", r:25, f:"#D9DDE3", s:"#8E949C", t:"#3E444C" },
+               10:{ n:"dime", r:19, f:"#E3E6EA", s:"#9AA0A8", t:"#3E444C" }, 25:{ n:"quarter", r:28, f:"#CFD4DA", s:"#7E858E", t:"#2F353D" } };
+  function coinSVG(v, k){ var c = COIN[v], d = c.r*2 + 4; k = k || 1;
+    return '<svg class="pl-coin" viewBox="0 0 '+d+' '+d+'" width="'+(d*k)+'" height="'+(d*k)+'" role="img" aria-label="'+c.n+', '+v+' cents">'+
+      '<circle cx="'+(d/2)+'" cy="'+(d/2)+'" r="'+c.r+'" fill="'+c.f+'" stroke="'+c.s+'" stroke-width="3"/>'+
+      '<circle cx="'+(d/2)+'" cy="'+(d/2)+'" r="'+(c.r-5)+'" fill="none" stroke="'+c.s+'" stroke-width="1.2" stroke-dasharray="2 3"/>'+
+      '<text x="'+(d/2)+'" y="'+(d/2 + 5)+'" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="'+(c.r > 22 ? 15 : 13)+'" fill="'+c.t+'">'+v+'¢</text></svg>'; }
+  function billSVG(v, k){ k = k || 1; var w = 104, h = 50;
+    return '<svg class="pl-bill" viewBox="0 0 '+w+' '+h+'" width="'+(w*k)+'" height="'+(h*k)+'" role="img" aria-label="'+(v/100)+' dollar bill">'+
+      '<rect x="1.5" y="1.5" width="'+(w-3)+'" height="'+(h-3)+'" rx="6" fill="#D6EBCB" stroke="#4F8A4A" stroke-width="3"/>'+
+      '<rect x="8" y="8" width="'+(w-16)+'" height="'+(h-16)+'" rx="4" fill="none" stroke="#7FB077" stroke-width="1.2"/>'+
+      '<ellipse cx="'+(w/2)+'" cy="'+(h/2)+'" rx="15" ry="13" fill="#BEDDB0" stroke="#7FB077"/>'+
+      '<text x="'+(w/2)+'" y="'+(h/2 + 6)+'" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="17" fill="#2E5B2A">$'+(v/100)+'</text>'+
+      '<text x="13" y="20" font-family="Nunito,sans-serif" font-weight="900" font-size="11" fill="#2E5B2A">'+(v/100)+'</text>'+
+      '<text x="'+(w-13)+'" y="'+(h-10)+'" text-anchor="end" font-family="Nunito,sans-serif" font-weight="900" font-size="11" fill="#2E5B2A">'+(v/100)+'</text></svg>'; }
+  function moneySVG(v, k){ return v >= 100 ? billSVG(v, k) : coinSVG(v, k); }
+  function stars(n, of){ var o = ""; for(var i=0;i<of;i++) o += '<i class="pl-st'+(i < n ? " on" : "")+'">★</i>'; return '<span class="pl-stars">'+o+'</span>'; }
+  function topBar(parts){ return '<div class="g-bar">'+parts.map(function(p){ return '<span class="g-pill">'+p+'</span>'; }).join("")+'</div>'; }
+  function cheer(){ return pick(["Great job!", "You got it!", "Super!", "Well done!", "Nice work!", "Awesome!"]); }
+  /* break an amount into a natural mix of pieces, largest first */
+  function makeChange(c, kinds){ var out = []; kinds.slice().sort(function(a,b){ return b - a; }).forEach(function(k){ while(c >= k){ out.push(k); c -= k; } }); return out; }
+  function mixedChange(c, kinds){ var big = makeChange(c, kinds);
+    // sometimes swap one large piece for smaller ones so the picture is not always the fewest pieces
+    if(big.length < 7 && Math.random() < 0.5){ for(var i=0;i<big.length;i++){ var smaller = kinds.filter(function(k){ return k < big[i]; }); if(smaller.length){ var parts = makeChange(big[i], smaller); if(big.length - 1 + parts.length <= 9){ big.splice.apply(big, [i, 1].concat(parts)); break; } } } }
+    return big.sort(function(a,b){ return b - a; }); }
+
+  /* ===================== 1. Number Chart Puzzle ===================== */
+  function numchart(el, level, cb){
+    var N = +level || 100, blanksN = { 20:6, 30:8, 40:10, 50:12, 100:20, 120:24 }[N] || 20, all = [], i;
+    for(i=1;i<=N;i++) all.push(i);
+    var blanks = shuffle(all).slice(0, blanksN), left = blanks.slice(), tray = [], sel = null, mistakes = 0, wrongOn = {}, drag = null, done = false;
+    function refill(){ while(tray.length < Math.min(5, left.length)){ var cand = left.filter(function(v){ return tray.indexOf(v) < 0; }); if(!cand.length) break; tray.push(pick(cand)); } }
+    refill();
+    function draw(){
+      var h = topBar(["Placed <b>"+(blanksN - left.length)+"</b> / "+blanksN, "Mistakes <b>"+mistakes+"</b>"]) +
+        '<div class="g-hint">Drag a number to its place on the chart, or tap a number and then tap its place.</div>'+
+        '<div class="pl-chart" style="--rows:'+(N/10)+'">';
+      for(var v=1; v<=N; v++){
+        var empty = left.indexOf(v) >= 0;
+        h += '<div class="pl-cell'+(empty ? " empty" : "")+((Math.floor((v-1)/10) + (v-1)) % 2 ? " alt" : "")+'" data-cell="'+v+'">'+(empty ? "" : v)+'</div>';
+      }
+      h += '</div><div class="pl-tray">'+tray.map(function(v){ return '<button class="pl-tile'+(sel === v ? " sel" : "")+'" data-tile="'+v+'">'+v+'</button>'; }).join("")+'</div><div class="g-flash" id="pl-fl"></div>';
+      el.innerHTML = h;
+      el.querySelectorAll("[data-tile]").forEach(function(b){
+        b.addEventListener("pointerdown", function(e){ startDrag(e, +b.dataset.tile, b); });
+      });
+      el.querySelectorAll(".pl-cell.empty").forEach(function(c){ c.addEventListener("click", function(){ if(sel != null) place(sel, +c.dataset.cell); }); });
+    }
+    function startDrag(e, v, b){
+      if(done) return; e.preventDefault();
+      var r = b.getBoundingClientRect(), ghost = b.cloneNode(true); ghost.className = "pl-tile ghost"; ghost.style.width = r.width + "px"; ghost.style.left = r.left + "px"; ghost.style.top = r.top + "px"; document.body.appendChild(ghost);
+      drag = { v:v, ghost:ghost, dx:e.clientX - r.left, dy:e.clientY - r.top, x0:e.clientX, y0:e.clientY, moved:false };
+      function mv(ev){ if(!drag) return; if(Math.abs(ev.clientX - drag.x0) + Math.abs(ev.clientY - drag.y0) > 6) drag.moved = true; drag.ghost.style.left = (ev.clientX - drag.dx) + "px"; drag.ghost.style.top = (ev.clientY - drag.dy) + "px";
+        el.querySelectorAll(".pl-cell.hover").forEach(function(c){ c.classList.remove("hover"); }); var t = cellAt(ev); if(t) t.classList.add("hover"); }
+      function up(ev){ document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+        var d = drag; drag = null; if(d.ghost.parentNode) d.ghost.parentNode.removeChild(d.ghost);
+        if(!d.moved){ sel = sel === d.v ? null : d.v; draw(); return; }
+        var t = cellAt(ev); if(t) place(d.v, +t.dataset.cell); else draw(); }
+      document.addEventListener("pointermove", mv); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+    }
+    function cellAt(ev){ var t = document.elementFromPoint(ev.clientX, ev.clientY); t = t && t.closest ? t.closest(".pl-cell.empty") : null; return t && el.contains(t) ? t : null; }
+    function place(v, cell){
+      if(v === cell){
+        left.splice(left.indexOf(v), 1); tray.splice(tray.indexOf(v), 1); sel = null; refill(); draw();
+        var c = el.querySelector('[data-cell="'+v+'"]'); if(c) c.classList.add("pop");
+        if(!left.length){ done = true; setTimeout(function(){ cb.onFinish(mistakes, "All "+blanksN+" numbers placed with "+mistakes+" mistake"+(mistakes === 1 ? "" : "s")); }, 700); }
+        return;
+      }
+      mistakes++; wrongOn[v] = (wrongOn[v] || 0) + 1; draw();
+      var bad = el.querySelector('[data-cell="'+cell+'"]'); if(bad){ bad.classList.add("nope"); }
+      var fl = el.querySelector("#pl-fl"); fl.className = "g-flash bad";
+      fl.textContent = wrongOn[v] >= 2 ? v + " goes where the glowing square is." : "Not there. Look at the numbers before and after.";
+      if(wrongOn[v] >= 2){ var g = el.querySelector('[data-cell="'+v+'"]'); if(g) g.classList.add("glow"); sel = v; el.querySelectorAll("[data-tile]").forEach(function(b){ b.classList.toggle("sel", +b.dataset.tile === v); }); }
+    }
+    draw();
+    return function(){ done = true; if(drag && drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost); };
+  }
+
+  /* ===================== 2. Color the Number Chart ===================== */
+  var PALETTE = ["#FFD84D", "#FF9F45", "#FF6B6B", "#F78FB3", "#B28DFF", "#6FA8FF", "#5BD1C9", "#7ED957", "#C8A27A", "#FFFFFF"];
+  function chart(el, level, cb){
+    var mode = level === "free" ? "free" : "skip", step = +level || 0, range = mode === "skip" ? "1-100" : "1-100", color = PALETTE[mode === "skip" ? 0 : 1], fill = {}, checks = 0, done = false;
+    function nums(){ var r = range === "0-99" ? [0, 99] : range === "1-120" ? [1, 120] : [1, 100], o = []; for(var v=r[0]; v<=r[1]; v++) o.push(v); return o; }
+    function draw(msg, cls){
+      var ns = nums();
+      var h = mode === "skip" ? topBar(["Count by <b>"+step+"s</b>", "Checks <b>"+checks+"</b>"]) + '<div class="g-hint">Count by '+step+'s: '+[1,2,3].map(function(k){ return step*k; }).join(", ")+', … Color every number you say, then press Check.</div>'
+                              : '<div class="g-hint">Pick a color and tap the numbers. Look for patterns!</div>';
+      h += '<div class="pl-color-wrap"><div class="pl-side"><div class="pl-pal">'+PALETTE.map(function(c){ return '<button class="pl-sw'+(c === color ? " on" : "")+'" data-col="'+c+'" style="background:'+c+'" aria-label="Color '+c+'"></button>'; }).join("")+'</div>';
+      if(mode === "free") h += '<div class="pl-ranges">'+["0-99","1-100","1-120"].map(function(r){ return '<button class="chip small'+(r === range ? " active" : "")+'" data-range="'+r+'">'+r.replace("-", "–")+'</button>'; }).join("")+'</div>';
+      h += '<div class="pl-tools"><button class="btn ghost sm" id="pl-clear">↺ Clear</button><button class="btn ghost sm" id="pl-print">🖨 Print</button></div></div>'+
+        '<div class="pl-chart color" style="--rows:'+Math.ceil(ns.length/10)+'">'+ns.map(function(v){ return '<button class="pl-cell" data-v="'+v+'" style="'+(fill[v] ? "background:"+fill[v] : "")+'">'+v+'</button>'; }).join("")+'</div></div>'+
+        '<div class="g-flash '+(cls || "")+'" id="pl-fl">'+(msg || "")+'</div><div class="btn-row center">'+(mode === "skip" ? '<button class="btn gold" id="pl-check">Check ✓</button>' : '<button class="btn gold" id="pl-done">I\'m done ✓</button>')+'</div>';
+      el.innerHTML = h;
+      el.querySelectorAll("[data-col]").forEach(function(b){ b.onclick = function(){ color = b.dataset.col; draw(); }; });
+      el.querySelectorAll("[data-range]").forEach(function(b){ b.onclick = function(){ range = b.dataset.range; draw(); }; });
+      var painting = false;
+      el.querySelectorAll("[data-v]").forEach(function(b){
+        b.addEventListener("pointerdown", function(e){ e.preventDefault(); painting = true; paint(b); });
+        b.addEventListener("pointerenter", function(){ if(painting) paint(b); });
+      });
+      document.addEventListener("pointerup", stopPaint);
+      function paint(b){ var v = +b.dataset.v; if(fill[v] === color || color === "#FFFFFF"){ delete fill[v]; b.style.background = ""; } else { fill[v] = color; b.style.background = color; } }
+      function stopPaint(){ painting = false; }
+      el.querySelector("#pl-clear").onclick = function(){ fill = {}; draw(); };
+      el.querySelector("#pl-print").onclick = printChart;
+      var ck = el.querySelector("#pl-check"); if(ck) ck.onclick = check;
+      var dn = el.querySelector("#pl-done"); if(dn) dn.onclick = function(){ done = true; cb.onFinish(0, "You colored " + Object.keys(fill).length + " numbers"); };
+    }
+    function check(){
+      checks++; var ns = nums(), missed = [], extra = [];
+      ns.forEach(function(v){ var want = v % step === 0, has = !!fill[v]; if(want && !has) missed.push(v); if(!want && has) extra.push(v); });
+      if(!missed.length && !extra.length){ done = true; draw("✓ Perfect! Look at the pattern you made.", "good"); setTimeout(function(){ cb.onFinish(checks, "Pattern finished in "+checks+" check"+(checks === 1 ? "" : "s")); }, 1600); return; }
+      draw((missed.length ? "You missed " + missed.length + " number" + (missed.length === 1 ? "" : "s") + ". " : "") + (extra.length ? extra.length + " colored number" + (extra.length === 1 ? " does" : "s do") + " not belong." : ""), "bad");
+      extra.forEach(function(v){ var b = el.querySelector('[data-v="'+v+'"]'); if(b) b.classList.add("nope"); });
+    }
+    function printChart(){
+      var ns = nums(), w = window.open("", "_blank"); if(!w) return;
+      w.document.write('<!doctype html><title>Number chart</title><style>body{font-family:Nunito,Arial,sans-serif;margin:24px}table{border-collapse:collapse;margin:auto}td{width:52px;height:44px;border:1.5px solid #555;text-align:center;font-size:20px;font-weight:800}@media print{td{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style><table>');
+      for(var r=0; r<Math.ceil(ns.length/10); r++){ w.document.write("<tr>"); for(var c=0;c<10;c++){ var v = ns[r*10+c]; w.document.write(v == null ? "<td></td>" : '<td style="background:'+(fill[v] || "#fff")+'">'+v+"</td>"); } w.document.write("</tr>"); }
+      w.document.write("</table><script>setTimeout(function(){print()},300)<\/script>"); w.document.close();
+    }
+    draw();
+    return function(){ done = true; };
+  }
+
+  /* ===================== 3 & 4. Make the amount with coins (and bills) ===================== */
+  function moneyMaker(el, level, cb, withBills){
+    var kinds = withBills ? [1000, 500, 100, 25, 10, 5, 1] : (level === "1" ? [10, 5, 1] : [25, 10, 5, 1]);
+    if(withBills && level === "1") kinds = [100, 25, 10, 5, 1]; if(withBills && level === "2") kinds = [500, 100, 25, 10, 5, 1];
+    var maxC = withBills ? { "1":500, "2":1000, "3":2000 }[level] || 500 : { "1":50, "2":100, "3":200 }[level] || 100, minC = withBills ? { "1":105, "2":250, "3":500 }[level] || 105 : { "1":5, "2":26, "3":101 }[level] || 5;
+    var round = 0, score = 0, target, box, firstTry, hints = false, timer = null, used = {};
+    function newTarget(){ var t; do { t = withBills ? ri(Math.ceil(minC/5), maxC/5)*5 : ri(minC, maxC); if(withBills && Math.random() < 0.35) t = ri(1, maxC/100)*100 + pick([0, 25, 50, 75]); } while(used[t] || t < minC || t > maxC); used[t] = 1; return t; }
+    function total(){ return box.reduce(function(s, v){ return s + v; }, 0); }
+    function next(){ round++; if(round > 8){ cb.onFinish(score, score + " of 8 amounts right on the first try"); return; } target = newTarget(); box = []; firstTry = true; draw(); say("Put " + spoken(target) + " in the box."); }
+    function spoken(c){ var d = Math.floor(c/100), k = c % 100; return (d ? d + " dollar" + (d === 1 ? "" : "s") : "") + (d && k ? " and " : "") + (k || !d ? k + " cent" + (k === 1 ? "" : "s") : ""); }
+    function draw(msg, cls){
+      var h = topBar(["Amount <b>"+round+"</b> / 8", "⭐ <b>"+score+"</b>"]) +
+        '<div class="pl-ask"><button class="pl-say" id="pl-say" aria-label="Listen">🔊</button>Put <b>'+(withBills ? dollars(target) : cents(target))+'</b> in the box.</div>'+
+        '<div class="pl-money-wrap"><div class="pl-bank">'+kinds.map(function(k){ return '<button class="pl-piece" data-add="'+k+'" title="Add '+(k >= 100 ? (k/100)+" dollar bill" : COIN[k].n)+'">'+moneySVG(k, k >= 100 ? 0.8 : 1)+'<small>'+(k >= 100 ? "$"+(k/100) : COIN[k].n)+'</small></button>'; }).join("")+'</div>'+
+        '<div class="pl-box" id="pl-box">'+(box.length ? box.map(function(v, i){ return '<button class="pl-in" data-rm="'+i+'" title="Take it out">'+moneySVG(v, v >= 100 ? 0.75 : 0.95)+'</button>'; }).join("") : '<span class="pl-box-e">Tap the money on the left to put it here. Tap money in the box to take it out.</span>')+'</div></div>'+
+        '<div class="pl-row"><label class="pl-hint"><input type="checkbox" id="pl-hints"'+(hints ? " checked" : "")+'> Show the total</label><span class="pl-total">'+(hints ? "Total: <b>"+(withBills ? dollars(total()) : cents(total()))+"</b>" : "")+'</span>'+
+        '<button class="btn gold" id="pl-check"'+(box.length ? "" : " disabled")+'>Check ✓</button></div><div class="g-flash '+(cls || "")+'" id="pl-fl">'+(msg || "")+'</div>';
+      el.innerHTML = h;
+      el.querySelectorAll("[data-add]").forEach(function(b){ b.onclick = function(){ if(box.length >= 30) return; box.push(+b.dataset.add); box.sort(function(a,c){ return c - a; }); draw(); }; });
+      el.querySelectorAll("[data-rm]").forEach(function(b){ b.onclick = function(){ box.splice(+b.dataset.rm, 1); draw(); }; });
+      el.querySelector("#pl-hints").onchange = function(){ hints = this.checked; draw(); };
+      el.querySelector("#pl-say").onclick = function(){ say("Put " + spoken(target) + " in the box."); };
+      el.querySelector("#pl-check").onclick = check;
+    }
+    function check(){
+      var t = total(), f = withBills ? dollars : cents;
+      if(t === target){ if(firstTry) score++; draw("✓ " + cheer() + " That makes " + f(target) + ".", "good"); el.querySelector("#pl-check").disabled = true; timer = setTimeout(next, 1500); return; }
+      firstTry = false; draw("Not yet. You have " + f(t) + ". " + (t < target ? "Add " : "Take out ") + f(Math.abs(target - t)) + ".", "bad");
+    }
+    next();
+    return function(){ clearTimeout(timer); hush(); };
+  }
+  function coins(el, level, cb){ return moneyMaker(el, level, cb, false); }
+  function bills(el, level, cb){ return moneyMaker(el, level, cb, true); }
+
+  /* ===================== 5. Set the Clock ===================== */
+  function clock(el, level, cb){
+    var stepM = { hour:60, half:30, quarter:15, five:5 }[level] || 5, round = 0, score = 0, firstTry, goal, h = 12, m = 0, timer = null, drag = null;
+    function rnd(){ var hh = ri(1, 12), mm = stepM === 60 ? 0 : ri(0, 60/stepM - 1)*stepM; if(stepM === 30 && Math.random() < 0.5) mm = 30; return { h:hh, m:mm }; }
+    function label(t){ return t.h + ":" + (t.m < 10 ? "0" : "") + t.m; }
+    function next(){ round++; if(round > 10){ cb.onFinish(score, score + " of 10 clocks right on the first try"); return; } do { goal = rnd(); } while(goal.h === h && goal.m === m); firstTry = true; h = 12; m = 0; draw(); say("Set the clock to " + spokenT(goal) + "."); }
+    function spokenT(t){ return t.m === 0 ? t.h + " o'clock" : t.h + " " + (t.m < 10 ? "oh " : "") + t.m; }
+    function face(){
+      var R = 120, c = 135, b = '<circle cx="'+c+'" cy="'+c+'" r="'+R+'" fill="#FFFDF7" stroke="#D9623F" stroke-width="8"/>';
+      for(var i=0;i<60;i++){ var a = i*Math.PI/30, big = i % 5 === 0, r1 = R - (big ? 14 : 7);
+        b += '<line x1="'+(c + r1*Math.sin(a)).toFixed(1)+'" y1="'+(c - r1*Math.cos(a)).toFixed(1)+'" x2="'+(c + (R-3)*Math.sin(a)).toFixed(1)+'" y2="'+(c - (R-3)*Math.cos(a)).toFixed(1)+'" stroke="#3A2A20" stroke-width="'+(big ? 3 : 1.4)+'"/>'; }
+      for(var n=1;n<=12;n++){ var an = n*Math.PI/6; b += '<text x="'+(c + (R-32)*Math.sin(an)).toFixed(1)+'" y="'+(c - (R-32)*Math.cos(an) + 8).toFixed(1)+'" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="23" fill="#3A2A20">'+n+'</text>'; }
+      var ha = ((h % 12) + m/60) * Math.PI/6, ma = m * Math.PI/30;
+      b += '<line class="pl-hand hr" data-hand="h" x1="'+c+'" y1="'+c+'" x2="'+(c + 62*Math.sin(ha)).toFixed(1)+'" y2="'+(c - 62*Math.cos(ha)).toFixed(1)+'" stroke="#3A2A20" stroke-width="11" stroke-linecap="round"/>'+
+           '<line class="pl-hand mn" data-hand="m" x1="'+c+'" y1="'+c+'" x2="'+(c + 95*Math.sin(ma)).toFixed(1)+'" y2="'+(c - 95*Math.cos(ma)).toFixed(1)+'" stroke="#2F6BFF" stroke-width="7" stroke-linecap="round"/>'+
+           '<circle class="pl-knob" data-hand="h" cx="'+(c + 62*Math.sin(ha)).toFixed(1)+'" cy="'+(c - 62*Math.cos(ha)).toFixed(1)+'" r="13" fill="#3A2A20" opacity=".18"/>'+
+           '<circle class="pl-knob" data-hand="m" cx="'+(c + 95*Math.sin(ma)).toFixed(1)+'" cy="'+(c - 95*Math.cos(ma)).toFixed(1)+'" r="14" fill="#2F6BFF" opacity=".2"/>'+
+           '<circle cx="'+c+'" cy="'+c+'" r="9" fill="#D9623F"/>';
+      return '<svg class="pl-clock" viewBox="0 0 270 270" width="270" height="270" role="img" aria-label="Clock">'+b+'</svg>';
+    }
+    function draw(msg, cls){
+      el.innerHTML = topBar(["Clock <b>"+round+"</b> / 10", "⭐ <b>"+score+"</b>"]) +
+        '<div class="pl-ask"><button class="pl-say" id="pl-say" aria-label="Listen">🔊</button>Set the clock to <b>'+label(goal)+'</b></div>'+
+        '<div class="pl-clock-wrap"><div class="pl-cface" id="pl-cface">'+face()+'</div><div class="pl-clock-btns">'+
+          '<div><small>Hour hand <i class="pl-dot hr"></i></small><button class="g-key" data-adj="h-">−</button><button class="g-key" data-adj="h+">+</button></div>'+
+          '<div><small>Minute hand <i class="pl-dot mn"></i></small><button class="g-key" data-adj="m-">−</button><button class="g-key" data-adj="m+">+</button></div></div></div>'+
+        '<div class="g-hint" style="margin-top:6px;">Drag the hands, or use the buttons. The short hand shows the hour, the long hand shows the minutes.</div>'+
+        '<div class="btn-row center"><button class="btn gold" id="pl-check">Check ✓</button></div><div class="g-flash '+(cls || "")+'" id="pl-fl">'+(msg || "")+'</div>';
+      el.querySelector("#pl-say").onclick = function(){ say("Set the clock to " + spokenT(goal) + "."); };
+      el.querySelectorAll("[data-adj]").forEach(function(b){ b.onclick = function(){ var k = b.dataset.adj;
+        if(k === "h+") h = h % 12 + 1; if(k === "h-") h = (h + 10) % 12 + 1;
+        if(k === "m+") moveMin(stepM === 60 ? 5 : Math.min(stepM, 5)); if(k === "m-") moveMin(-(stepM === 60 ? 5 : Math.min(stepM, 5)));
+        redrawFace(); }; });
+      el.querySelector("#pl-check").onclick = check;
+      bindDrag();
+    }
+    function moveMin(d){ var nm = m + d; if(nm >= 60){ nm -= 60; h = h % 12 + 1; } if(nm < 0){ nm += 60; h = (h + 10) % 12 + 1; } m = nm; }
+    function redrawFace(){ var box = el.querySelector("#pl-cface"); if(box) box.innerHTML = face(); }
+    function bindDrag(){
+      var box = el.querySelector("#pl-cface"); if(!box) return;
+      function pt(e){ var r = box.getBoundingClientRect(); return { x:(e.clientX - r.left)/r.width*270 - 135, y:(e.clientY - r.top)/r.height*270 - 135 }; }
+      function move(e){ if(!drag) return; var p = pt(e), ang = Math.atan2(p.x, -p.y); if(ang < 0) ang += 2*Math.PI;
+        if(drag === "m"){ var nm = Math.round(ang/(2*Math.PI)*12)*5 % 60; if(m >= 45 && nm < 15) h = h % 12 + 1; else if(m < 15 && nm >= 45) h = (h + 10) % 12 + 1; m = nm; }
+        else { var nh = Math.round(ang/(2*Math.PI)*12 - m/60) % 12; if(nh <= 0) nh += 12; h = nh; }
+        redrawFace(); }
+      box.addEventListener("pointerdown", function(e){
+        var p = pt(e), dist = Math.sqrt(p.x*p.x + p.y*p.y), t = e.target.getAttribute && e.target.getAttribute("data-hand");
+        if(dist > 132) return;
+        drag = t || (dist > 76 ? "m" : "h"); e.preventDefault(); move(e);
+        function mv(ev){ move(ev); } function upf(){ drag = null; document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", upf); document.removeEventListener("pointercancel", upf); }
+        document.addEventListener("pointermove", mv); document.addEventListener("pointerup", upf); document.addEventListener("pointercancel", upf);
+      });
+    }
+    function check(){
+      if(h === goal.h && m === goal.m){ if(firstTry) score++; draw("✓ " + cheer() + " It is " + label(goal) + ".", "good"); el.querySelector("#pl-check").disabled = true; timer = setTimeout(next, 1500); return; }
+      firstTry = false; var hint = h !== goal.h ? "Check the short hour hand. " : "", hint2 = m !== goal.m ? "Check the long minute hand: " + goal.m + " minutes is the " + (goal.m === 0 ? "12" : goal.m/5) + "." : "";
+      draw("Not yet. The clock shows " + label({ h:h, m:m }) + ". " + hint + hint2, "bad");
+    }
+    goal = rnd(); round = 0; next();
+    return function(){ clearTimeout(timer); hush(); };
+  }
+
+  /* ===================== 6. Flower Garden (add & subtract within 10 / 20) ===================== */
+  var KIDS = ["Bek", "Lola", "Aziz", "Mia", "Sam", "Nora", "Tim", "Zara", "Leo", "Ana"];
+  function garden(el, level, cb){
+    var MAX = level === "10" ? 10 : 20, round = 0, score = 0, firstTry, task, plot, timer = null;
+    function make(){ var add = Math.random() < 0.5, a, b; if(add){ a = ri(1, MAX - 1); b = ri(1, MAX - a); } else { a = ri(2, MAX); b = ri(1, a - 1); }
+      var who = pick(KIDS), he = ["Bek","Aziz","Sam","Tim","Leo"].indexOf(who) >= 0 ? "He" : "She";
+      return { add:add, a:a, b:b, r: add ? a + b : a - b, text: who + " has " + a + " flower" + (a === 1 ? "" : "s") + ". " + he + (add ? " plants " + b + " more." : " picks " + b + "."), act: add ? "Plant " + b + " flower" + (b === 1 ? "" : "s") + "." : "Pick " + b + " flower" + (b === 1 ? "" : "s") + "." }; }
+    function next(){ round++; if(round > 10){ cb.onFinish(score, score + " of 10 stories right on the first try"); return; } task = make(); firstTry = true;
+      plot = []; for(var i=0;i<20;i++) plot.push(false); shuffle(Array.apply(null, Array(20)).map(function(_, i){ return i; })).slice(0, task.a).forEach(function(i){ plot[i] = true; });
+      draw(); say(task.text + " " + task.act); }
+    function count(){ return plot.filter(Boolean).length; }
+    function draw(msg, cls){
+      el.innerHTML = topBar(["Story <b>"+round+"</b> / 10", "⭐ <b>"+score+"</b>"]) +
+        '<div class="pl-ask"><button class="pl-say" id="pl-say" aria-label="Listen">🔊</button>'+esc(task.text)+' <b>'+esc(task.act)+'</b></div>'+
+        '<div class="pl-garden">'+plot.map(function(f, i){ return '<button class="pl-spot'+(f ? " on" : "")+'" data-spot="'+i+'" aria-label="'+(f ? "Flower, tap to pick" : "Empty spot, tap to plant")+'">'+(f ? '<span class="pl-fl">🌷</span>' : '<span class="pl-soil"></span>')+'</button>'; }).join("")+'</div>'+
+        '<div class="pl-row"><span class="pl-total">Flowers now: <b>'+count()+'</b></span><button class="btn gold" id="pl-check">Check ✓</button></div><div class="g-flash '+(cls || "")+'" id="pl-fl">'+(msg || "")+'</div>';
+      el.querySelector("#pl-say").onclick = function(){ say(task.text + " " + task.act); };
+      el.querySelectorAll("[data-spot]").forEach(function(b){ b.onclick = function(){ var i = +b.dataset.spot; plot[i] = !plot[i]; draw(); }; });
+      el.querySelector("#pl-check").onclick = check;
+    }
+    function check(){
+      var c = count(), eq = task.a + (task.add ? " + " : " − ") + task.b + " = " + task.r;
+      if(c === task.r){ if(firstTry) score++; draw("✓ " + cheer() + " " + eq, "good"); el.querySelector("#pl-check").disabled = true; timer = setTimeout(next, 1700); return; }
+      firstTry = false; draw("Not yet. There are " + c + " flowers. " + (c < task.r ? "Plant " + (task.r - c) + " more." : "Pick " + (c - task.r) + " more."), "bad");
+    }
+    next();
+    return function(){ clearTimeout(timer); hush(); };
+  }
+
+  /* ===================== 7 & 8. Money BINGO ===================== */
+  function bingoGame(el, level, cb, withBills){
+    var kinds = withBills ? (level === "2" ? [500, 100, 25, 10, 5, 1] : [100, 25, 10, 5, 1]) : (level === "1" ? [10, 5, 1] : [25, 10, 5, 1]);
+    var lo = withBills ? 100 : 5, hi = withBills ? (level === "2" ? 1000 : 500) : (level === "1" ? 50 : 99), vals = {}, board = [], marked = [], mistakes = 0, call, called = [], timer = null, over = false;
+    while(Object.keys(vals).length < 16){ var v = withBills ? ri(lo/5, hi/5)*5 : ri(lo, hi); vals[v] = 1; }
+    board = shuffle(Object.keys(vals).map(Number)); for(var i=0;i<16;i++) marked.push(false);
+    function lines(){ var L = []; for(var r=0;r<4;r++){ L.push([r*4, r*4+1, r*4+2, r*4+3]); L.push([r, r+4, r+8, r+12]); } L.push([0,5,10,15]); L.push([3,6,9,12]); return L; }
+    function win(){ return lines().filter(function(l){ return l.every(function(i){ return marked[i]; }); })[0]; }
+    function next(){ var open = board.filter(function(v, i){ return !marked[i]; }); call = pick(open); called.push(call); draw(); }
+    function f(c){ return withBills ? dollars(c) : cents(c); }
+    function draw(msg, cls, line){
+      el.innerHTML = topBar(["Mistakes <b>"+mistakes+"</b>", "Found <b>"+marked.filter(Boolean).length+"</b>"]) +
+        '<div class="pl-bingo-wrap"><div class="pl-callbox"><div class="g-hint" style="margin:0 0 6px;">How much money is this?</div><div class="pl-pile">'+mixedChange(call, kinds).map(function(p){ return moneySVG(p, p >= 100 ? 0.7 : 0.9); }).join("")+'</div></div>'+
+        '<div class="pl-bingo">'+board.map(function(v, i){ return '<button class="pl-bc'+(marked[i] ? " on" : "")+(line && line.indexOf(i) >= 0 ? " win" : "")+'" data-bc="'+i+'"'+(marked[i] ? " disabled" : "")+'>'+(marked[i] ? "★" : f(v))+'</button>'; }).join("")+'</div></div>'+
+        '<div class="g-flash '+(cls || "")+'" id="pl-fl">'+(msg || "")+'</div>';
+      if(over) return;
+      el.querySelectorAll("[data-bc]").forEach(function(b){ b.onclick = function(){ var i = +b.dataset.bc; if(board[i] === call){ marked[i] = true; var w = win();
+        if(w){ over = true; draw("🎉 BINGO! " + cheer(), "good", w); timer = setTimeout(function(){ cb.onFinish(mistakes, "BINGO with " + mistakes + " mistake" + (mistakes === 1 ? "" : "s")); }, 1800); return; }
+        draw("✓ That's " + f(call) + "!", "good"); timer = setTimeout(next, 900); }
+        else { mistakes++; b.classList.add("nope"); var fl = el.querySelector("#pl-fl"); fl.className = "g-flash bad"; fl.textContent = "That square is " + f(board[i]) + ". Count again!"; } }; });
+    }
+    next();
+    return function(){ clearTimeout(timer); over = true; };
+  }
+  function bingo(el, level, cb){ return bingoGame(el, level, cb, false); }
+  function bingo2(el, level, cb){ return bingoGame(el, level, cb, true); }
+
+  /* ===================== 9. Window Match: adding to 100 ===================== */
+  function windows(el, level, cb){
+    var memory = level === "memory", board = 0, mistakes = 0, cards, sel = null, up = [], timer = null, lock = false;
+    function pairs(){ var out = [], sums = {}; while(out.length < 6){ var a = ri(11, 79), b = ri(11, 99 - a), s = a + b; if(b < 10 || sums[s]) continue; sums[s] = 1; out.push({ e: a + " + " + b, s: s }); } return out; }
+    function newBoard(){ board++; if(board > 2){ cb.onFinish(mistakes, "All sums matched with " + mistakes + " mistake" + (mistakes === 1 ? "" : "s")); return; }
+      var ps = pairs(); cards = shuffle([].concat(ps.map(function(p, i){ return { k:"e", p:i, t:p.e }; }), ps.map(function(p, i){ return { k:"a", p:i, t:String(p.s) }; })));
+      cards.forEach(function(c){ c.done = false; }); sel = null; up = []; draw(); }
+    function draw(msg, cls){
+      el.innerHTML = topBar(["House <b>"+board+"</b> / 2", "Mistakes <b>"+mistakes+"</b>"]) +
+        '<div class="g-hint">'+(memory ? "Open two windows. Find a sum and its answer!" : "Tap a sum, then tap its answer.")+'</div>'+
+        '<div class="pl-house"><div class="pl-roof"></div><div class="pl-wins">'+cards.map(function(c, i){
+          var show = !memory || c.done || up.indexOf(i) >= 0;
+          return '<button class="pl-win'+(c.done ? " done" : "")+(sel === i ? " sel" : "")+(c.k === "a" ? " ans" : "")+(show ? " open" : "")+'" data-w="'+i+'"'+(c.done ? " disabled" : "")+'><span>'+(show ? esc(c.t) : "")+'</span></button>'; }).join("")+'</div></div>'+
+        '<div class="g-flash '+(cls || "")+'" id="pl-fl">'+(msg || "")+'</div>';
+      el.querySelectorAll("[data-w]").forEach(function(b){ b.onclick = function(){ tap(+b.dataset.w); }; });
+    }
+    function tap(i){
+      if(lock || cards[i].done) return;
+      if(memory){
+        if(up.indexOf(i) >= 0) return; up.push(i); draw();
+        if(up.length < 2) return;
+        var a = cards[up[0]], b = cards[up[1]];
+        if(a.p === b.p && a.k !== b.k){ a.done = b.done = true; up = []; afterMatch(); }
+        else { mistakes++; lock = true; draw("Not a match. Remember where they are!", "bad"); timer = setTimeout(function(){ up = []; lock = false; draw(); }, 1100); }
+        return;
+      }
+      if(sel == null){ sel = i; draw(); return; }
+      if(sel === i){ sel = null; draw(); return; }
+      var x = cards[sel], y = cards[i];
+      if(x.k === y.k){ sel = i; draw(); return; }
+      if(x.p === y.p){ x.done = y.done = true; sel = null; afterMatch(); }
+      else { mistakes++; sel = null; draw("Not a match. " + (x.k === "e" ? x.t : y.t) + " is not " + (x.k === "e" ? y.t : x.t) + ".", "bad"); }
+    }
+    function afterMatch(){ if(cards.every(function(c){ return c.done; })){ draw("🎉 House done! " + cheer(), "good"); timer = setTimeout(newBoard, 1400); } else draw("✓ " + cheer(), "good"); }
+    newBoard();
+    return function(){ clearTimeout(timer); };
+  }
+
+  var RUN = { numchart:numchart, chart:chart, coins:coins, bills:bills, clock:clock, garden:garden, bingo:bingo, bingo2:bingo2, windows:windows };
+  return {
+    GAMES: GAMES,
+    game: game,
+    levels: function(id){ var g = game(id); return g ? g.levels : {}; },
+    levelName: function(id, lv){ var g = game(id); return g && g.levels[lv] || lv; },
+    isBetter: function(id, score, best){ var g = game(id); if(best == null) return true; return g.better === "high" ? score > best : score < best; },
+    mount: function(el, id, level, cb){ return RUN[id](el, level, cb); },
+    _test: { makeChange:makeChange, mixedChange:mixedChange }
+  };
+})();
+if(typeof module !== "undefined") module.exports = TMPlay;
+
+/* @@PLAY_END */
 /* =====================================================================
    DATA LAYER — ONLINE VERSION (Firebase)
    Same functions as the offline store, so the screens don't change.
@@ -10215,9 +10669,9 @@ var Store = (function(){
     markNotified: function(sid, kind, id){ var o = {}; o[kind] = {}; o[kind][id] = Date.now(); return meta(sid, "notified").set(o, { merge:true }); },
 
     /* --- brain games --- */
-    getGames: function(sid){ return meta(sid, "games").get().then(function(s){ var d = s.exists ? s.data() : {}; return { best: d.best || {}, plays: d.plays || {} }; }); },
+    getGames: function(sid){ return meta(sid, "games").get().then(function(s){ var d = s.exists ? s.data() : {}; return { best: d.best || {}, plays: d.plays || {}, last: d.last || {} }; }); },
     saveGameScore: function(sid, key, score, isRecord){
-      var o = { plays: {} }; o.plays[key] = inc(1);
+      var o = { plays: {}, last: {} }; o.plays[key] = inc(1); o.last[key] = Date.now();
       if(isRecord){ o.best = {}; o.best[key] = score; }
       return meta(sid, "games").set(o, { merge:true });
     },
@@ -11133,6 +11587,7 @@ var Store = (function(){
     var tab = S.sTab; if(tab === "games") tab = S.sTab = "todo";
     var extra = await pExtra;
     var actS = extra[0], gamesS = extra[1], revRes = extra[2], wallet = walletOf(extra[3]), streak = streakInfo(actS);
+    var gOpen = mine.filter(function(a){ return a.games && a.games.length && !gameHwDone(a, gamesS); }); left += gOpen.length;
     var doneQR = myQRes.filter(function(r){ return r && r.submittedAt; });
     var badges = badgeList({ streak: streak.best, answered: answered, certs: certs.length, mastered: recs.filter(function(r){ return r.masteredAt; }).length,
       games: Object.keys(gamesS.plays || {}).reduce(function(s, k){ return s + (gamesS.plays[k] || 0); }, 0), quizzes: doneQR.length,
@@ -11212,7 +11667,13 @@ var Store = (function(){
         h += '<div class="card assign quiz-card"><div class="assign-head"><b>📝 Quiz: '+esc(q.title)+'</b><span class="due '+due.cls+'">'+due.text+'</span></div>'+
           '<div class="quiz-card-row"><span class="muted">'+esc(quizMeta(q))+(started ? ", you already started" : "")+'</span><button class="btn gold sm" data-quiz="'+q.id+'">'+(started ? "Continue ›" : "Start ›")+'</button></div></div>';
       });
-      if(!open.length && !openQuizzes.length) h += '<div class="card empty"><div style="font-size:44px;">🎉</div><h3 style="font-size:19px;">Nothing to do right now</h3><p class="muted">When your teacher gives you new work, it will show up here.</p></div>';
+      gOpen.forEach(function(a){
+        var due = dueInfo(a.due);
+        a.games.forEach(function(x){ var g = TMPlay.game(x.id); if(!g) return;
+          h += '<div class="card assign quiz-card"><div class="assign-head"><b>'+g.icon+' Game: '+esc(g.name)+'</b><span class="due '+due.cls+'">'+due.text+'</span></div>'+
+            '<div class="quiz-card-row"><span class="muted">'+esc(TMPlay.levelName(x.id, x.level))+'. '+esc(g.desc)+'</span><button class="btn gold sm" data-pgame="'+esc(a.id+"|"+x.id+"|"+x.level)+'">Play ▶</button></div></div>'; });
+      });
+      if(!open.length && !openQuizzes.length && !gOpen.length) h += '<div class="card empty"><div style="font-size:44px;">🎉</div><h3 style="font-size:19px;">Nothing to do right now</h3><p class="muted">When your teacher gives you new work, it will show up here.</p></div>';
       open.forEach(function(a){
         var due = dueInfo(a.due);
         var rows = a.skills.map(function(k){
@@ -11278,6 +11739,7 @@ var Store = (function(){
     on("[data-skill]", "click", function(){ var k = this.dataset.skill; startPractice(k, { target: targets[k] }); });
     on("[data-cert]", "click", function(){ openCert(certs[+this.dataset.cert]); });
     on("[data-quiz]", "click", function(){ openQuiz(this.dataset.quiz); });
+    on("[data-pgame]", "click", function(){ var p = this.dataset.pgame.split("|"); S.game = { kind:"play", asg:p[0], id:p[1], level:p[2] }; go("game"); });
   }
 
   /* =====================================================================
@@ -12658,9 +13120,26 @@ var Store = (function(){
      BRAIN GAMES
      ===================================================================== */
   function tBest(){ try{ return JSON.parse(localStorage.getItem("tm-tgames") || "{}"); }catch(e){ return {}; } }
-  function tabGames(body){
-    var best = tBest(); S.gameLv = S.gameLv || {};
-    body.innerHTML = '<div class="section-title"><h2>Brain games</h2></div><p class="muted" style="margin:0 0 12px;">Only you can open the games. Share your screen and play them with a student during a lesson. 🎮</p><div class="game-grid">' +
+  function gameHwText(games){ return games.map(function(x){ var g = TMPlay.game(x.id); return "🎮 " + (g ? g.name : x.id) + " (" + TMPlay.levelName(x.id, x.level) + ")"; }).join("\n"); }
+  function gameHwDone(a, gs){ return (a.games || []).every(function(x){ var t = gs && gs.last && gs.last["p:" + x.id + ":" + x.level]; return t && t >= (a.createdAt || 0); }); }
+  async function tabGames(body){
+    var best = tBest(); S.gameLv = S.gameLv || {}; S.pLv = S.pLv || {};
+    body.innerHTML = '<p class="muted">Loading…</p>';
+    var r = await Promise.all([Store.listStudents().catch(function(){ return []; }), Store.listAssignments().catch(function(){ return []; })]);
+    var studs = r[0].sort(function(a,b){ return a.name.localeCompare(b.name); }), gasg = r[1].filter(function(a){ return a.games && a.games.length; });
+    var h = '<section class="gl-sec"><div class="section-title"><div><h2>Learning games</h2><p class="muted" style="margin:2px 0 0;">Math games for young students. Try one yourself, or give it as homework. The student plays it from the homework list.</p></div></div><div class="game-grid">' +
+      TMPlay.GAMES.map(function(g){
+        var levels = TMPlay.levels(g.id), lv = S.pLv[g.id] || Object.keys(levels)[0], b = best["p:" + g.id + ":" + lv], open = S.pHw === g.id;
+        return '<div class="card game-card" data-pg="'+g.id+'"><div class="gc-top"><span class="gc-ico">'+g.icon+'</span><div><b>'+esc(g.name)+'</b><small>'+esc(g.desc)+'</small></div></div>'+
+          '<div class="gc-levels">'+Object.keys(levels).map(function(k){ return '<button class="chip small'+(k===lv?" active":"")+'" data-plv="'+g.id+':'+k+'">'+esc(levels[k])+'</button>'; }).join("")+'</div>'+
+          '<div class="gc-foot"><span class="gc-best">'+(b != null ? "🏆 Your best: <b>"+b+"</b> "+esc(g.unit) : "")+'</span><div class="gc-acts">'+
+          '<button class="btn ghost sm" data-ptry="'+g.id+'">Try ▶</button><button class="btn plum sm" data-phw="'+g.id+'">📌 Homework</button></div></div>'+
+          (open ? '<div class="ghw-form"><label>Student<select id="ghw-st"><option value="all">All students</option>'+studs.map(function(st){ return '<option value="'+st.id+'">'+esc(st.name)+'</option>'; }).join("")+'</select></label>'+
+            '<label>Due date<input id="ghw-due" type="date"></label><button class="btn gold sm" id="ghw-go">Give “'+esc(levels[lv])+'”</button><button class="link-btn" id="ghw-x">Cancel</button></div>' : '')+
+          '</div>';
+      }).join("") + '</div></section>';
+    h += '<details class="hw-list" id="ghw-list"'+(S.ghwOpen ? " open" : "")+'><summary><h2>Game homework given</h2><span class="hw-n">'+gasg.length+'</span></summary><div id="ghw-body"><p class="muted">Loading…</p></div></details>';
+    h += '<section class="gl-sec" style="margin-top:26px;"><div class="section-title"><div><h2>Brain games</h2><p class="muted" style="margin:2px 0 0;">Only you can open these. Share your screen and play them with a student during a lesson. 🎮</p></div></div><div class="game-grid">' +
       TMGames.GAMES.map(function(g){
         var lv = S.gameLv[g.id] || "medium", levels = TMGames.levels(g.id); if(!levels[lv]) lv = Object.keys(levels)[0];
         var b = best[g.id + ":" + lv];
@@ -12668,30 +13147,68 @@ var Store = (function(){
           '<div class="gc-levels">'+Object.keys(levels).map(function(k){ return '<button class="chip small'+(k===lv?" active":"")+'" data-glv="'+g.id+':'+k+'">'+levels[k]+'</button>'; }).join("")+'</div>'+
           '<div class="gc-foot"><span class="gc-best">'+(b != null ? "🏆 Best: <b>"+b+"</b> "+esc(g.unit) : "No score yet")+'</span>'+
           '<button class="btn gold sm" data-play="'+g.id+'">Play ▶</button></div></div>';
-      }).join("") + '</div>';
+      }).join("") + '</div></section>';
+    body.innerHTML = h;
     on("[data-glv]", "click", function(){ var p = this.dataset.glv.split(":"); S.gameLv[p[0]] = p[1]; tabGames(body); });
     on("[data-play]", "click", function(){ var act = this.closest(".game-card").querySelector(".gc-levels .active");
       S.game = { id:this.dataset.play, level: act.dataset.glv.split(":")[1] }; go("game"); });
+    on("[data-plv]", "click", function(){ var p = this.dataset.plv.split(":"); S.pLv[p[0]] = p[1]; tabGames(body); });
+    on("[data-ptry]", "click", function(){ var id = this.dataset.ptry; S.game = { kind:"play", id:id, level: S.pLv[id] || Object.keys(TMPlay.levels(id))[0] }; go("game"); });
+    on("[data-phw]", "click", function(){ var id = this.dataset.phw; S.pHw = S.pHw === id ? null : id; tabGames(body); });
+    var x = $("#ghw-x"); if(x) x.onclick = function(){ S.pHw = null; tabGames(body); };
+    var go2 = $("#ghw-go");
+    if(go2) go2.onclick = async function(){
+      var id = S.pHw, lv = S.pLv[id] || Object.keys(TMPlay.levels(id))[0], sid = $("#ghw-st").value, due = $("#ghw-due").value, btn = this; btn.disabled = true;
+      try {
+        var created = await Store.saveAssignment({ studentId:sid, skills:[], games:[{ id:id, level:lv }], target:0, due:due });
+        Store.queueNotice({ sid: created.studentId, kind: "new_homework", refId: created.id, createdAt: Date.now(),
+          text: gameHwText(created.games) + (created.due ? "\n📅 " + dueInfo(created.due).text : "") }).catch(function(){});
+        var who = sid === "all" ? "all students" : ((studs.filter(function(st){ return st.id === sid; })[0] || {}).name || "the student");
+        S.pHw = null; S.ghwOpen = true; toast("Game given to " + who + "."); tabGames(body);
+      } catch(e){ btn.disabled = false; toast("Could not save. Please try again."); }
+    };
+    var list = $("#ghw-list"), filled = false;
+    async function fill(){
+      if(!gasg.length){ $("#ghw-body").innerHTML = '<p class="muted">No game homework yet. Press “📌 Homework” on a game above.</p>'; return; }
+      var gsAll = {}; (await Promise.all(studs.map(function(st){ return Store.getGames(st.id).catch(function(){ return {}; }); }))).forEach(function(g, i){ gsAll[studs[i].id] = g; });
+      if(!document.body.contains(list)) return;
+      $("#ghw-body").innerHTML = gasg.slice().sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); }).map(function(a){
+        var who = a.studentId === "all" ? studs : studs.filter(function(st){ return st.id === a.studentId; }), due = dueInfo(a.due);
+        var forName = a.studentId === "all" ? "All students" : (who[0] ? who[0].name : "Removed student");
+        var rows = who.map(function(st){ var gs = gsAll[st.id] || {}, done = gameHwDone(a, gs), k = "p:" + a.games[0].id + ":" + a.games[0].level, bs = gs.best && gs.best[k], g = TMPlay.game(a.games[0].id);
+          return '<tr><td><b>'+esc(st.name)+'</b></td><td>'+(done ? '<span class="ok">✓ Done</span>' : '<span class="muted">Not yet</span>')+'</td><td class="num">'+(bs != null ? esc(bs + " " + (g ? g.unit : "")) : "–")+'</td></tr>'; }).join("");
+        return '<div class="card a-item"><div class="assign-head"><b>'+esc(forName)+': '+esc(gameHwText(a.games).replace("🎮 ", ""))+'</b><span class="due '+due.cls+'">'+due.text+'</span></div>'+
+          (who.length ? '<div class="table-wrap"><table class="t-table"><thead><tr><th>Student</th><th>Status</th><th>Best score</th></tr></thead><tbody>'+rows+'</tbody></table></div>' : '<p class="muted">No students yet.</p>')+
+          '<div class="btn-row" style="margin-top:10px;"><button class="btn ghost sm" data-gadel="'+a.id+'">Delete</button></div></div>';
+      }).join("");
+      $$("[data-gadel]").forEach(function(b){ armConfirm(b, async function(){ await Store.deleteAssignment(b.dataset.gadel); toast("Homework deleted."); S.ghwOpen = true; tabGames(body); }); });
+    }
+    list.addEventListener("toggle", function(){ S.ghwOpen = list.open; if(list.open && !filled){ filled = true; fill(); } });
+    if(list.open){ filled = true; fill(); }
   }
   async function viewGame(){
-    var G = S.game; if(S.teacher && G) return viewGameTeacher(G);
-    return go(S.teacher ? "teacher" : "student-home");
+    var G = S.game; if(!G) return go(S.teacher ? "teacher" : "student-home");
+    if(S.teacher) return viewGameTeacher(G);
+    if(G.kind === "play" && S.sid) return viewGameStudent(G);
+    return go("student-home");
   }
+  function gameLib(G){ return G.kind === "play" ? TMPlay : TMGames; }
+  function gameKey(G){ return (G.kind === "play" ? "p:" : "") + G.id + ":" + G.level; }
   async function viewGameTeacher(G){
-    var g = TMGames.GAMES.filter(function(x){ return x.id === G.id; })[0], levels = TMGames.levels(G.id);
-    var key = G.id + ":" + G.level, all = tBest(), best = all[key];
+    var lib = gameLib(G), g = lib.GAMES.filter(function(x){ return x.id === G.id; })[0], levels = lib.levels(G.id);
+    var key = gameKey(G), all = tBest(), best = all[key];
     function back(){ if(S.gameStop){ S.gameStop(); S.gameStop = null; } S.tTab = "games"; go("teacher"); }
     app.innerHTML = topbar("Teacher studio", "") +
       '<div class="prac-head"><button class="link" id="g-back">← Back to games</button>'+
-      '<div class="prac-title"><span class="code-lg">'+g.icon+'</span><div><h2>'+esc(g.name)+'</h2><div class="tags"><span class="tag">'+levels[G.level]+'</span>'+
+      '<div class="prac-title"><span class="code-lg">'+g.icon+'</span><div><h2>'+esc(g.name)+'</h2><div class="tags"><span class="tag">'+esc(levels[G.level])+'</span>'+
       '<span class="tag">'+(best != null ? "🏆 Best: " + best + " " + esc(g.unit) : "No best score yet")+'</span></div></div></div></div>'+
       '<section class="card game-box"><div id="g-area"></div></section>';
     $("#g-back").onclick = back;
     var area = $("#g-area");
-    S.gameStop = TMGames.mount(area, G.id, G.level, {
+    S.gameStop = lib.mount(area, G.id, G.level, {
       onFinish: function(score, text){
         if(S.gameStop){ S.gameStop(); S.gameStop = null; }
-        var record = TMGames.isBetter(G.id, score, best);
+        var record = lib.isBetter(G.id, score, best);
         if(record){ all[key] = score; try{ localStorage.setItem("tm-tgames", JSON.stringify(all)); }catch(e){} }
         area.innerHTML = '<div class="done-card pop-in"><div class="medal">'+(record ? "🏆" : "🎉")+'</div><h3>'+(record ? "New best score!" : "Well done!")+'</h3>'+
           '<p class="muted">'+esc(text)+(record || best == null ? "" : ". Best: " + best + " " + esc(g.unit))+'</p>'+
@@ -12701,6 +13218,32 @@ var Store = (function(){
       }
     });
   }
+  async function viewGameStudent(G){
+    var g = TMPlay.game(G.id); if(!g) return go("student-home");
+    var key = gameKey(G), gs = await Store.getGames(S.sid).catch(function(){ return { best:{} }; }), best = gs.best[key];
+    function back(){ if(S.gameStop){ S.gameStop(); S.gameStop = null; } S.game = null; S.sTab = "todo"; go("student-home"); }
+    app.innerHTML = topbar("Math games", "") +
+      '<div class="prac-head"><button class="link" id="g-back">← Back to my homework</button>'+
+      '<div class="prac-title"><span class="code-lg">'+g.icon+'</span><div><h2>'+esc(g.name)+'</h2><div class="tags"><span class="tag">'+esc(TMPlay.levelName(G.id, G.level))+'</span>'+
+      '<span class="tag">'+(best != null ? "🏆 Best: " + best + " " + esc(g.unit) : "First time playing")+'</span></div></div></div></div>'+
+      '<section class="card game-box"><div id="g-area"></div></section>';
+    $("#g-back").onclick = back;
+    var area = $("#g-area");
+    S.gameStop = TMPlay.mount(area, G.id, G.level, {
+      onFinish: function(score, text){
+        if(S.gameStop){ S.gameStop(); S.gameStop = null; }
+        var record = TMPlay.isBetter(G.id, score, best);
+        Store.saveGameScore(S.sid, key, score, record).catch(function(){});
+        var hw = G.asg; G.asg = null; if(hw) Store.addCoins(S.sid, 10).catch(function(){});
+        area.innerHTML = '<div class="done-card pop-in"><div class="medal">'+(record && best != null ? "🏆" : "🎉")+'</div><h3>'+(record && best != null ? "New best score!" : "Well done!")+'</h3>'+
+          '<p class="muted">'+esc(text)+(hw ? ". Homework done! 🪙 +10 coins" : "")+'</p>'+
+          '<div class="btn-row center"><button class="btn gold" id="g-again">Play again</button><button class="btn ghost" id="g-list">Back to my homework</button></div></div>';
+        $("#g-again").onclick = function(){ best = record ? score : best; render(); };
+        $("#g-list").onclick = back;
+      }
+    });
+  }
+
   async function viewGameOld(){
     var G = S.game; if(!G || !S.sid) return go("student-home");
     var g = TMGames.GAMES.filter(function(x){ return x.id === G.id; })[0], levels = TMGames.levels(G.id);
@@ -13309,7 +13852,7 @@ var Store = (function(){
     S.wsCount = S.wsCount || 12;
     var ad = S.ad = S.ad || { studentId:"all", skills:[], target:80, due:"" };
     var r = await Promise.all([Store.listStudents(), Store.listTopics(), Store.listAssignments()]);
-    var studs = r[0].sort(function(a,b){ return a.name.localeCompare(b.name); }), topics = r[1], asg = r[2];
+    var studs = r[0].sort(function(a,b){ return a.name.localeCompare(b.name); }), topics = r[1], asg = r[2].filter(function(a){ return a.skills && a.skills.length; });
     var sets = topics.filter(function(t){ return t.questions && t.questions.length; });
     function countText(){ var n = ad.skills.length; return n ? n + " skill" + (n === 1 ? "" : "s") + " selected" : "No skills selected"; }
 
