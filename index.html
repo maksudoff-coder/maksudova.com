@@ -1912,18 +1912,86 @@
 <body>
 <div class="bg-deco" aria-hidden="true"><img class="wm" id="bg-wm" alt=""></div>
 <div class="app" id="app"></div>
-<script src="vendor/firebase-app-compat.js"></script>
-<script src="vendor/firebase-auth-compat.js"></script>
-<script src="vendor/firebase-firestore-compat.js"></script>
 <script>
-var FIREBASE_CONFIG = {
-  apiKey: "AIzaSyArHyi9cqjeuS4StLFCIxfbLE89xl0WY-I",
-  authDomain: "tutor-maksudova.firebaseapp.com",
-  projectId: "tutor-maksudova",
-  storageBucket: "tutor-maksudova.firebasestorage.app",
-  messagingSenderId: "393574925334",
-  appId: "1:393574925334:web:7bd7dc83dafdbc53166137"
-};
+/* @@CFDB */
+/* ---- a small client for the site's own server (/api), shaped like the parts of Firestore the Store uses ---- */
+var CF = (function(){
+  "use strict";
+  var TOKEN_KEY = "tm-token";
+  function token(){ try{ return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || ""; }catch(e){ return ""; } }
+  function setToken(t, remember){ try{ localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); if(t) (remember === false ? sessionStorage : localStorage).setItem(TOKEN_KEY, t); }catch(e){} }
+  function err(msg, code){ var e = new Error(msg || "Something went wrong. Please try again."); e.code = code || ""; return e; }
+  async function call(path, body, method){
+    var t = token(), res;
+    try{
+      res = await fetch("/api/" + path, { method: method || "POST", headers: Object.assign({ "content-type": "application/json" }, t ? { authorization: "Bearer " + t } : {}), body: method === "GET" ? undefined : JSON.stringify(body || {}) });
+    }catch(e){ throw err("No internet connection. Check your connection and try again.", "unavailable"); }
+    var data = null; try{ data = await res.json(); }catch(e){}
+    if(!res.ok) throw err(data && data.error, data && data.code);
+    return data || {};
+  }
+
+  var FV = {
+    increment: function(n){ return { __fv: "inc", n: n }; },
+    delete: function(){ return { __fv: "del" }; },
+    arrayUnion: function(){ return { __fv: "union", v: [].slice.call(arguments) }; }
+  };
+  function newId(){ var a = new Uint8Array(12); crypto.getRandomValues(a); return Array.prototype.map.call(a, function(x){ return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[x % 62]; }).join("").slice(0, 20); }
+
+  function DocSnap(ref, data){ return { id: ref.id, ref: ref, exists: !!data, data: function(){ return data ? JSON.parse(JSON.stringify(data)) : undefined; } }; }
+  function QuerySnap(col, docs){ var d = docs.map(function(x){ return DocSnap(new DocRef(col + "/" + x.id), x.data); }); return { docs: d, empty: !d.length, size: d.length }; }
+
+  // live updates: ask the server again every few seconds and report only real changes
+  function poll(fetcher, cb, onErr, ms){
+    var stop = false, last = null, timer = null;
+    async function tick(){
+      if(stop) return;
+      try{ var r = await fetcher(), key = JSON.stringify(r.key); if(key !== last){ last = key; cb(r.snap); } }
+      catch(e){ if(onErr) onErr(e); }
+      if(!stop) timer = setTimeout(tick, document.hidden ? ms * 4 : ms);
+    }
+    tick();
+    return function(){ stop = true; clearTimeout(timer); };
+  }
+
+  function DocRef(path){ this.path = path; this.id = path.split("/").pop(); }
+  DocRef.prototype.get = async function(){ var r = await call("db/get", { path: this.path }); return DocSnap(this, r.exists ? r.data : null); };
+  DocRef.prototype.set = function(data, opt){ return write([{ op: "set", path: this.path, data: data, merge: !!(opt && opt.merge) }]); };
+  DocRef.prototype.update = function(data){ return write([{ op: "update", path: this.path, data: data }]); };
+  DocRef.prototype.delete = function(){ return write([{ op: "delete", path: this.path }]); };
+  DocRef.prototype.collection = function(c){ return new Query(this.path + "/" + c); };
+  DocRef.prototype.onSnapshot = function(cb, onErr){ var self = this;
+    return poll(async function(){ var r = await call("db/get", { path: self.path }); return { key: r, snap: DocSnap(self, r.exists ? r.data : null) }; }, cb, onErr, 3000); };
+
+  function Query(path, opt){ this.path = path; this.o = opt || { where: [] }; this.id = path.split("/").pop(); }
+  Query.prototype._with = function(k, v){ var o = JSON.parse(JSON.stringify(this.o)); o[k] = v; return new Query(this.path, o); };
+  Query.prototype.where = function(f, op, v){ if(op !== "==") throw err("Only == filters are supported."); return this._with("where", this.o.where.concat([[f, v]])); };
+  Query.prototype.orderBy = function(f){ return this._with("orderBy", f); };
+  Query.prototype.limit = function(n){ return this._with("limit", n); };
+  Query.prototype.limitToLast = function(n){ return this._with("last", n); };
+  Query.prototype.doc = function(id){ return new DocRef(this.path + "/" + (id || newId())); };
+  Query.prototype.add = async function(data){ var ref = this.doc(); await ref.set(data); return ref; };
+  Query.prototype._q = function(){ return call("db/query", Object.assign({ path: this.path }, this.o)); };
+  Query.prototype.get = async function(){ var r = await this._q(); return QuerySnap(this.path, r.docs); };
+  Query.prototype.onSnapshot = function(cb, onErr){ var self = this;
+    return poll(async function(){ var r = await self._q(); return { key: r.docs, snap: QuerySnap(self.path, r.docs) }; }, cb, onErr, 3500); };
+
+  function write(ops){ return call("db/write", { ops: ops }).then(function(){}); }
+  function Batch(){ this.ops = []; }
+  Batch.prototype.set = function(ref, data, opt){ this.ops.push({ op: "set", path: ref.path, data: data, merge: !!(opt && opt.merge) }); return this; };
+  Batch.prototype.update = function(ref, data){ this.ops.push({ op: "update", path: ref.path, data: data }); return this; };
+  Batch.prototype.delete = function(ref){ this.ops.push({ op: "delete", path: ref.path }); return this; };
+  Batch.prototype.commit = function(){ return this.ops.length ? write(this.ops) : Promise.resolve(); };
+
+  var db = {
+    doc: function(p){ return new DocRef(p); },
+    collection: function(p){ return new Query(p); },
+    batch: function(){ return new Batch(); }
+  };
+  return { db: db, FieldValue: FV, call: call, token: token, setToken: setToken };
+})();
+
+/* @@CFDB_END */
 var LOGO_BADGE = "" + location.origin + "/img/logo.webp";
 var LOGO_BADGE_SM = "" + location.origin + "/img/logo-sm.webp";
 var TUTOR_PHOTO="" + location.origin + "/img/tutor.webp";
@@ -10334,13 +10402,11 @@ if(typeof module !== "undefined") module.exports = TMPlay;
 
 /* @@PLAY_END */
 /* =====================================================================
-   DATA LAYER — ONLINE VERSION (Firebase)
+   DATA LAYER — ONLINE VERSION (Cloudflare D1 via /api)
    Same functions as the offline store, so the screens don't change.
-   Accounts:   Firebase Authentication (email + password). Logins are
-               turned into addresses like  ali+k3f9@tutormaksudova.app
-   Data:       Cloud Firestore
+   Accounts:   /api/auth (logins and PBKDF2 password hashes in the D1 users table)
+   Data:       /api/db, a small document store with Firestore-like paths
      site/public                 profile shown on the sign-in page, teacher login name
-     logins/{login}              which account a login belongs to
      students/{sid}              name, login, grade, uid (the account)
      students/{sid}/meta/progress   { skills: { skillId: record } }
      students/{sid}/meta/activity   { days: { "2026-09-27": {n, s} } }
@@ -10352,9 +10418,10 @@ var Store = (function(){
   "use strict";
   var DOMAIN = "tutormaksudova.app";
   var TEACHER_EMAIL = "teacher@" + DOMAIN;
-  firebase.initializeApp(FIREBASE_CONFIG);
-  var auth = firebase.auth(), db = firebase.firestore();
-  var inc = function(n){ return firebase.firestore.FieldValue.increment(n); };
+  var db = CF.db, FV = CF.FieldValue, api = CF.call;
+  var inc = function(n){ return FV.increment(n); };
+  var session = null;       // { uid, login, role, sid, tid } from the server
+  var pendingSetup = null;  // first sign-in of the owner: { login, remember }
   var currentSid = null;
   var me = null;            // signed-in teacher: { owner:true } for the site owner, { owner:false, tid, name, login } for an added teacher
   var stTid = null;         // the signed-in student's teacher ("" = the owner)
@@ -10373,7 +10440,6 @@ var Store = (function(){
   }
   function stamp(o){ if(isT() && !o.teacherId) o.teacherId = me.tid; return o; }
 
-  var authReady = new Promise(function(res){ var off = auth.onAuthStateChanged(function(){ off(); res(); }); });
   function uid(p){ return p + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function emailFor(login){ return login + "+" + Date.now().toString(36) + "@" + DOMAIN; }
   function clean(o){ return JSON.parse(JSON.stringify(o)); }   // Firestore rejects undefined values
@@ -10388,27 +10454,21 @@ var Store = (function(){
   }
   function isBadLogin(e){ var c = e && e.code || ""; return c === "auth/invalid-credential" || c === "auth/wrong-password" || c === "auth/user-not-found" || c === "auth/invalid-email" || c === "auth/invalid-login-credentials"; }
 
-  // a second, separate connection so the teacher can create student accounts without being signed out
-  var creator = null;
-  async function creatorAuth(){
-    if(!creator){
-      var app; try{ app = firebase.app("creator"); }catch(e){ app = firebase.initializeApp(FIREBASE_CONFIG, "creator"); }
-      creator = app.auth();
-      await creator.setPersistence(firebase.auth.Auth.Persistence.NONE);
+  function remembered(){ try{ return !!localStorage.getItem("tm-token"); }catch(e){ return true; } }
+  async function enter(user){
+    session = user; currentSid = null; me = null; stTid = null;
+    if(user.role === "owner"){ me = { owner:true }; hint("teacher"); return { role:"teacher" }; }
+    if(user.role === "teacher"){
+      var td = await db.doc("teachers/" + user.tid).get();
+      if(!td.exists) return null;
+      me = { owner:false, tid:td.id, name:td.data().name || "", login:td.data().login || user.login }; hint("teacher");
+      return { role:"teacher" };
     }
-    return creator;
+    var st = await db.doc("students/" + user.sid).get();
+    if(!st.exists) return null;
+    currentSid = st.id; var o = st.data(); o.id = st.id; stTid = o.teacherId || ""; hint("student");
+    return { role:"student", student:o, sid:st.id };
   }
-  async function newAccount(login, password){
-    var ca = await creatorAuth();
-    try{
-      var email = emailFor(login);
-      var cred = await ca.createUserWithEmailAndPassword(email, password);
-      var id = cred.user.uid;
-      await ca.signOut();
-      return { uid:id, email:email };
-    }catch(e){ throw friendly(e); }
-  }
-
   function hint(v){ try{ if(v) localStorage.setItem("tm-who", v); else localStorage.removeItem("tm-who"); }catch(e){} }
   function site(){ return db.doc("site/public").get().then(function(s){ return s.exists ? s.data() : {}; }); }
   function meta(sid, name){ return db.doc("students/" + sid + "/meta/" + name); }
@@ -10422,58 +10482,24 @@ var Store = (function(){
     signIn: async function(login, pass, remember){
       login = String(login).trim().toLowerCase();
       try{
-        // Remember me: stay signed in on this device; otherwise only until the tab is closed
-        // persistence, the teacher login name and the student's login card are fetched together, not one after another
-        var got = await Promise.all([
-          auth.setPersistence(remember === false ? firebase.auth.Auth.Persistence.SESSION : firebase.auth.Auth.Persistence.LOCAL),
-          site().catch(function(){ return {}; }),
-          db.doc("logins/" + login).get().catch(function(){ return null; })
-        ]);
-        var s = got[1] || {}, l = got[2];
-        if(login === (s.teacherLogin || "teacher")){
-          try{ await auth.signInWithEmailAndPassword(TEACHER_EMAIL, pass); currentSid = null; stTid = null; me = { owner:true }; return { role:"teacher" }; }
-          catch(e){ if(isBadLogin(e)) return null; throw e; }
-        }
-        if(!l) l = await db.doc("logins/" + login).get();
-        if(!l.exists) return null;
-        try{ await auth.signInWithEmailAndPassword(l.data().email, pass); }
-        catch(e){ if(isBadLogin(e)) return null; throw e; }
-        if(l.data().tid){
-          var td = await db.doc("teachers/" + l.data().tid).get();
-          if(!td.exists){ await auth.signOut(); return null; }
-          currentSid = null; stTid = null; me = { owner:false, tid:td.id, name:td.data().name || "", login:td.data().login || login };
-          return { role:"teacher" };
-        }
-        var st = await db.doc("students/" + l.data().sid).get();
-        if(!st.exists){ await auth.signOut(); return null; }
-        currentSid = st.id; me = null;
-        var o = st.data(); o.id = st.id; stTid = o.teacherId || "";
-        return { role:"student", student:o };
+        var r = await api("auth/login", { login:login, pass:String(pass), remember: remember !== false });
+        if(r.setup){ pendingSetup = { login:login, remember: remember !== false }; return { role:"setup" }; }
+        if(!r.ok) return null;
+        CF.setToken(r.token, remember !== false);
+        var e = await enter(r.user); if(!e){ CF.setToken(null); return null; }
+        return e;
       }catch(e){ throw friendly(e); }
     },
     getSession: async function(){
-      await authReady;
-      var u = auth.currentUser; if(!u){ hint(null); return null; }
-      if(u.email === TEACHER_EMAIL){ me = { owner:true }; hint("teacher"); return { role:"teacher" }; }
-      var known = null; try{ known = JSON.parse(localStorage.getItem("tm-sid") || "null"); }catch(e){}
-      if(known && known.uid === u.uid && known.sid){ currentSid = known.sid; me = null; hint("student"); return { role:"student", sid:currentSid }; }
+      if(!CF.token()){ hint(null); return null; }
       try{
-        var sf = await db.doc("staff/" + u.uid).get().catch(function(){ return null; });
-        if(sf && sf.exists){
-          var td = await db.doc("teachers/" + sf.data().tid).get();
-          if(td.exists){ me = { owner:false, tid:td.id, name:td.data().name || "", login:td.data().login || "" }; currentSid = null; hint("teacher"); return { role:"teacher" }; }
-        }
-      }catch(e){}
-      try{
-        var q = await db.collection("students").where("uid", "==", u.uid).limit(1).get();
-        if(q.empty){ await auth.signOut(); hint(null); return null; }
-        currentSid = q.docs[0].id;
-        try{ localStorage.setItem("tm-sid", JSON.stringify({ uid:u.uid, sid:currentSid })); }catch(e){}
-        hint("student");
-        return { role:"student", sid:currentSid };
-      }catch(e){ return null; }
+        var r = await api("auth/me");
+        var e = await enter(r.user);
+        if(!e){ CF.setToken(null); hint(null); return null; }
+        return e.role === "student" ? { role:"student", sid:e.sid } : e;
+      }catch(e){ if(e.code === "unauthenticated"){ CF.setToken(null); hint(null); } return null; }
     },
-    setSession: async function(s){ if(!s){ currentSid = null; me = null; stTid = null; hint(null); try{ localStorage.removeItem("tm-sid"); }catch(e){} await auth.signOut(); } else hint(s.role || "student"); },   // signing in already set how long it lasts
+    setSession: async function(s){ if(!s){ currentSid = null; me = null; stTid = null; session = null; hint(null); try{ localStorage.removeItem("tm-sid"); }catch(e){} CF.setToken(null); } else hint(s.role || "student"); },
 
     /* --- who is signed in, and the extra teachers (only the owner manages them) --- */
     me: function(){ return me; },
@@ -10481,29 +10507,17 @@ var Store = (function(){
     listTeachers: function(){ return db.collection("teachers").get().then(all); },
     createTeacher: async function(name, login, password){
       login = String(login).trim().toLowerCase();
-      var acc = await newAccount(login, password);
       var ref = db.collection("teachers").doc();
+      var acc = await api("auth/create", { login:login, pass:password, role:"teacher", ref:ref.id }).catch(function(e){ throw friendly(e); });
       var t = { name:String(name).trim(), login:login, uid:acc.uid, createdAt:Date.now() };
-      var b = db.batch();
-      b.set(ref, t);
-      b.set(db.doc("staff/" + acc.uid), { tid:ref.id });
-      b.set(db.doc("logins/" + login), { email:acc.email, tid:ref.id });
-      await b.commit();
+      await ref.set(t);
       t.id = ref.id; return t;
     },
     updateTeacher: async function(id, patch){
       patch = Object.assign({}, patch);
-      var t = (await db.doc("teachers/" + id).get()).data();
-      var b = db.batch();
-      if(patch.password){
-        var acc = await newAccount(t.login, patch.password);   // a fresh account replaces the old one
-        b.update(db.doc("teachers/" + id), { uid:acc.uid });
-        b.set(db.doc("staff/" + acc.uid), { tid:id });
-        if(t.uid) b.delete(db.doc("staff/" + t.uid));
-        b.set(db.doc("logins/" + t.login), { email:acc.email, tid:id });
-      }
-      if(patch.name) b.update(db.doc("teachers/" + id), { name:String(patch.name).trim() });
-      await b.commit();
+      var t = (await db.doc("teachers/" + id).get()).data() || {};
+      if(patch.password) await api("auth/password", { uid:t.uid, pass:patch.password }).catch(function(e){ throw friendly(e); });
+      if(patch.name) await db.doc("teachers/" + id).update({ name:String(patch.name).trim() });
       return true;
     },
     deleteTeacher: async function(id){
@@ -10512,18 +10526,15 @@ var Store = (function(){
       var moved = 0;
       for(var c of ["students", "assignments", "quizzes", "topics", "chats"]){
         var docs = (await db.collection(c).where("teacherId", "==", id).get()).docs;
-        for(var j=0;j<docs.length;j+=400){ var bb = db.batch(); docs.slice(j, j+400).forEach(function(d){ bb.update(d.ref, { teacherId: firebase.firestore.FieldValue.delete() }); }); await bb.commit(); }
+        for(var j=0;j<docs.length;j+=400){ var bb = db.batch(); docs.slice(j, j+400).forEach(function(d){ bb.update(d.ref, { teacherId: FV.delete() }); }); await bb.commit(); }
         if(c === "students") moved = docs.length;
       }
-      var b = db.batch();
-      b.delete(db.doc("teachers/" + id));
-      if(t.uid) b.delete(db.doc("staff/" + t.uid));
-      if(t.login) b.delete(db.doc("logins/" + t.login));
-      await b.commit();
+      await db.doc("teachers/" + id).delete();
+      if(t.uid) await api("auth/delete", { uid:t.uid }).catch(function(){});
       return moved;
     },
     setStudentTeacher: async function(sid, tid){
-      var v = tid ? tid : firebase.firestore.FieldValue.delete();
+      var v = tid ? tid : FV.delete();
       await db.doc("students/" + sid).update({ teacherId: v });
       var c = await db.doc("chats/" + sid).get().catch(function(){ return null; });
       if(c && c.exists) await db.doc("chats/" + sid).update({ teacherId: v });
@@ -10533,11 +10544,23 @@ var Store = (function(){
     hasTeacherPin: function(){ return Promise.resolve(true); },
     checkTeacherPin: function(){ return Promise.resolve(false); },
     setTeacherPin: async function(pw){
-      var u = auth.currentUser; if(!u) throw new Error("Please sign in again.");
-      try{ await u.updatePassword(pw); return true; }catch(e){ throw friendly(e); }
+      try{
+        if(pendingSetup){
+          var r = await api("auth/setup", { login:pendingSetup.login, pass:pw, remember:pendingSetup.remember });
+          CF.setToken(r.token, pendingSetup.remember); pendingSetup = null; await enter(r.user); return true;
+        }
+        var r2 = await api("auth/password", { pass:pw, remember:remembered() });
+        if(r2.token) CF.setToken(r2.token, remembered());
+        return true;
+      }catch(e){ throw friendly(e); }
     },
     getTeacherLogin: function(){ return site().then(function(s){ return s.teacherLogin || "teacher"; }); },
-    setTeacherLogin: function(l){ return db.doc("site/public").set({ teacherLogin: String(l).trim().toLowerCase() }, { merge:true }).then(function(){ return true; }); },
+    setTeacherLogin: async function(l){
+      l = String(l).trim().toLowerCase();
+      await api("auth/login-name", { login:l }).catch(function(e){ throw friendly(e); });
+      await db.doc("site/public").set({ teacherLogin: l }, { merge:true });
+      return true;
+    },
 
     /* --- sign-in page profile --- */
     getProfile: function(){ return site().then(function(s){ return s.profile || null; }).catch(function(){ return null; }); },
@@ -10547,28 +10570,21 @@ var Store = (function(){
     listStudents: function(){ return mineOnly(db.collection("students")).get().then(all); },
     getStudent: function(id){ return db.doc("students/" + id).get().then(function(s){ if(!s.exists) return null; var o = s.data(); o.id = s.id; return o; }); },
     findStudentByLogin: function(login){
-      return db.doc("logins/" + String(login).trim().toLowerCase()).get().then(function(s){ return s.exists ? { id: s.data().sid } : null; });
+      return api("auth/exists", { login:String(login).trim().toLowerCase() }).then(function(r){ return r.taken ? { id:"" } : null; });
     },
     createStudent: async function(name, login, password, grade){
       login = String(login).trim().toLowerCase();
-      var acc = await newAccount(login, password);
       var ref = db.collection("students").doc();
+      var acc = await api("auth/create", { login:login, pass:password, role:"student", ref:ref.id }).catch(function(e){ throw friendly(e); });
       var st = stamp({ name:String(name).trim(), login:login, grade:grade || null, uid:acc.uid, createdAt:Date.now(), lastActive:0 });
-      var b = db.batch();
-      b.set(ref, st);
-      b.set(db.doc("logins/" + login), { email:acc.email, sid:ref.id });
-      await b.commit();
+      await ref.set(st);
       st.id = ref.id; return st;
     },
     updateStudent: async function(id, patch){
       patch = Object.assign({}, patch);
       if(patch.password){
         var st = (await db.doc("students/" + id).get()).data();
-        var acc = await newAccount(st.login, patch.password);   // a fresh account replaces the old one
-        var b = db.batch();
-        b.update(db.doc("students/" + id), { uid:acc.uid });
-        b.set(db.doc("logins/" + st.login), { email:acc.email, sid:id });
-        await b.commit();
+        await api("auth/password", { uid:st.uid, pass:patch.password }).catch(function(e){ throw friendly(e); });
         delete patch.password;
       }
       delete patch.pin;
@@ -10580,7 +10596,6 @@ var Store = (function(){
       var b = db.batch();
       ["progress","activity","mistakes","games","notified","diagnostic","reviews","wallet"].forEach(function(n){ b.delete(meta(id, n)); });
       b.delete(db.doc("students/" + id));
-      if(st && st.login) b.delete(db.doc("logins/" + st.login));
       var a = await mineOnly(db.collection("assignments")).where("studentId", "==", id).get();
       a.docs.forEach(function(d){ b.delete(d.ref); });
       await b.commit();
@@ -10590,6 +10605,7 @@ var Store = (function(){
       await db.doc("chats/" + id).delete();
       await db.doc("consents/" + id).delete().catch(function(){});
       await this.clearBoard(id).catch(function(){}); await db.doc("boards/" + id).delete().catch(function(){});
+      if(st && st.uid) await api("auth/delete", { uid:st.uid }).catch(function(){});
     },
 
     /* --- SmartScore records --- */
@@ -10679,8 +10695,8 @@ var Store = (function(){
     getReviewResults: function(sid){ return meta(sid, "reviews").get().then(function(s){ return (s.exists && s.data().r) || {}; }); },
     saveReviewResult: function(sid, key, r){ var o = {}; o[key] = clean(r); return meta(sid, "reviews").set({ r: o }, { merge:true }); },
     getWallet: function(sid){ return meta(sid, "wallet").get().then(function(s){ return s.exists ? s.data() : {}; }); },
-    addCoins: function(sid, n){ return meta(sid, "wallet").set({ earned: firebase.firestore.FieldValue.increment(n) }, { merge:true }); },
-    buyItem: function(sid, id, price){ return meta(sid, "wallet").set({ spent: firebase.firestore.FieldValue.increment(price), owned: firebase.firestore.FieldValue.arrayUnion(id) }, { merge:true }); },
+    addCoins: function(sid, n){ return meta(sid, "wallet").set({ earned: FV.increment(n) }, { merge:true }); },
+    buyItem: function(sid, id, price){ return meta(sid, "wallet").set({ spent: FV.increment(price), owned: FV.arrayUnion(id) }, { merge:true }); },
     setLook: function(sid, look){ return meta(sid, "wallet").set(clean(look), { merge:true }); },
     /* --- lesson board: boards/{sid} (background) and boards/{sid}/strokes/{id} --- */
     watchBoard: function(sid, cb){
@@ -10690,7 +10706,7 @@ var Store = (function(){
       var u2 = db.doc("boards/" + sid).onSnapshot(function(s){ m = s.exists ? s.data() : {}; emit(); }, function(){});
       return function(){ u1(); u2(); };
     },
-    addStroke: function(sid, s){ s = Object.assign({}, s, { uid: auth.currentUser ? auth.currentUser.uid : "" }); return db.collection("boards/" + sid + "/strokes").add(clean(s)).then(function(r){ return r.id; }); },
+    addStroke: function(sid, s){ s = Object.assign({}, s, { uid: session ? session.uid : "" }); return db.collection("boards/" + sid + "/strokes").add(clean(s)).then(function(r){ return r.id; }); },
     deleteStroke: function(sid, id){ return db.doc("boards/" + sid + "/strokes/" + id).delete(); },
     clearBoard: async function(sid){ var q = await db.collection("boards/" + sid + "/strokes").get(); for(var i=0; i<q.docs.length; i+=400){ var b = db.batch(); q.docs.slice(i, i+400).forEach(function(d){ b.delete(d.ref); }); await b.commit(); } },
     setBoardMeta: function(sid, m){ return db.doc("boards/" + sid).set(clean(m), { merge:true }); },
@@ -10796,7 +10812,7 @@ var Store = (function(){
       for(var i=0;i<studs.docs.length;i++) await this.deleteStudent(studs.docs[i].id);
       var qz = (await db.collection("quizzes").get()).docs;
       for(var k=0;k<qz.length;k++) await this.deleteQuiz(qz[k].id);
-      var rest = (await db.collection("topics").get()).docs.concat((await db.collection("assignments").get()).docs, (await db.collection("logins").get()).docs);
+      var rest = (await db.collection("topics").get()).docs.concat((await db.collection("assignments").get()).docs);
       for(var j=0;j<rest.length;j+=400){ var b = db.batch(); rest.slice(j, j+400).forEach(function(d){ b.delete(d.ref); }); await b.commit(); }
     }
   };
@@ -12610,9 +12626,9 @@ var Store = (function(){
         '<li><b>From parents:</b> the parent\'s name, email and phone number when they book a lesson or fill in the consent form.</li></ul>'+
       '<p>We do <b>not</b> ask children for their address, photos, school name, or any other personal details, and we do not collect location data.</p>'+
       '<h3>3. How we use it</h3><p>Only to teach: to show practice and results, to give homework and quizzes, to send homework alerts and results to the family, and to answer questions. We <b>do not sell or rent</b> any information, we <b>show no ads</b>, and we do not use children\'s information for marketing.</p>'+
-      '<h3>4. Who helps us run the site</h3><p>We use trusted services that store or deliver data for us and may not use it for anything else: Google Firebase (secure database and sign-in), Cloudflare (website hosting and our Telegram bot) and Telegram (messages, only for families who connect the bot). Lesson videos may be embedded from YouTube or similar services in privacy-enhanced mode.</p>'+
+      '<h3>4. Who helps us run the site</h3><p>We use trusted services that store or deliver data for us and may not use it for anything else: Cloudflare (website hosting, our secure database and sign-in, and our Telegram bot) and Telegram (messages, only for families who connect the bot). Lesson videos may be embedded from YouTube or similar services in privacy-enhanced mode.</p>'+
       '<h3>5. Cookies and storage</h3><p>The site uses your browser\'s storage only for things you choose, such as “Remember me”, day/night mode and keeping you signed in. We do not use advertising or tracking cookies.</p>'+
-      '<h3>6. Keeping information safe</h3><p>Passwords are protected by Google Firebase and are never visible to us. Each student can see only their own work; parents\' Telegram messages contain only their own child\'s results. Access to all records is limited to the teacher.</p>'+
+      '<h3>6. Keeping information safe</h3><p>Passwords are stored only in a scrambled (hashed) form and are never visible to us. Each student can see only their own work; parents\' Telegram messages contain only their own child\'s results. Access to all records is limited to the teacher.</p>'+
       '<h3>7. How long we keep it</h3><p>We keep a student\'s information while they take lessons. When lessons end, or whenever a parent asks, we delete the account and all of its practice, messages and results.</p>'+
       '<h3>8. Parents\' rights</h3><p>A parent or guardian may at any time: <b>see</b> the information we have about their child, ask us to <b>correct</b> it, ask us to <b>delete</b> it, and <b>withdraw consent</b> so that we stop collecting it. To do this, contact us: '+c+'. We will reply within a few days.</p>'+
       '<h3>9. Changes</h3><p>If we change this policy, we will update the date above and, for important changes, tell parents before the change applies.</p>'+
@@ -14268,7 +14284,7 @@ var Store = (function(){
       '<p class="muted">Deletes every student, score, assignment and practice set'+(Store.kind === "cloud" ? "" : " saved on this device")+'. The sign-in page stays as it is.</p>'+
       '<button class="btn danger" id="p-wipe" style="margin-top:12px;">Erase all data</button></div>';
     await tabProfile($("#set-profile"));
-    teachersCard($("#set-teachers")).catch(function(){ var b = $("#set-teachers"); if(b) b.innerHTML = '<div class="card" style="margin-top:16px;"><h2 style="font-size:19px;">Teachers</h2><p class="muted">Could not load the teachers. Check that the new Firebase rules are published.</p></div>'; });
+    teachersCard($("#set-teachers")).catch(function(){ var b = $("#set-teachers"); if(b) b.innerHTML = '<div class="card" style="margin-top:16px;"><h2 style="font-size:19px;">Teachers</h2><p class="muted">Could not load the teachers. Please try again in a moment.</p></div>'; });
     $("#bk-save").onclick = async function(){
       var days = {}; DAYS.forEach(function(d){ days[d[0]] = $("#bk-d-"+d[0]).value.split(",").map(function(t){ return t.trim(); }).filter(Boolean).slice(0, 12); });
       var pr = await getProfile(); pr.booking = { on: $("#bk-on").checked, tz: $("#bk-tz").value.trim(), days: days };
