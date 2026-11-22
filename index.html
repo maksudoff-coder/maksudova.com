@@ -10356,6 +10356,22 @@ var Store = (function(){
   var auth = firebase.auth(), db = firebase.firestore();
   var inc = function(n){ return firebase.firestore.FieldValue.increment(n); };
   var currentSid = null;
+  var me = null;            // signed-in teacher: { owner:true } for the site owner, { owner:false, tid, name, login } for an added teacher
+  var stTid = null;         // the signed-in student's teacher ("" = the owner)
+  function isT(){ return !!(me && !me.owner); }
+  function mineOnly(q){ return isT() ? q.where("teacherId", "==", me.tid) : q; }
+  async function studentTid(){
+    if(stTid !== null || !currentSid) return stTid || "";
+    try{ var d = await db.doc("students/" + currentSid).get(); stTid = (d.exists && d.data().teacherId) || ""; }catch(e){ return ""; }
+    return stTid;
+  }
+  // what a signed-in student may see: their own items and the "all students" items of their teacher
+  async function forStudentOnly(list){
+    if(me || !currentSid) return list;
+    var t = await studentTid();
+    return list.filter(function(x){ return x.studentId === currentSid || (x.studentId === "all" && (x.teacherId || "") === t); });
+  }
+  function stamp(o){ if(isT() && !o.teacherId) o.teacherId = me.tid; return o; }
 
   var authReady = new Promise(function(res){ var off = auth.onAuthStateChanged(function(){ off(); res(); }); });
   function uid(p){ return p + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -10415,26 +10431,39 @@ var Store = (function(){
         ]);
         var s = got[1] || {}, l = got[2];
         if(login === (s.teacherLogin || "teacher")){
-          try{ await auth.signInWithEmailAndPassword(TEACHER_EMAIL, pass); currentSid = null; return { role:"teacher" }; }
+          try{ await auth.signInWithEmailAndPassword(TEACHER_EMAIL, pass); currentSid = null; stTid = null; me = { owner:true }; return { role:"teacher" }; }
           catch(e){ if(isBadLogin(e)) return null; throw e; }
         }
         if(!l) l = await db.doc("logins/" + login).get();
         if(!l.exists) return null;
         try{ await auth.signInWithEmailAndPassword(l.data().email, pass); }
         catch(e){ if(isBadLogin(e)) return null; throw e; }
+        if(l.data().tid){
+          var td = await db.doc("teachers/" + l.data().tid).get();
+          if(!td.exists){ await auth.signOut(); return null; }
+          currentSid = null; stTid = null; me = { owner:false, tid:td.id, name:td.data().name || "", login:td.data().login || login };
+          return { role:"teacher" };
+        }
         var st = await db.doc("students/" + l.data().sid).get();
         if(!st.exists){ await auth.signOut(); return null; }
-        currentSid = st.id;
-        var o = st.data(); o.id = st.id;
+        currentSid = st.id; me = null;
+        var o = st.data(); o.id = st.id; stTid = o.teacherId || "";
         return { role:"student", student:o };
       }catch(e){ throw friendly(e); }
     },
     getSession: async function(){
       await authReady;
       var u = auth.currentUser; if(!u){ hint(null); return null; }
-      if(u.email === TEACHER_EMAIL){ hint("teacher"); return { role:"teacher" }; }
+      if(u.email === TEACHER_EMAIL){ me = { owner:true }; hint("teacher"); return { role:"teacher" }; }
       var known = null; try{ known = JSON.parse(localStorage.getItem("tm-sid") || "null"); }catch(e){}
-      if(known && known.uid === u.uid && known.sid){ currentSid = known.sid; hint("student"); return { role:"student", sid:currentSid }; }
+      if(known && known.uid === u.uid && known.sid){ currentSid = known.sid; me = null; hint("student"); return { role:"student", sid:currentSid }; }
+      try{
+        var sf = await db.doc("staff/" + u.uid).get().catch(function(){ return null; });
+        if(sf && sf.exists){
+          var td = await db.doc("teachers/" + sf.data().tid).get();
+          if(td.exists){ me = { owner:false, tid:td.id, name:td.data().name || "", login:td.data().login || "" }; currentSid = null; hint("teacher"); return { role:"teacher" }; }
+        }
+      }catch(e){}
       try{
         var q = await db.collection("students").where("uid", "==", u.uid).limit(1).get();
         if(q.empty){ await auth.signOut(); hint(null); return null; }
@@ -10444,7 +10473,61 @@ var Store = (function(){
         return { role:"student", sid:currentSid };
       }catch(e){ return null; }
     },
-    setSession: async function(s){ if(!s){ currentSid = null; hint(null); try{ localStorage.removeItem("tm-sid"); }catch(e){} await auth.signOut(); } else hint(s.role || "student"); },   // signing in already set how long it lasts
+    setSession: async function(s){ if(!s){ currentSid = null; me = null; stTid = null; hint(null); try{ localStorage.removeItem("tm-sid"); }catch(e){} await auth.signOut(); } else hint(s.role || "student"); },   // signing in already set how long it lasts
+
+    /* --- who is signed in, and the extra teachers (only the owner manages them) --- */
+    me: function(){ return me; },
+    isOwner: function(){ return !!(me && me.owner); },
+    listTeachers: function(){ return db.collection("teachers").get().then(all); },
+    createTeacher: async function(name, login, password){
+      login = String(login).trim().toLowerCase();
+      var acc = await newAccount(login, password);
+      var ref = db.collection("teachers").doc();
+      var t = { name:String(name).trim(), login:login, uid:acc.uid, createdAt:Date.now() };
+      var b = db.batch();
+      b.set(ref, t);
+      b.set(db.doc("staff/" + acc.uid), { tid:ref.id });
+      b.set(db.doc("logins/" + login), { email:acc.email, tid:ref.id });
+      await b.commit();
+      t.id = ref.id; return t;
+    },
+    updateTeacher: async function(id, patch){
+      patch = Object.assign({}, patch);
+      var t = (await db.doc("teachers/" + id).get()).data();
+      var b = db.batch();
+      if(patch.password){
+        var acc = await newAccount(t.login, patch.password);   // a fresh account replaces the old one
+        b.update(db.doc("teachers/" + id), { uid:acc.uid });
+        b.set(db.doc("staff/" + acc.uid), { tid:id });
+        if(t.uid) b.delete(db.doc("staff/" + t.uid));
+        b.set(db.doc("logins/" + t.login), { email:acc.email, tid:id });
+      }
+      if(patch.name) b.update(db.doc("teachers/" + id), { name:String(patch.name).trim() });
+      await b.commit();
+      return true;
+    },
+    deleteTeacher: async function(id){
+      var t = (await db.doc("teachers/" + id).get()).data() || {};
+      // the teacher's students, homework, quizzes and practice sets move to the owner
+      var moved = 0;
+      for(var c of ["students", "assignments", "quizzes", "topics", "chats"]){
+        var docs = (await db.collection(c).where("teacherId", "==", id).get()).docs;
+        for(var j=0;j<docs.length;j+=400){ var bb = db.batch(); docs.slice(j, j+400).forEach(function(d){ bb.update(d.ref, { teacherId: firebase.firestore.FieldValue.delete() }); }); await bb.commit(); }
+        if(c === "students") moved = docs.length;
+      }
+      var b = db.batch();
+      b.delete(db.doc("teachers/" + id));
+      if(t.uid) b.delete(db.doc("staff/" + t.uid));
+      if(t.login) b.delete(db.doc("logins/" + t.login));
+      await b.commit();
+      return moved;
+    },
+    setStudentTeacher: async function(sid, tid){
+      var v = tid ? tid : firebase.firestore.FieldValue.delete();
+      await db.doc("students/" + sid).update({ teacherId: v });
+      var c = await db.doc("chats/" + sid).get().catch(function(){ return null; });
+      if(c && c.exists) await db.doc("chats/" + sid).update({ teacherId: v });
+    },
 
     /* --- teacher login --- */
     hasTeacherPin: function(){ return Promise.resolve(true); },
@@ -10461,7 +10544,7 @@ var Store = (function(){
     saveProfile: function(p){ return db.doc("site/public").set({ profile: clean(p) }, { merge:true }).then(function(){ return p; }); },
 
     /* --- students --- */
-    listStudents: function(){ return db.collection("students").get().then(all); },
+    listStudents: function(){ return mineOnly(db.collection("students")).get().then(all); },
     getStudent: function(id){ return db.doc("students/" + id).get().then(function(s){ if(!s.exists) return null; var o = s.data(); o.id = s.id; return o; }); },
     findStudentByLogin: function(login){
       return db.doc("logins/" + String(login).trim().toLowerCase()).get().then(function(s){ return s.exists ? { id: s.data().sid } : null; });
@@ -10470,7 +10553,7 @@ var Store = (function(){
       login = String(login).trim().toLowerCase();
       var acc = await newAccount(login, password);
       var ref = db.collection("students").doc();
-      var st = { name:String(name).trim(), login:login, grade:grade || null, uid:acc.uid, createdAt:Date.now(), lastActive:0 };
+      var st = stamp({ name:String(name).trim(), login:login, grade:grade || null, uid:acc.uid, createdAt:Date.now(), lastActive:0 });
       var b = db.batch();
       b.set(ref, st);
       b.set(db.doc("logins/" + login), { email:acc.email, sid:ref.id });
@@ -10498,7 +10581,7 @@ var Store = (function(){
       ["progress","activity","mistakes","games","notified","diagnostic","reviews","wallet"].forEach(function(n){ b.delete(meta(id, n)); });
       b.delete(db.doc("students/" + id));
       if(st && st.login) b.delete(db.doc("logins/" + st.login));
-      var a = await db.collection("assignments").where("studentId", "==", id).get();
+      var a = await mineOnly(db.collection("assignments")).where("studentId", "==", id).get();
       a.docs.forEach(function(d){ b.delete(d.ref); });
       await b.commit();
       // the conversation with this student
@@ -10536,17 +10619,17 @@ var Store = (function(){
     },
 
     /* --- practice sets --- */
-    listTopics: function(){ return db.collection("topics").get().then(all); },
+    listTopics: function(){ return mineOnly(db.collection("topics")).get().then(all); },
     saveTopic: function(t){
-      t = clean(t); if(!t.id) t.id = uid("t_");
+      t = stamp(clean(t)); if(!t.id) t.id = uid("t_");
       var id = t.id; delete t.id;
       return db.doc("topics/" + id).set(t).then(function(){ t.id = id; return t; });
     },
     deleteTopic: async function(id){
       var key = "c:" + id, b = db.batch();
       b.delete(db.doc("topics/" + id));
-      (await db.collection("assignments").get()).docs.forEach(function(d){
-        var a = d.data(); if(a.skills.indexOf(key) < 0) return;
+      (await mineOnly(db.collection("assignments")).get()).docs.forEach(function(d){
+        var a = d.data(); if(!a.skills || a.skills.indexOf(key) < 0) return;
         var rest = a.skills.filter(function(k){ return k !== key; });
         if(rest.length) b.update(d.ref, { skills:rest }); else b.delete(d.ref);
       });
@@ -10554,9 +10637,9 @@ var Store = (function(){
     },
 
     /* --- assignments --- */
-    listAssignments: function(){ return db.collection("assignments").get().then(all); },
+    listAssignments: function(){ return mineOnly(db.collection("assignments")).get().then(all).then(forStudentOnly); },
     saveAssignment: function(a){
-      a = clean(a); if(!a.id){ a.id = uid("a_"); a.createdAt = Date.now(); }
+      a = stamp(clean(a)); if(!a.id){ a.id = uid("a_"); a.createdAt = Date.now(); }
       var id = a.id; delete a.id;
       return db.doc("assignments/" + id).set(a).then(function(){ a.id = id; return a; });
     },
@@ -10582,7 +10665,9 @@ var Store = (function(){
     /* --- parent consent: consents/{studentId}; a parent signs once, only the teacher and that student can read it --- */
     addConsent: function(sid, c){ return db.doc("consents/" + sid).set(clean(c)).then(function(){ return c; }); },
     getConsent: function(sid){ return db.doc("consents/" + sid).get().then(function(s){ return s.exists ? s.data() : null; }); },
-    listConsents: function(){ return db.collection("consents").get().then(function(q){ var o = {}; q.docs.forEach(function(d){ o[d.id] = d.data(); }); return o; }); },
+    listConsents: async function(){
+      if(isT()){ var o1 = {}, st = await this.listStudents(); (await Promise.all(st.map(function(x){ return db.doc("consents/" + x.id).get().catch(function(){ return null; }); }))).forEach(function(d){ if(d && d.exists) o1[d.id] = d.data(); }); return o1; }
+      return db.collection("consents").get().then(function(q){ var o = {}; q.docs.forEach(function(d){ o[d.id] = d.data(); }); return o; }); },
     deleteConsent: function(sid){ return db.doc("consents/" + sid).delete(); },
 
     /* --- payments: billing/{sid}, teacher only --- */
@@ -10636,9 +10721,9 @@ var Store = (function(){
     /* --- quizzes (one attempt each) ---
        quizzes/{id}                 title, studentId, questions, timeLimit, due, showAnswers
        quizzes/{id}/results/{sid}   answers, startedAt, submittedAt, correct, score, total */
-    listQuizzes: function(){ return db.collection("quizzes").get().then(all); },
+    listQuizzes: function(){ return mineOnly(db.collection("quizzes")).get().then(all).then(forStudentOnly); },
     saveQuiz: function(q){
-      q = clean(q); if(!q.id){ q.id = uid("q_"); q.createdAt = Date.now(); }
+      q = stamp(clean(q)); if(!q.id){ q.id = uid("q_"); q.createdAt = Date.now(); }
       var id = q.id; delete q.id;
       return db.doc("quizzes/" + id).set(q).then(function(){ q.id = id; return q; });
     },
@@ -10662,7 +10747,9 @@ var Store = (function(){
     getTelegram: function(){ return db.doc("private/telegram").get().then(function(s){ return s.exists ? s.data() : {}; }); },
     saveTelegram: function(t){ return db.doc("private/telegram").set(clean(t)).then(function(){ return t; }); },
     // outbox/{id}: a student's short notice that a parent should get a Telegram message
-    queueNotice: function(n){ return db.collection("outbox").add({ sid:n.sid, kind:n.kind, refId:n.refId || "", createdAt:n.createdAt, text:String(n.text || "").slice(0, 1800) }); },
+    queueNotice: async function(n){
+      if(isT() && n.sid === "all"){ var self = this, st = await this.listStudents(); return Promise.all(st.map(function(x){ return self.queueNotice(Object.assign({}, n, { sid:x.id })); })); }
+      return db.collection("outbox").add({ sid:n.sid, kind:n.kind, refId:n.refId || "", createdAt:n.createdAt, text:String(n.text || "").slice(0, 1800) }); },
     deleteNotice: function(id){ return db.doc("outbox/" + id).delete(); },
     watchOutbox: function(cb){ return db.collection("outbox").onSnapshot(function(q){ cb(q.docs.map(function(d){ var o = d.data(); o.id = d.id; return o; })); }, function(){}); },
     getNotified: function(sid){ return meta(sid, "notified").get().then(function(s){ var d = s.exists ? s.data() : {}; return { assignments: d.assignments || {}, quizzes: d.quizzes || {} }; }); },
@@ -10684,6 +10771,7 @@ var Store = (function(){
       var r = await db.collection("chats/" + sid + "/messages").add(m);
       var s = { lastAt: m.at, lastFrom: from, lastText: m.text.slice(0, 120) || (ref ? "Question about: " + ref.title : "") };
       if(from === "student") s.unreadTeacher = inc(1); else s.unreadStudent = inc(1);
+      if(isT()) s.teacherId = me.tid; else if(!me){ var t0 = await studentTid(); if(t0) s.teacherId = t0; }
       await db.doc("chats/" + sid).set(s, { merge:true });
       m.id = r.id; return m;
     },
@@ -10692,7 +10780,7 @@ var Store = (function(){
       return db.doc("chats/" + sid).set(o, { merge:true }).catch(function(){});
     },
     watchChats: function(cb){
-      return db.collection("chats").onSnapshot(function(q){ var c = {}; q.docs.forEach(function(d){ c[d.id] = d.data(); }); cb(c); }, function(){});
+      return mineOnly(db.collection("chats")).onSnapshot(function(q){ var c = {}; q.docs.forEach(function(d){ c[d.id] = d.data(); }); cb(c); }, function(){});
     },
     watchChat: function(sid, cb){
       return db.doc("chats/" + sid).onSnapshot(function(s){ cb(s.exists ? s.data() : null); }, function(){});
@@ -11484,14 +11572,18 @@ var Store = (function(){
   /* =====================================================================
      STUDENT HOME
      ===================================================================== */
+  // is this homework / quiz for this student? "all" means all students of the teacher who gave it
+  function itemFor(a, st){ if(typeof st !== "object" || !st) return a.studentId === "all" || a.studentId === st; return a.studentId === st.id || (a.studentId === "all" && (a.teacherId || "") === (st.teacherId || "")); }
+  function audience(a, studs){ return a.studentId === "all" ? studs.filter(function(x){ return (x.teacherId || "") === (a.teacherId || ""); }) : studs.filter(function(x){ return x.id === a.studentId; }); }
+  function allLabel(){ return Store.isOwner && Store.isOwner() && S.hasTeachers ? "All my students" : "All students"; }
   // lowest target per skill among this student's assignments
   function targetsFor(sid, asg){
     var t = {};
-    asg.forEach(function(a){ if(a.studentId === "all" || a.studentId === sid) a.skills.forEach(function(k){ if(t[k] === undefined || a.target < t[k]) t[k] = a.target; }); });
+    asg.forEach(function(a){ if(itemFor(a, sid) && a.skills) a.skills.forEach(function(k){ if(t[k] === undefined || a.target < t[k]) t[k] = a.target; }); });
     return t;
   }
   function certsFor(st, prog, asg, topics){
-    var t = targetsFor(st.id, asg), out = [];
+    var t = targetsFor(st, asg), out = [];
     Object.keys(t).forEach(function(k){
       var r = prog[k], info = skillInfo(k, topics);
       if(r && info && (r.best || 0) >= t[k]) out.push({ key:k, name:st.name, title:info.title, sub:info.sub, score:r.best, date:r.certAt || r.masteredAt || r.lastAt });
@@ -11640,7 +11732,7 @@ var Store = (function(){
     } else if(tab === "practice"){
       var g = S.homeGrade || st.grade || "3";
       if(!isStandalone()) h += '<div class="inst-row">'+installBtn()+'<span class="muted">Open your math practice like an app, right from your home screen.</span></div>';
-      var mySets = topics.filter(function(t){ return t.questions && t.questions.length; });
+      var mySets = topics.filter(function(t){ return t.questions && t.questions.length && (t.teacherId || "") === (st.teacherId || ""); });
       if(mySets.length){
         h += '<h3 class="cat-h"><span class="cat-l">★</span>From your teacher</h3><div class="card skill-list">'+
           mySets.map(function(t){ var k = "c:" + t.id; return skillRow(k, skillInfo(k, topics), pill(prog[k])); }).join("")+'</div>'+
@@ -13134,7 +13226,7 @@ var Store = (function(){
           '<div class="gc-levels">'+Object.keys(levels).map(function(k){ return '<button class="chip small'+(k===lv?" active":"")+'" data-plv="'+g.id+':'+k+'">'+esc(levels[k])+'</button>'; }).join("")+'</div>'+
           '<div class="gc-foot"><span class="gc-best">'+(b != null ? "🏆 Your best: <b>"+b+"</b> "+esc(g.unit) : "")+'</span><div class="gc-acts">'+
           '<button class="btn ghost sm" data-ptry="'+g.id+'">Try ▶</button><button class="btn plum sm" data-phw="'+g.id+'">📌 Homework</button></div></div>'+
-          (open ? '<div class="ghw-form"><label>Student<select id="ghw-st"><option value="all">All students</option>'+studs.map(function(st){ return '<option value="'+st.id+'">'+esc(st.name)+'</option>'; }).join("")+'</select></label>'+
+          (open ? '<div class="ghw-form"><label>Student<select id="ghw-st"><option value="all">'+allLabel()+'</option>'+studs.map(function(st){ return '<option value="'+st.id+'">'+esc(st.name)+'</option>'; }).join("")+'</select></label>'+
             '<label>Due date<input id="ghw-due" type="date"></label><button class="btn gold sm" id="ghw-go">Give “'+esc(levels[lv])+'”</button><button class="link-btn" id="ghw-x">Cancel</button></div>' : '')+
           '</div>';
       }).join("") + '</div></section>';
@@ -13173,8 +13265,8 @@ var Store = (function(){
       var gsAll = {}; (await Promise.all(studs.map(function(st){ return Store.getGames(st.id).catch(function(){ return {}; }); }))).forEach(function(g, i){ gsAll[studs[i].id] = g; });
       if(!document.body.contains(list)) return;
       $("#ghw-body").innerHTML = gasg.slice().sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); }).map(function(a){
-        var who = a.studentId === "all" ? studs : studs.filter(function(st){ return st.id === a.studentId; }), due = dueInfo(a.due);
-        var forName = a.studentId === "all" ? "All students" : (who[0] ? who[0].name : "Removed student");
+        var who = audience(a, studs), due = dueInfo(a.due);
+        var forName = a.studentId === "all" ? allLabel() : (who[0] ? who[0].name : "Removed student");
         var rows = who.map(function(st){ var gs = gsAll[st.id] || {}, done = gameHwDone(a, gs), k = "p:" + a.games[0].id + ":" + a.games[0].level, bs = gs.best && gs.best[k], g = TMPlay.game(a.games[0].id);
           return '<tr><td><b>'+esc(st.name)+'</b></td><td>'+(done ? '<span class="ok">✓ Done</span>' : '<span class="muted">Not yet</span>')+'</td><td class="num">'+(bs != null ? esc(bs + " " + (g ? g.unit : "")) : "–")+'</td></tr>'; }).join("");
         return '<div class="card a-item"><div class="assign-head"><b>'+esc(forName)+': '+esc(gameHwText(a.games).replace("🎮 ", ""))+'</b><span class="due '+due.cls+'">'+due.text+'</span></div>'+
@@ -13373,12 +13465,16 @@ var Store = (function(){
   async function viewTeacher(){
     if(!S.teacher) return go("teacher-login");
     var saved0 = entrySaved(), prof = saved0 ? fixProfile(saved0.p) : await getProfile(), gr = greeting(), overview = S.tTab === "students" && !S.tStudent;
-    var tfirst = (function(n){ var f = String(n || "").trim().split(/\s+/)[0]; return (/^tutor$/i.test(f) || !f) ? "teacher" : f; })(prof.name);
+    var owner = Store.isOwner(), meT = Store.me() || {}, tName = owner ? (prof.name || "Tutor Maksudova") : (meT.name || "Teacher");
+    var TEACH_TABS = ["students", "messages", "skills", "sets", "quizzes", "games", "account"];
+    if(!owner && TEACH_TABS.indexOf(S.tTab) < 0) S.tTab = "students";
+    if(owner && !S.tList){ S.tList = true; Store.listTeachers().then(function(l){ S.teachers = l; S.hasTeachers = l.length > 0; }).catch(function(){}); }
+    var tfirst = (function(n){ var f = String(n || "").trim().split(/\s+/)[0]; return (/^tutor$/i.test(f) || !f) ? "teacher" : f; })(owner ? prof.name : meT.name);
     var TNAV = { students:["Students","students"], messages:["Messages","chat"], assignments:["Assignments","clip"], skills:["Skills","layers"], sets:["Practice sets","folder"],
-      quizzes:["Quizzes","quiz"], games:["Games","game"], bookings:["Requests","cal"], payments:["Payments","wallet"], reviews:["Feedback","star"], blog:["Blog","blog"], settings:["Settings","gear"] };
+      quizzes:["Quizzes","quiz"], games:["Games","game"], account:["My account","gear"], bookings:["Requests","cal"], payments:["Payments","wallet"], reviews:["Feedback","star"], blog:["Blog","blog"], settings:["Settings","gear"] };
     var th = '<div class="dash dash-t"><aside class="d-side">' +
-      '<div class="d-brand d-brand-t">'+mascotSVG(50)+'<div><b>'+esc(prof.name || "Tutor Maksudova")+'</b><small>Teacher studio</small></div></div>'+
-      '<nav class="d-nav" role="tablist" aria-label="Teacher menu"><i class="d-ind" aria-hidden="true"></i>' + TABS.map(function(t){ var m = TNAV[t[0]] || [t[1], "todo"];
+      '<div class="d-brand d-brand-t">'+mascotSVG(50)+'<div><b>'+esc(tName)+'</b><small>Teacher studio</small></div></div>'+
+      '<nav class="d-nav" role="tablist" aria-label="Teacher menu"><i class="d-ind" aria-hidden="true"></i>' + TABS.concat(owner ? [] : [["account","My account"]]).filter(function(t){ return owner ? t[0] !== "account" : TEACH_TABS.indexOf(t[0]) >= 0; }).map(function(t){ var m = TNAV[t[0]] || [t[1], "todo"];
         return navBtn("data-tab", t[0], m[0], m[1], S.tTab === t[0], t[0]==="messages" ? '<span class="count" id="tmsg-count" style="display:none">0</span>' : t[0]==="bookings" ? '<span class="count" id="tbk-count" style="display:none">0</span>' : t[0]==="reviews" ? '<span class="count" id="trv-count" style="display:none">0</span>' : ""); }).join("") + '</nav>'+
       '<div class="d-side-foot">'+themeBtn()+'<button id="t-out" class="d-link" title="Sign out">'+navIcon("out")+'<span>Sign out</span></button></div></aside><main class="d-main">';
     if(overview){
@@ -13395,19 +13491,18 @@ var Store = (function(){
         '<div class="d-hero-art" aria-hidden="true"><div class="d-card-stack"><span class="dcs c1">a² + b² = c²</span><span class="dcs c2">⅔ + ⅙ = ⅚</span><span class="dcs c3">7 × 8 = 56</span></div></div></section>'+
         '<div class="d-stats">'+dStat("students", studs0 ? studs0.length : "…", "students", "s-q", ' id="th-st" data-tab="students" role="button" tabindex="0"')+dStat("flame", studs0 ? act0 : "…", "active today", "s-fire"+(act0 ? " hot" : ""), ' id="th-act"')+
         dStat("chat", unread0, "unread messages", "s-coin"+(unread0 ? " lit" : ""), ' id="th-msg" data-tab="messages" role="button" tabindex="0"')+
-        dStat("cal", 0, "new requests", "s-cert", ' id="th-bk" data-tab="bookings" role="button" tabindex="0"')+dStat("star", 0, "reviews to approve", "s-time", ' id="th-rv" data-tab="reviews" role="button" tabindex="0"')+'</div>';
+        (owner ? dStat("cal", 0, "new requests", "s-cert", ' id="th-bk" data-tab="bookings" role="button" tabindex="0"')+dStat("star", 0, "reviews to approve", "s-time", ' id="th-rv" data-tab="reviews" role="button" tabindex="0"') : "")+'</div>';
     }
     app.innerHTML = th + '<div id="tab-body" class="d-content"><div class="d-wait" aria-live="polite"><i></i><i></i><i></i></div></div></main></div>';
     if($("#q-add")) $("#q-add").onclick = function(){ S.tTab = "students"; S.tStudent = null; S.addOpen = true; render(); };
     if(!S.tWarm){ S.tWarm = true; setTimeout(function(){
       [function(){ return Store.listStudents(); }, function(){ return Store.listAssignments(); }, function(){ return Store.listQuizzes(); }, function(){ return Store.listTopics(); },
-       function(){ return Store.listBookings(); }, function(){ return Store.listReviews(true); }, function(){ return Store.listBilling(); }, function(){ return Store.listPosts(true); },
-       function(){ return Store.getNotifyConfig(); }, function(){ return Store.listConsents(); }].forEach(function(f){ try{ f().catch(function(){}); }catch(err){} });
+       function(){ return Store.getNotifyConfig(); }, function(){ return Store.listConsents(); }].concat(owner ? [function(){ return Store.listBookings(); }, function(){ return Store.listReviews(true); }, function(){ return Store.listBilling(); }, function(){ return Store.listPosts(true); }] : []).forEach(function(f){ try{ f().catch(function(){}); }catch(err){} });
     }, 700); }
     $("#t-out").onclick = async function(){ stopAllWatchers(); S.teacher = false; S.tStudent = null; S.draft = null; await Store.setSession(null); go("role"); };
     watchTeacherInbox();
-    Store.listBookings().then(function(l){ var n = l.filter(function(r){ return r.status === "new"; }).length; setCount(document.getElementById("tbk-count"), n); heroCount("th-bk", n); }).catch(function(){});
-    Store.listReviews(true).then(function(l){ var n = l.filter(function(r){ return !r.approved; }).length; setCount(document.getElementById("trv-count"), n); heroCount("th-rv", n); }).catch(function(){});
+    if(owner) Store.listBookings().then(function(l){ var n = l.filter(function(r){ return r.status === "new"; }).length; setCount(document.getElementById("tbk-count"), n); heroCount("th-bk", n); }).catch(function(){});
+    if(owner) Store.listReviews(true).then(function(l){ var n = l.filter(function(r){ return !r.approved; }).length; setCount(document.getElementById("trv-count"), n); heroCount("th-rv", n); }).catch(function(){});
     setCount(document.getElementById("tmsg-count"), Object.keys(S.chats || {}).reduce(function(s, k){ return s + ((S.chats[k] || {}).unreadTeacher || 0); }, 0));
     on("[data-tab]", "click", function(){ S.tTab = this.dataset.tab; S.tStudent = null; S.draft = null; S.creds = null; S.qDraft = null; S.qView = null; S.pDraft = null; render(); });
     var body = $("#tab-body");
@@ -13422,21 +13517,83 @@ var Store = (function(){
     if(S.tTab === "skills") return tabSkills(body);
     if(S.tTab === "sets") return S.draft ? tabSetEditor(body) : tabSets(body);
     if(S.tTab === "games") return tabGames(body);
-    if(S.tTab === "settings") return tabSettings(body);
+    if(S.tTab === "settings") return owner ? tabSettings(body) : null;
+    if(S.tTab === "account") return tabAccount(body);
+  }
+
+  /* ----- an added teacher's own account ----- */
+  function tabAccount(el){
+    var m = Store.me() || {};
+    el.innerHTML = '<div class="card" style="max-width:480px;"><h2 style="font-size:19px;">My account</h2>'+
+      '<p class="muted">Name: <b>'+esc(m.name || "")+'</b><br>Login: <code>'+esc(m.login || "")+'</code></p>'+
+      '<label for="ac-new">New password</label><input id="ac-new" type="password" maxlength="30" autocomplete="new-password">'+
+      '<label for="ac-new2">Type the new password again</label><input id="ac-new2" type="password" maxlength="30" autocomplete="new-password">'+
+      '<div class="err" id="ac-msg" role="status"></div><button class="btn plum" id="ac-save">Change password</button></div>';
+    $("#ac-save").onclick = async function(){
+      var a = $("#ac-new").value, b = $("#ac-new2").value, msg = $("#ac-msg");
+      if(a.length < 6) return msg.textContent = "The password should be at least 6 characters.";
+      if(a !== b) return msg.textContent = "The two passwords don't match.";
+      try{ await Store.setTeacherPin(a); $("#ac-new").value = $("#ac-new2").value = ""; msg.textContent = ""; toast("Password changed."); }catch(e){ msg.textContent = e.message || "Could not change the password."; }
+    };
+  }
+
+  /* ----- the owner's list of teachers ----- */
+  async function teachersCard(box){
+    var r = await Promise.all([Store.listTeachers().catch(function(){ return []; }), Store.listStudents().catch(function(){ return []; })]);
+    var ts = r[0].sort(function(a, b){ return a.name.localeCompare(b.name); }), studs = r[1];
+    S.teachers = ts; S.hasTeachers = ts.length > 0;
+    var cnt = function(t){ return studs.filter(function(x){ return x.teacherId === t.id; }).length; };
+    box.innerHTML = '<div class="card" style="margin-top:16px;"><h2 style="font-size:19px;">Teachers</h2>'+
+      '<p class="muted">Each teacher signs in on the same page as students and sees only their own students. They can give homework, quizzes and games and send messages. Payments, requests, feedback, the blog and these settings stay only with you.</p>'+
+      (ts.length ? '<div class="table-wrap"><table class="t-table"><thead><tr><th>Name</th><th>Login</th><th>Students</th><th></th></tr></thead><tbody>'+ts.map(function(t){
+        return '<tr><td><b>'+esc(t.name)+'</b></td><td><code>'+esc(t.login)+'</code></td><td class="num">'+cnt(t)+'</td><td style="text-align:right;white-space:nowrap;">'+
+          '<button class="btn ghost sm" data-tpw="'+t.id+'">New password</button> <button class="btn danger sm" data-tdel2="'+t.id+'">Remove</button></td></tr>'; }).join("")+'</tbody></table></div>' : '<p class="muted">No other teachers yet.</p>')+
+      '<h3 class="nh">Add a teacher</h3><div class="form-grid"><div><label for="tc-name">Full name</label><input id="tc-name" type="text" maxlength="40"></div>'+
+      '<div><label for="tc-login">Login</label><input id="tc-login" type="text" maxlength="30" autocapitalize="off" spellcheck="false"></div>'+
+      '<div><label for="tc-pass">Password</label><input id="tc-pass" type="text" maxlength="30" value="'+makePassword()+'" autocapitalize="off" spellcheck="false"></div></div>'+
+      '<div class="err" id="tc-err" role="alert"></div><button class="btn plum" id="tc-add">Add teacher</button><div id="tc-creds"></div></div>';
+    $("#tc-name").addEventListener("input", function(){ if(!$("#tc-login").dataset.touched) $("#tc-login").value = suggestLogin(this.value); });
+    $("#tc-login").addEventListener("input", function(){ this.dataset.touched = "1"; });
+    $("#tc-add").onclick = async function(){
+      var err = function(m){ $("#tc-err").textContent = m; }, name = $("#tc-name").value.trim(), login = $("#tc-login").value.trim().toLowerCase(), pass = $("#tc-pass").value.trim(), btn = this;
+      if(!name) return err("Type the teacher's name.");
+      if(!/^[a-z0-9._-]{3,30}$/.test(login)) return err("Login: 3 to 30 characters, only letters, numbers, dots, dashes or underscores.");
+      if(pass.length < 6) return err("The password should be at least 6 characters.");
+      btn.disabled = true;
+      try{
+        if(await Store.findStudentByLogin(login) || login === await Store.getTeacherLogin()) { btn.disabled = false; return err("This login is already taken. Choose another one."); }
+        await Store.createTeacher(name, login, pass);
+        toast("Teacher added."); await teachersCard(box);
+        $("#tc-creds").innerHTML = '<div class="card creds" style="margin-top:12px;"><b>Give these to '+esc(name)+':</b><p>Website: <b>'+esc(location.host || "maksudova.com")+'</b><br>Login: <code>'+esc(login)+'</code><br>Password: <code>'+esc(pass)+'</code></p></div>';
+      }catch(e){ btn.disabled = false; err(e.message || "Could not add the teacher."); }
+    };
+    $$("[data-tpw]").forEach(function(b){ b.onclick = async function(){
+      var pw = makePassword(); b.disabled = true;
+      try{ await Store.updateTeacher(b.dataset.tpw, { password:pw }); var t = ts.filter(function(x){ return x.id === b.dataset.tpw; })[0] || {};
+        await teachersCard(box); $("#tc-creds").innerHTML = '<div class="card creds" style="margin-top:12px;"><b>New password for '+esc(t.name || "")+':</b><p>Login: <code>'+esc(t.login || "")+'</code><br>Password: <code>'+esc(pw)+'</code></p></div>';
+      }catch(e){ b.disabled = false; toast(e.message || "Could not change the password."); } }; });
+    $$("[data-tdel2]").forEach(function(b){ armConfirm(b, async function(){ var n = await Store.deleteTeacher(b.dataset.tdel2); toast("Teacher removed." + (n ? " Their " + n + " student" + (n === 1 ? " is" : "s are") + " now yours." : "")); teachersCard(box); }); });
   }
 
   /* ----- Students ----- */
   async function tabStudents(el){
     var studs = (await Store.listStudents()).sort(function(a,b){ return (b.lastActive||0) - (a.lastActive||0); });
-    var data = await Promise.all(studs.map(function(s){ return Promise.all([Store.getProgress(s.id), Store.getActivity(s.id)]); }));
     var allAsg = await Store.listAssignments(), consents = await Store.listConsents().catch(function(){ return {}; });
+    var owner = Store.isOwner(), tlist = owner ? await Store.listTeachers().catch(function(){ return []; }) : [], tmap = {};
+    tlist.forEach(function(t){ tmap[t.id] = t.name; }); S.teachers = tlist; S.hasTeachers = tlist.length > 0;
+    if(S.tFilter && !tmap[S.tFilter] && S.tFilter !== "me") S.tFilter = "";
+    if(owner && S.tFilter) studs = studs.filter(function(x){ return S.tFilter === "me" ? !x.teacherId : x.teacherId === S.tFilter; });
+    var data = await Promise.all(studs.map(function(s){ return Promise.all([Store.getProgress(s.id), Store.getActivity(s.id)]); }));
     var h = '<div class="section-title"><h2 style="font-size:20px;">Students</h2><button class="btn gold sm" id="add-toggle">'+(S.addOpen?"Close":"+ Add a student")+'</button></div>';
+    if(owner && tlist.length) h += '<div class="gc-levels" style="margin:-4px 0 14px;">'+[["", "Everyone"], ["me", "My students"]].concat(tlist.map(function(t){ return [t.id, t.name]; })).map(function(o){
+      return '<button class="chip small'+((S.tFilter || "") === o[0] ? " active" : "")+'" data-tfil="'+esc(o[0])+'">'+esc(o[1])+'</button>'; }).join("")+'</div>';
     if(S.addOpen){
       h += '<div class="card" style="margin-bottom:16px;"><div class="form-grid">'+
         '<div><label for="n-name">Full name</label><input id="n-name" type="text" maxlength="40"></div>'+
         '<div><label for="n-grade">Grade</label><select id="n-grade">'+gradeOptions("3")+'</select></div>'+
         '<div><label for="n-login">Login</label><input id="n-login" type="text" maxlength="30" autocapitalize="off" spellcheck="false"></div>'+
-        '<div><label for="n-pass">Password</label><input id="n-pass" type="text" maxlength="30" value="'+makePassword()+'" autocapitalize="off" spellcheck="false"></div></div>'+
+        '<div><label for="n-pass">Password</label><input id="n-pass" type="text" maxlength="30" value="'+makePassword()+'" autocapitalize="off" spellcheck="false"></div>'+
+        (owner && tlist.length ? '<div><label for="n-teacher">Teacher</label><select id="n-teacher"><option value="">Me</option>'+tlist.map(function(t){ return '<option value="'+t.id+'"'+(S.tFilter === t.id ? " selected" : "")+'>'+esc(t.name)+'</option>'; }).join("")+'</select></div>' : "")+'</div>'+
         '<div class="err" id="n-err" role="alert"></div><button class="btn plum" id="n-save">Add student</button></div>';
     }
     if(S.creds) h += credsCard(S.creds);
@@ -13446,9 +13603,9 @@ var Store = (function(){
       h += '<div class="card table-wrap"><table class="t-table"><thead><tr><th>Name</th><th>Login</th><th>Grade</th><th>Assignments</th><th>Certificates</th><th>Last 7 days</th><th>Last active</th><th></th></tr></thead><tbody>';
       studs.forEach(function(s, i){
         var prog = data[i][0], wk = weekStats(data[i][1]);
-        var tg = targetsFor(s.id, allAsg), tk = Object.keys(tg), done = tk.filter(function(k){ return prog[k] && (prog[k].best||0) >= tg[k]; }).length;
+        var tg = targetsFor(s, allAsg), tk = Object.keys(tg), done = tk.filter(function(k){ return prog[k] && (prog[k].best||0) >= tg[k]; }).length;
         var ur = (S.chats && S.chats[s.id] && S.chats[s.id].unreadTeacher) || 0, cflag = consents[s.id] ? "" : s.consentRequired ? ' <span class="cflag wait" title="Waiting for parent consent">⏳ consent</span>' : ' <span class="cflag warn" title="No parent consent on file">⚠️ consent</span>';
-        h += '<tr><td><span class="ini" style="--h:'+warmHue(s.name)+'">'+initials(s.name)+'</span><b>'+esc(s.name)+'</b>'+cflag+' <span class="count" data-unread="'+s.id+'" title="Unread messages" style="'+(ur ? "" : "display:none")+'">'+ur+'</span></td><td><code>'+esc(s.login || "")+'</code></td><td>'+gradeName(s.grade)+'</td><td>'+(tk.length ? (done === tk.length ? '<span class="ok">✓ '+done+' of '+tk.length+'</span>' : done+' of '+tk.length+' skills') : '<span class="muted">None</span>')+'</td>'+
+        h += '<tr><td><span class="ini" style="--h:'+warmHue(s.name)+'">'+initials(s.name)+'</span><b>'+esc(s.name)+'</b>'+(owner && s.teacherId ? ' <span class="tag" title="Teacher">👩‍🏫 '+esc(tmap[s.teacherId] || "Removed teacher")+'</span>' : "")+cflag+' <span class="count" data-unread="'+s.id+'" title="Unread messages" style="'+(ur ? "" : "display:none")+'">'+ur+'</span></td><td><code>'+esc(s.login || "")+'</code></td><td>'+gradeName(s.grade)+'</td><td>'+(tk.length ? (done === tk.length ? '<span class="ok">✓ '+done+' of '+tk.length+'</span>' : done+' of '+tk.length+' skills') : '<span class="muted">None</span>')+'</td>'+
              '<td class="num">'+done+'</td><td>'+wk.n+' questions, '+fmtDur(wk.s)+'</td><td>'+ago(s.lastActive)+'</td>'+
              '<td style="text-align:right;"><button class="btn ghost sm" data-open="'+s.id+'">Open</button></td></tr>';
       });
@@ -13472,9 +13629,11 @@ var Store = (function(){
       if(await Store.findStudentByLogin(login) || login === await Store.getTeacherLogin()) return err("This login is already taken. Choose another one.");
       var created = await Store.createStudent(name, login, pass, grade);
       await Store.updateStudent(created.id, { consentRequired: true });
+      var tsel = $("#n-teacher"); if(tsel && tsel.value) await Store.setStudentTeacher(created.id, tsel.value).catch(function(){});
       S.addOpen = false; S.creds = { name:name, login:login, password:pass }; render();
     };
     on("[data-open]", "click", function(){ S.tStudent = this.dataset.open; S.creds = null; render(); });
+    on("[data-tfil]", "click", function(){ S.tFilter = this.dataset.tfil; render(); });
   }
 
   function parentReport(st, prog, act, asg, topics){
@@ -13497,7 +13656,7 @@ var Store = (function(){
         L.push("- " + (info.custom ? "" : TM.SKILLS[k].gradeName + " " + info.code + " ") + info.title + ": " + (r.masteredAt ? "mastered" : "SmartScore " + r.score) + " (" + r.answered + " questions)");
       });
     }
-    var mine = asg.filter(function(a){ return a.studentId === "all" || a.studentId === st.id; });
+    var mine = asg.filter(function(a){ return itemFor(a, st); });
     if(mine.length){
       L.push(""); L.push("Assignments:");
       mine.forEach(function(a){
@@ -13525,13 +13684,14 @@ var Store = (function(){
     var h = '<button class="link" id="d-back">← All students</button>'+
       (S.creds ? credsCard(S.creds) : "")+
       '<div class="detail-head"><span class="ini big" style="--h:'+warmHue(st.name)+'">'+initials(st.name)+'</span><div class="dh-info"><h2>'+esc(st.name)+'</h2><div class="muted" style="margin-top:2px;">Login: <code>'+esc(st.login || "")+'</code></div><div style="display:flex;align-items:center;gap:8px;margin-top:6px;"><label for="d-grade" style="margin:0;">Grade</label>'+
-      '<select id="d-grade" style="width:auto;padding:6px 10px;">'+(st.grade ? "" : '<option value="" selected>Not set</option>')+gradeOptions(st.grade)+'</select></div></div>'+
+      '<select id="d-grade" style="width:auto;padding:6px 10px;">'+(st.grade ? "" : '<option value="" selected>Not set</option>')+gradeOptions(st.grade)+'</select>'+
+      (Store.isOwner() && (S.teachers || []).length ? '<label for="d-teacher" style="margin:0 0 0 10px;">Teacher</label><select id="d-teacher" style="width:auto;padding:6px 10px;"><option value="">Me</option>'+S.teachers.map(function(t){ return '<option value="'+t.id+'"'+(st.teacherId === t.id ? " selected" : "")+'>'+esc(t.name)+'</option>'; }).join("")+'</select>' : "")+'</div></div>'+
       '<div class="btn-row"><button class="btn plum sm" id="d-msg">💬 Message</button><button class="btn gold sm" id="d-report">Copy parent report</button><button class="btn ghost sm" id="d-pw">Set new password</button><button class="btn danger sm" id="d-del">Delete student</button></div></div>'+
       consentCardHTML(st, consent) + notifyCard(st) + diagTeacherHTML(revT, stk, walletT) +
       '<div class="stats" style="margin-bottom:6px;"><div class="stat"><b>'+wk.n+'</b><small>questions, last 7 days</small></div><div class="stat"><b>'+fmtDur(wk.s)+'</b><small>practice, last 7 days</small></div>'+
       '<div class="stat"><b>'+total+'</b><small>questions, all time</small></div><div class="stat"><b>'+fmtDur(secs)+'</b><small>practice, all time</small></div><div class="stat"><b>'+mastered+'</b><small>skills mastered</small></div></div>';
 
-    var mine = asg.filter(function(a){ return a.studentId === "all" || a.studentId === st.id; });
+    var mine = asg.filter(function(a){ return itemFor(a, st); });
     if(mine.length){
       h += '<h2 class="sec">Assignments</h2><div class="card table-wrap"><table class="t-table"><thead><tr><th>Skill</th><th>Best SmartScore</th><th>Target</th><th>Due</th><th>Certificate</th></tr></thead><tbody>';
       var certs = certsFor(st, prog, asg, topics), certIdx = {}; certs.forEach(function(c, i){ certIdx[c.key] = i; });
@@ -13575,6 +13735,7 @@ var Store = (function(){
     $("#d-back").onclick = function(){ S.tStudent = null; S.creds = null; render(); };
     on("[data-cert]", "click", function(){ openCert(certs[+this.dataset.cert]); });
     $("#d-grade").onchange = async function(){ await Store.updateStudent(st.id, { grade: this.value }); toast("Grade updated."); };
+    if($("#d-teacher")) $("#d-teacher").onchange = async function(){ var v = this.value; await Store.setStudentTeacher(st.id, v); st.teacherId = v || undefined; toast(v ? "Student moved to " + ((S.teachers || []).filter(function(t){ return t.id === v; })[0] || {}).name + "." : "Student moved to you."); };
     wireNotifyCard(st); wireConsentCard(st, consent);
     $("#bd-open").onclick = function(){ S.boardSid = st.id; go("board"); };
     $("#d-msg").onclick = function(){ S.tTab = "messages"; S.chatSid = st.id; S.tStudent = null; render(); };
@@ -13710,8 +13871,8 @@ var Store = (function(){
       '<button class="btn gold sm" id="qz-new">+ New quiz</button></div>';
     if(!qs.length) h += '<div class="card empty"><div style="font-size:40px;">📝</div><h3 style="font-size:18px;">No quizzes yet</h3><p class="muted">Create a quiz and choose who takes it.</p></div>';
     qs.forEach(function(q, i){
-      var who = q.studentId === "all" ? studs : studs.filter(function(s){ return s.id === q.studentId; });
-      var forName = q.studentId === "all" ? "All students" : (who[0] ? who[0].name : "Removed student");
+      var who = audience(q, studs);
+      var forName = q.studentId === "all" ? allLabel() : (who[0] ? who[0].name : "Removed student");
       var res = results[i], sub = Object.keys(res).filter(function(k){ return res[k].submittedAt; });
       var avg = sub.length ? Math.round(sub.reduce(function(s, k){ return s + 100*res[k].score/res[k].total; }, 0) / sub.length) : null;
       h += '<div class="card a-item"><div class="assign-head"><b>📝 '+esc(q.title)+'</b><span class="due '+dueInfo(q.due).cls+'">'+dueInfo(q.due).text+'</span></div>'+
@@ -13729,7 +13890,7 @@ var Store = (function(){
     var d = S.qDraft, studs = (await Store.listStudents()).sort(function(a,b){ return a.name.localeCompare(b.name); });
     var h = '<button class="link" id="qe-back">← Quizzes</button><div class="card" style="margin-top:10px;"><h2 style="font-size:20px;">'+(d.id ? "Edit quiz" : "New quiz")+'</h2>'+
       '<div class="form-grid"><div><label for="qe-title">Title</label><input id="qe-title" type="text" maxlength="80" value="'+esc(d.title)+'" placeholder="For example: Fractions check-up"></div>'+
-      '<div><label for="qe-for">Who takes it</label><select id="qe-for"><option value="all">All students</option>'+studs.map(function(s){ return '<option value="'+s.id+'"'+(d.studentId===s.id?" selected":"")+'>'+esc(s.name)+'</option>'; }).join("")+'</select></div>'+
+      '<div><label for="qe-for">Who takes it</label><select id="qe-for"><option value="all">'+allLabel()+'</option>'+studs.map(function(s){ return '<option value="'+s.id+'"'+(d.studentId===s.id?" selected":"")+'>'+esc(s.name)+'</option>'; }).join("")+'</select></div>'+
       '<div><label for="qe-time">Time limit</label><select id="qe-time">'+[0,5,10,15,20,30,45,60].map(function(m){ return '<option value="'+m+'"'+(+d.timeLimit===m?" selected":"")+'>'+(m ? m + " minutes" : "No limit")+'</option>'; }).join("")+'</select></div>'+
       '<div><label for="qe-due">Due date (optional)</label><input id="qe-due" type="date" value="'+esc(d.due)+'"></div></div>'+
       '<label class="check" style="margin-top:12px;"><input type="checkbox" id="qe-show"'+(d.showAnswers !== false ? " checked" : "")+'> Show students the correct answers after they submit</label></div>';
@@ -13790,7 +13951,7 @@ var Store = (function(){
     var qz = (await Store.listQuizzes()).filter(function(q){ return q.id === S.qView; })[0];
     if(!qz){ S.qView = null; return render(); }
     var r = await Promise.all([Store.getQuizResults(qz.id), Store.listStudents()]), res = r[0], studs = r[1];
-    var who = qz.studentId === "all" ? studs : studs.filter(function(s){ return s.id === qz.studentId; });
+    var who = audience(qz, studs);
     var sub = who.filter(function(s){ return res[s.id] && res[s.id].submittedAt; });
     var h = '<button class="link" id="qr-back">← Quizzes</button><div class="detail-head"><div><h2>📝 '+esc(qz.title)+'</h2><p class="muted" style="margin:4px 0 0;">'+esc(quizMeta(qz))+', '+dueInfo(qz.due).text+'</p></div></div>';
     h += '<div class="card table-wrap"><table class="t-table"><thead><tr><th>Student</th><th>Score</th><th>Time</th><th>Submitted</th><th></th></tr></thead><tbody>'+
@@ -13827,8 +13988,8 @@ var Store = (function(){
   function homeworkList(asg, studs, progs, topics){
     if(!asg.length) return '<p class="muted">No homework yet. Tick skills above and press "Give homework".</p>';
     return asg.slice().sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); }).map(function(a){
-      var who = a.studentId === "all" ? studs : studs.filter(function(s){ return s.id === a.studentId; });
-      var forName = a.studentId === "all" ? "All students" : (who[0] ? who[0].name : "Removed student");
+      var who = audience(a, studs);
+      var forName = a.studentId === "all" ? allLabel() : (who[0] ? who[0].name : "Removed student");
       var due = dueInfo(a.due), ks = a.skills.filter(function(k){ return skillInfo(k, topics); }), t = "";
       if(!who.length) t = '<p class="muted">No students yet.</p>';
       else {
@@ -13871,7 +14032,7 @@ var Store = (function(){
     }
     h += '</div>';
     h += '<div class="hw-bar card" id="hw-bar"><div class="hw-count"><b id="a-count">'+countText()+'</b><button class="link-btn" id="a-clear"'+(ad.skills.length ? "" : " hidden")+'>Clear</button></div>'+
-      '<label>Student<select id="a-st"><option value="all">All students</option>'+studs.map(function(s){ return '<option value="'+s.id+'"'+(ad.studentId === s.id ? " selected" : "")+'>'+esc(s.name)+'</option>'; }).join("")+'</select></label>'+
+      '<label>Student<select id="a-st"><option value="all">'+allLabel()+'</option>'+studs.map(function(s){ return '<option value="'+s.id+'"'+(ad.studentId === s.id ? " selected" : "")+'>'+esc(s.name)+'</option>'; }).join("")+'</select></label>'+
       '<label>Target SmartScore<select id="a-target">'+[70,80,90,100].map(function(t){ return '<option'+(ad.target === t ? " selected" : "")+'>'+t+'</option>'; }).join("")+'</select></label>'+
       '<label>Due date<input id="a-due" type="date" value="'+esc(ad.due)+'"></label>'+
       '<button class="btn plum" id="a-create"'+(ad.skills.length ? "" : " disabled")+'>📌 Give<span class="hw-long"> homework</span></button></div>';
@@ -14083,7 +14244,7 @@ var Store = (function(){
   async function tabSettings(el){
     var tl = await Store.getTeacherLogin();
     var ncfg = await Store.getNotifyConfig(), prof0 = await getProfile();
-    el.innerHTML = '<div id="set-profile"></div>' +
+    el.innerHTML = '<div id="set-profile"></div><div id="set-teachers"></div>' +
       bookingSettingsHTML(prof0) +
       '<div class="card" style="margin-top:16px;"><h2 style="font-size:19px;">Notifications</h2>'+
       '<h3 class="nh">📲 Telegram: homework and quiz alerts</h3>'+
@@ -14107,6 +14268,7 @@ var Store = (function(){
       '<p class="muted">Deletes every student, score, assignment and practice set'+(Store.kind === "cloud" ? "" : " saved on this device")+'. The sign-in page stays as it is.</p>'+
       '<button class="btn danger" id="p-wipe" style="margin-top:12px;">Erase all data</button></div>';
     await tabProfile($("#set-profile"));
+    teachersCard($("#set-teachers")).catch(function(){ var b = $("#set-teachers"); if(b) b.innerHTML = '<div class="card" style="margin-top:16px;"><h2 style="font-size:19px;">Teachers</h2><p class="muted">Could not load the teachers. Check that the new Firebase rules are published.</p></div>'; });
     $("#bk-save").onclick = async function(){
       var days = {}; DAYS.forEach(function(d){ days[d[0]] = $("#bk-d-"+d[0]).value.split(",").map(function(t){ return t.trim(); }).filter(Boolean).slice(0, 12); });
       var pr = await getProfile(); pr.booking = { on: $("#bk-on").checked, tz: $("#bk-tz").value.trim(), days: days };
