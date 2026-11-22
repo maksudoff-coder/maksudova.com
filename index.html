@@ -11628,6 +11628,7 @@ var Store = (function(){
     board:'<rect x="3" y="4" width="18" height="12.5" rx="2.2"/><path d="M8.5 20.5h7M12 16.5v4M7 12.5l3-3 2 2 4.2-4.2"/>',
     blog:'<path d="M5 4.5h11v15H6.2A1.2 1.2 0 0 1 5 18.3z"/><path d="M16 9h3v8.8a1.7 1.7 0 0 1-3.4 0M8 8.5h5M8 11.5h5M8 14.5h3"/>',
     out:'<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/>',
+    teachers:'<rect x="9.5" y="3.5" width="11.5" height="8.5" rx="1.4"/><path d="M13 8.5l2-2 2 1.5 2-2"/><circle cx="6" cy="8" r="2.6"/><path d="M1.8 19.5a4.4 4.4 0 0 1 8.4-1.9L13 14"/>',
     students:'<circle cx="9" cy="8.5" r="3.4"/><path d="M2.8 19.5a6.2 6.2 0 0 1 12.4 0"/><path d="M15.8 5.3a3.3 3.3 0 0 1 0 6.5M18 14.3a5.6 5.6 0 0 1 3.3 5.2"/>',
     clip:'<rect x="5" y="4.5" width="14" height="16" rx="2.2"/><path d="M9 4.5V3h6v1.5M8.8 13l2.2 2.2 4.2-4.4"/>',
     layers:'<path d="M12 3.5 2.8 8.2 12 13l9.2-4.8z"/><path d="m2.8 12.3 9.2 4.8 9.2-4.8M2.8 16.3l9.2 4.8 9.2-4.8"/>',
@@ -13498,7 +13499,7 @@ var Store = (function(){
   /* =====================================================================
      TEACHER PANEL
      ===================================================================== */
-  var TABS = [["students","Students"],["messages","💬 Messages"],["skills","Skills"],["sets","My practice sets"],["quizzes","📝 Quizzes"],["games","🎮 Games"],["bookings","📅 Requests"],["payments","💵 Payments"],["reviews","⭐ Feedback"],["blog","📰 Blog"],["settings","Settings"]];
+  var TABS = [["students","Students"],["teachers","Teachers"],["messages","💬 Messages"],["skills","Skills"],["sets","My practice sets"],["quizzes","📝 Quizzes"],["games","🎮 Games"],["bookings","📅 Requests"],["payments","💵 Payments"],["reviews","⭐ Feedback"],["blog","📰 Blog"],["settings","Settings"]];
   async function viewTeacher(){
     if(!S.teacher) return go("teacher-login");
     var saved0 = entrySaved(), prof = saved0 ? fixProfile(saved0.p) : await getProfile(), gr = greeting(), overview = S.tTab === "students" && !S.tStudent;
@@ -13507,7 +13508,7 @@ var Store = (function(){
     if(!owner && TEACH_TABS.indexOf(S.tTab) < 0) S.tTab = "students";
     if(owner && !S.tList){ S.tList = true; Store.listTeachers().then(function(l){ S.teachers = l; S.hasTeachers = l.length > 0; }).catch(function(){}); }
     var tfirst = (function(n){ var f = String(n || "").trim().split(/\s+/)[0]; return (/^tutor$/i.test(f) || !f) ? "teacher" : f; })(owner ? prof.name : meT.name);
-    var TNAV = { students:["Students","students"], messages:["Messages","chat"], assignments:["Assignments","clip"], skills:["Skills","layers"], sets:["Practice sets","folder"],
+    var TNAV = { students:["Students","students"], teachers:["Teachers","teachers"], messages:["Messages","chat"], assignments:["Assignments","clip"], skills:["Skills","layers"], sets:["Practice sets","folder"],
       quizzes:["Quizzes","quiz"], games:["Games","game"], account:["My account","gear"], bookings:["Requests","cal"], payments:["Payments","wallet"], reviews:["Feedback","star"], blog:["Blog","blog"], settings:["Settings","gear"] };
     var th = '<div class="dash dash-t"><aside class="d-side">' +
       '<div class="d-brand d-brand-t">'+mascotSVG(50)+'<div><b>'+esc(tName)+'</b><small>Teacher studio</small></div></div>'+
@@ -13544,6 +13545,7 @@ var Store = (function(){
     on("[data-tab]", "click", function(){ S.tTab = this.dataset.tab; S.tStudent = null; S.draft = null; S.creds = null; S.qDraft = null; S.qView = null; S.pDraft = null; render(); });
     var body = $("#tab-body");
     if(S.tTab === "students") return S.tStudent ? tabStudentDetail(body) : tabStudents(body);
+    if(S.tTab === "teachers") return owner ? tabTeachers(body) : null;
     if(S.tTab === "messages") return tabMessages(body);
     if(S.tTab === "blog") return S.pDraft ? tabPostEditor(body) : tabBlog(body);
     if(S.tTab === "bookings") return tabBookings(body);
@@ -13574,21 +13576,35 @@ var Store = (function(){
     };
   }
 
+  /* ----- Teachers (owner only) ----- */
+  async function tabTeachers(el){
+    el.innerHTML = '<div id="set-teachers"></div>';
+    try{ await teachersCard($("#set-teachers")); }
+    catch(e){ el.innerHTML = '<div class="card"><h2 style="font-size:19px;">Teachers</h2><p class="muted">Could not load the teachers. Please try again in a moment.</p></div>'; }
+  }
   /* ----- the owner's list of teachers ----- */
   async function teachersCard(box){
     var r = await Promise.all([Store.listTeachers().catch(function(){ return []; }), Store.listStudents().catch(function(){ return []; })]);
     var ts = r[0].sort(function(a, b){ return a.name.localeCompare(b.name); }), studs = r[1];
     S.teachers = ts; S.hasTeachers = ts.length > 0;
     var cnt = function(t){ return studs.filter(function(x){ return x.teacherId === t.id; }).length; };
-    box.innerHTML = '<div class="card" style="margin-top:16px;"><h2 style="font-size:19px;">Teachers</h2>'+
-      '<p class="muted">Each teacher signs in on the same page as students and sees only their own students. They can give homework, quizzes and games and send messages. Payments, requests, feedback, the blog and these settings stay only with you.</p>'+
-      (ts.length ? '<div class="table-wrap"><table class="t-table"><thead><tr><th>Name</th><th>Login</th><th>Students</th><th></th></tr></thead><tbody>'+ts.map(function(t){
-        return '<tr><td><b>'+esc(t.name)+'</b></td><td><code>'+esc(t.login)+'</code></td><td class="num">'+cnt(t)+'</td><td style="text-align:right;white-space:nowrap;">'+
-          '<button class="btn ghost sm" data-tpw="'+t.id+'">New password</button> <button class="btn danger sm" data-tdel2="'+t.id+'">Remove</button></td></tr>'; }).join("")+'</tbody></table></div>' : '<p class="muted">No other teachers yet.</p>')+
-      '<h3 class="nh">Add a teacher</h3><div class="form-grid"><div><label for="tc-name">Full name</label><input id="tc-name" type="text" maxlength="40"></div>'+
-      '<div><label for="tc-login">Login</label><input id="tc-login" type="text" maxlength="30" autocapitalize="off" spellcheck="false"></div>'+
-      '<div><label for="tc-pass">Password</label><input id="tc-pass" type="text" maxlength="30" value="'+makePassword()+'" autocapitalize="off" spellcheck="false"></div></div>'+
-      '<div class="err" id="tc-err" role="alert"></div><button class="btn plum" id="tc-add">Add teacher</button><div id="tc-creds"></div></div>';
+    var lastAct = function(t){ return studs.filter(function(x){ return x.teacherId === t.id; }).reduce(function(m, x){ return Math.max(m, x.lastActive || 0); }, 0); };
+    box.innerHTML = '<div class="section-title"><h2 style="font-size:20px;">Teachers</h2><button class="btn gold sm" id="tc-toggle">'+(S.tcAddOpen ? "Close" : "+ Add a teacher")+'</button></div>'+
+      '<p class="muted" style="margin:-4px 0 14px;">Each teacher signs in on the same page as students and sees only their own students. They can give homework, quizzes and games and send messages. Payments, requests, feedback, the blog and settings stay only with you.</p>'+
+      (S.tcAddOpen ? '<div class="card" style="margin-bottom:16px;"><div class="form-grid"><div><label for="tc-name">Full name</label><input id="tc-name" type="text" maxlength="40"></div>'+
+        '<div><label for="tc-login">Login</label><input id="tc-login" type="text" maxlength="30" autocapitalize="off" spellcheck="false"></div>'+
+        '<div><label for="tc-pass">Password</label><input id="tc-pass" type="text" maxlength="30" value="'+makePassword()+'" autocapitalize="off" spellcheck="false"></div></div>'+
+        '<div class="err" id="tc-err" role="alert"></div><button class="btn plum" id="tc-add">Add teacher</button></div>' : "")+
+      '<div id="tc-creds"></div>'+
+      (ts.length ? '<div class="card table-wrap"><table class="t-table"><thead><tr><th>Name</th><th>Login</th><th>Students</th><th>Students last active</th><th></th></tr></thead><tbody>'+ts.map(function(t){
+        return '<tr><td><span class="ini" style="--h:'+warmHue(t.name)+'">'+initials(t.name)+'</span><b>'+esc(t.name)+'</b></td><td><code>'+esc(t.login)+'</code></td>'+
+          '<td>'+(cnt(t) ? '<button class="link-btn" data-tstuds="'+t.id+'">'+cnt(t)+' student'+(cnt(t) === 1 ? "" : "s")+'</button>' : '<span class="muted">None yet</span>')+'</td><td>'+ago(lastAct(t))+'</td>'+
+          '<td style="text-align:right;white-space:nowrap;"><button class="btn ghost sm" data-tpw="'+t.id+'">New password</button> <button class="btn danger sm" data-tdel2="'+t.id+'">Remove</button></td></tr>'; }).join("")+'</tbody></table></div>'
+        : '<div class="card empty"><div style="font-size:40px;">👩‍🏫</div><h3 style="font-size:18px;">No other teachers yet</h3><p class="muted">Add a teacher to create their login and password.</p></div>');
+    $("#tc-toggle").onclick = function(){ S.tcAddOpen = !S.tcAddOpen; teachersCard(box); };
+    $$("[data-tstuds]").forEach(function(b){ b.onclick = function(){ S.tFilter = b.dataset.tstuds; S.tTab = "students"; S.tStudent = null; render(); }; });
+    if(!$("#tc-name")){ wireRows(); return; }
+    $("#tc-name").focus();
     $("#tc-name").addEventListener("input", function(){ if(!$("#tc-login").dataset.touched) $("#tc-login").value = suggestLogin(this.value); });
     $("#tc-login").addEventListener("input", function(){ this.dataset.touched = "1"; });
     $("#tc-add").onclick = async function(){
@@ -13600,16 +13616,19 @@ var Store = (function(){
       try{
         if(await Store.findStudentByLogin(login) || login === await Store.getTeacherLogin()) { btn.disabled = false; return err("This login is already taken. Choose another one."); }
         await Store.createTeacher(name, login, pass);
-        toast("Teacher added."); await teachersCard(box);
+        toast("Teacher added."); S.tcAddOpen = false; await teachersCard(box);
         $("#tc-creds").innerHTML = '<div class="card creds" style="margin-top:12px;"><b>Give these to '+esc(name)+':</b><p>Website: <b>'+esc(location.host || "maksudova.com")+'</b><br>Login: <code>'+esc(login)+'</code><br>Password: <code>'+esc(pass)+'</code></p></div>';
       }catch(e){ btn.disabled = false; err(e.message || "Could not add the teacher."); }
     };
+    wireRows();
+    function wireRows(){
     $$("[data-tpw]").forEach(function(b){ b.onclick = async function(){
       var pw = makePassword(); b.disabled = true;
       try{ await Store.updateTeacher(b.dataset.tpw, { password:pw }); var t = ts.filter(function(x){ return x.id === b.dataset.tpw; })[0] || {};
         await teachersCard(box); $("#tc-creds").innerHTML = '<div class="card creds" style="margin-top:12px;"><b>New password for '+esc(t.name || "")+':</b><p>Login: <code>'+esc(t.login || "")+'</code><br>Password: <code>'+esc(pw)+'</code></p></div>';
       }catch(e){ b.disabled = false; toast(e.message || "Could not change the password."); } }; });
     $$("[data-tdel2]").forEach(function(b){ armConfirm(b, async function(){ var n = await Store.deleteTeacher(b.dataset.tdel2); toast("Teacher removed." + (n ? " Their " + n + " student" + (n === 1 ? " is" : "s are") + " now yours." : "")); teachersCard(box); }); });
+    }
   }
 
   /* ----- Students ----- */
@@ -14281,7 +14300,7 @@ var Store = (function(){
   async function tabSettings(el){
     var tl = await Store.getTeacherLogin();
     var ncfg = await Store.getNotifyConfig(), prof0 = await getProfile();
-    el.innerHTML = '<div id="set-profile"></div><div id="set-teachers"></div>' +
+    el.innerHTML = '<div id="set-profile"></div>' +
       bookingSettingsHTML(prof0) +
       '<div class="card" style="margin-top:16px;"><h2 style="font-size:19px;">Notifications</h2>'+
       '<h3 class="nh">📲 Telegram: homework and quiz alerts</h3>'+
@@ -14305,7 +14324,6 @@ var Store = (function(){
       '<p class="muted">Deletes every student, score, assignment and practice set'+(Store.kind === "cloud" ? "" : " saved on this device")+'. The sign-in page stays as it is.</p>'+
       '<button class="btn danger" id="p-wipe" style="margin-top:12px;">Erase all data</button></div>';
     await tabProfile($("#set-profile"));
-    teachersCard($("#set-teachers")).catch(function(){ var b = $("#set-teachers"); if(b) b.innerHTML = '<div class="card" style="margin-top:16px;"><h2 style="font-size:19px;">Teachers</h2><p class="muted">Could not load the teachers. Please try again in a moment.</p></div>'; });
     $("#bk-save").onclick = async function(){
       var days = {}; DAYS.forEach(function(d){ days[d[0]] = $("#bk-d-"+d[0]).value.split(",").map(function(t){ return t.trim(); }).filter(Boolean).slice(0, 12); });
       var pr = await getProfile(); pr.booking = { on: $("#bk-on").checked, tz: $("#bk-tz").value.trim(), days: days };
