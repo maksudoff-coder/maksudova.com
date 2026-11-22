@@ -1877,6 +1877,7 @@
 }
 
 /* @@PLAYCSS_END */
+.skill-row.just-back{animation:jb 1.6s ease-out;}@keyframes jb{0%,40%{box-shadow:0 0 0 3px var(--sky,#3b82f6);}100%{box-shadow:0 0 0 0 transparent;}}
 </style>
 <style id="gen3">
 /* precise skill generators: pictures and layouts */
@@ -11955,6 +11956,9 @@ var Store = (function(){
             t0:Date.now(), tick:Date.now(), state:"ask", sel:null, given:"", givenText:"", msg:"", busy:false };
     if(rec.score >= 100) S.P.state = "again"; else newQuestion();
     if(topic && videoEmbed(topic.video) && S.P.state !== "again"){ S.P.state = "lesson"; S.P.firstLesson = true; }
+    // remember where the skill was on the list, so "Back" returns to the same spot
+    var row = opts.row || document.querySelector('[data-skill="'+key.replace(/"/g, "")+'"]');
+    S.backSpot = { key:key, y:window.scrollY, top: row ? row.getBoundingClientRect().top : null };
     go("practice");
   }
   function customQuestion(t, lastQ){
@@ -11973,7 +11977,24 @@ var Store = (function(){
   function backLabel(){ return S.sTab === "practice" ? "Back to Practice" : S.sTab === "results" ? "Back to My results" : "Back to To do"; }
   function leavePractice(){
     var P = S.P; S.P = null;
+    var spot = S.backSpot; S.backSpot = null;
     if(P && P.preview){ go("teacher"); } else go("student-home");
+    if(spot && P && spot.key === P.key) restoreSpot(spot);
+  }
+  // put the list back where it was: the same skill row at the same height on screen
+  function restoreSpot(spot){
+    var tries = 0;
+    (function look(){
+      var row = document.querySelector('[data-skill="'+spot.key.replace(/"/g, "")+'"]');
+      if(row && row.offsetParent !== null){
+        var y = spot.top == null ? spot.y : window.scrollY + row.getBoundingClientRect().top - spot.top;
+        window.scrollTo(0, Math.max(0, y));
+        if(spot.top != null && Math.abs(row.getBoundingClientRect().top - spot.top) > 2 && tries++ < 40) return setTimeout(look, 50);
+        row.classList.add("just-back"); setTimeout(function(){ row.classList.remove("just-back"); }, 1600);
+        return;
+      }
+      if(tries++ < 60) setTimeout(look, 50); else if(spot.y) window.scrollTo(0, spot.y);
+    })();
   }
 
   function questionCard(){
