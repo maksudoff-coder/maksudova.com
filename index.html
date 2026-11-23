@@ -11691,7 +11691,16 @@ var Store = (function(){
   }
   function initials(n){ return String(n || "?").trim().split(/\s+/).slice(0, 2).map(function(w){ return w.charAt(0).toUpperCase(); }).join(""); }
   function warmHue(n){ var h = 0; String(n || "").split("").forEach(function(c){ h = (h*31 + c.charCodeAt(0)) % 997; }); return [12, 24, 36, 348, 18, 30][h % 6]; }
-  function sideBrand(sub){ return '<div class="d-brand">'+mascotSVG(42)+'<div><b>Tutor Maksudova</b><small>'+sub+'</small></div></div>'; }
+  function sideBrand(sub){ return '<div class="d-brand" role="button" tabindex="0" title="Home" aria-label="Go to the home page">'+mascotSVG(42)+'<div><b>Tutor Maksudova</b><small>'+sub+'</small></div></div>'; }
+  // the logo and name in the panel take you back to the first page: Students for teachers, To do for students
+  function goPanelHome(){
+    if(S.view === "teacher"){ S.tTab = "students"; S.tStudent = null; S.draft = null; S.creds = null; S.qDraft = null; S.qView = null; S.pDraft = null; }
+    else if(S.view === "student-home"){ S.sTab = "todo"; }
+    else return;
+    render(); window.scrollTo(0, 0);
+  }
+  document.addEventListener("click", function(e){ if(e.target.closest && e.target.closest(".d-brand")) goPanelHome(); });
+  document.addEventListener("keydown", function(e){ if((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("d-brand")){ e.preventDefault(); goPanelHome(); } });
   function heroCount(id, n){ var el = document.querySelector("#" + id + " b"); if(el) el.textContent = n; var t = document.getElementById(id); if(t) t.classList.toggle("lit", n > 0); }
 
   function zoomHref(v){ try{ var u = new URL(String(v || "")); return (u.protocol === "https:" || u.protocol === "http:") ? u.href : ""; }catch(e){ return ""; } }
@@ -16127,6 +16136,10 @@ html:root:not(#x) body .d-mini a.d-chip.zm + .d-chip.fl{margin-left:0;}
   html:root:not(#x) body table.t-table.stack td[data-l]:not(:first-child)::before{content:attr(data-l);display:block;font-size:11px;font-weight:800;color:var(--ink-soft,#7a8199);text-transform:none;margin-bottom:1px;}
   html:root:not(#x) body table.t-table.stack td:last-child:not([data-l]){flex:1 1 100%;}
 }
+
+html:root:not(#x) body .d-brand{cursor:pointer;border-radius:14px;}
+html:root:not(#x) body .d-brand:focus-visible{outline:3px solid #2f6bff;outline-offset:3px;}
+@media (max-width:900px){ html:root:not(#x) body .hw-bar{bottom:calc(88px + env(safe-area-inset-bottom)) !important;} }
 </style>
 <script id="skprev-js">
 (function(){
