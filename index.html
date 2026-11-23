@@ -11183,6 +11183,7 @@ var Store = (function(){
     app.classList.remove("landing");
     var isDash = S.view === "student-home" || S.view === "teacher";
     app.classList.toggle("dash-app", isDash); document.body.classList.toggle("in-dash", isDash);
+    document.body.classList.toggle("in-play", ["practice", "game", "quiz", "test"].indexOf(S.view) >= 0);
     stopW("msgs"); S.convPaint = null;
     if(S.gameStop){ S.gameStop(); S.gameStop = null; }
     var v = S.view;
@@ -16078,6 +16079,12 @@ html:root:not(#x)[data-theme="dark"] .sk-pick.on .skill-row b,html:root:not(#x)[
 .skp .k-big{font-size:22px;}
 :root[data-theme="dark"] .skp{background:#1c2236;color:#eef1fa;border-color:#2e3654;}
 @media (hover:none),(pointer:coarse){.skp{display:none!important}}
+
+/* ===== backgrounds after sign-in: the same math wallpaper as the home page; a brighter, playful one for practice ===== */
+html:root:not(#x) body.in-dash{background:url(/img/math-bg.webp) 0 0/900px 900px repeat,radial-gradient(900px 520px at 0% 0%,rgba(47,107,255,.10),transparent 70%),radial-gradient(800px 520px at 100% 0%,rgba(123,79,214,.10),transparent 70%),radial-gradient(900px 600px at 85% 100%,rgba(255,138,31,.08),transparent 70%),var(--mc-bg,#f4f5f8) !important;background-attachment:fixed !important;}
+html:root:not(#x)[data-theme="dark"] body.in-dash{background:url(/img/math-bg-dark.webp) 0 0/900px 900px repeat,radial-gradient(900px 520px at 0% 0%,#1d2c6e 0,transparent 70%),radial-gradient(800px 520px at 100% 0%,#3a2470 0,transparent 70%),var(--mc-bg,#0f1530) !important;background-attachment:fixed !important;}
+html:root:not(#x) body.in-play{background:url(/img/play-bg.svg) 0 0/520px 520px repeat,radial-gradient(700px 420px at 8% 0%,rgba(255,214,92,.55),transparent 70%),radial-gradient(760px 480px at 100% 8%,rgba(255,150,190,.38),transparent 70%),radial-gradient(900px 600px at 50% 110%,rgba(120,220,170,.40),transparent 70%),linear-gradient(180deg,#dff1ff 0%,#eef3ff 45%,#fff5e9 100%) !important;background-attachment:fixed !important;}
+html:root:not(#x)[data-theme="dark"] body.in-play{background:url(/img/play-bg-dark.svg) 0 0/520px 520px repeat,radial-gradient(700px 420px at 8% 0%,rgba(255,190,60,.16),transparent 70%),radial-gradient(760px 480px at 100% 8%,rgba(255,110,170,.14),transparent 70%),linear-gradient(180deg,#14204e 0%,#1a1b45 60%,#21183f 100%) !important;background-attachment:fixed !important;}
 </style>
 <script id="skprev-js">
 (function(){
