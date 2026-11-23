@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <script>(function(){var t="light";try{if(localStorage.getItem("tm-theme")==="dark")t="dark"}catch(e){}document.documentElement.setAttribute("data-theme",t)})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tutor Maksudova — Online Math Tutor for Grades 1–8 and Algebra 1</title>
-<meta name="description" content="Friendly one-to-one online math lessons with Tutor Maksudova. Practice 3,000+ skills from Grade 1 to Algebra 1, brain games, quizzes and video lessons. Book a lesson today.">
+<title>Tutor Maksudova — Online Math Tutor from Pre-K to Calculus</title>
+<meta name="description" content="Friendly one-to-one online math lessons with Tutor Maksudova. Practice 5,700+ skills from Pre-K to Calculus, math games, quizzes and video lessons. Book a lesson today.">
 <link rel="canonical" href="https://maksudova.com/">
 <meta name="theme-color" content="#f4f5f8">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tutor Maksudova">
 <meta property="og:url" content="https://maksudova.com/">
 <meta property="og:title" content="Tutor Maksudova — Math that finally makes sense">
-<meta property="og:description" content="Online math lessons for Grades 1–8 and Algebra 1. Practice, brain games, quizzes and video lessons. Teaching since 2018.">
+<meta property="og:description" content="Online math lessons from Pre-K to Calculus. Practice, math games, quizzes and video lessons. Teaching since 2018.">
 <meta property="og:image" content="https://maksudova.com/og-2026b.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -1882,6 +1882,8 @@
 .hw-acts{display:flex;flex-wrap:wrap;gap:4px 14px;}
 .qgen .q-vis svg{max-width:100%;height:auto;}
 .qgen-opts{display:flex;flex-wrap:wrap;gap:8px;} .qgen-opts span{border:1.5px solid var(--line,#d6dbea);border-radius:10px;padding:4px 12px;font-weight:700;} .qgen-opts span.ok{border-color:#2e9e5b;background:rgba(46,158,91,.12);}
+.zoom-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:4px 0 12px;} .zoom-row label{margin:0;font-weight:800;} .zoom-row input{flex:1 1 260px;min-width:0;width:auto;padding:8px 12px;}
+.d-hero-cta .zoom-cta{background:#2d8cff;color:#fff;text-decoration:none;} .d-chip.zm{text-decoration:none;background:#2d8cff;color:#fff;}
 </style>
 <style id="gen3">
 /* precise skill generators: pictures and layouts */
@@ -10582,8 +10584,22 @@ var Store = (function(){
       var ref = db.collection("students").doc();
       var acc = await api("auth/create", { login:login, pass:password, role:"student", ref:ref.id }).catch(function(e){ throw friendly(e); });
       var st = stamp({ name:String(name).trim(), login:login, grade:grade || null, uid:acc.uid, createdAt:Date.now(), lastActive:0 });
+      try{   // a new student gets the lesson link their teacher already uses
+        var mineSt = (await mineOnly(db.collection("students")).get()).docs.map(function(d){ return d.data(); })
+          .filter(function(x){ return x.zoom && (x.teacherId || "") === (st.teacherId || ""); }).sort(function(a, b){ return (b.createdAt || 0) - (a.createdAt || 0); });
+        if(mineSt.length) st.zoom = mineSt[0].zoom;
+      }catch(e){}
       await ref.set(st);
       st.id = ref.id; return st;
+    },
+    // the online lesson link (Zoom, Meet...) for one student or for all of the signed-in teacher's students
+    setLessonLink: async function(ids, link){
+      for(var j = 0; j < ids.length; j += 400){
+        var b = db.batch();
+        ids.slice(j, j + 400).forEach(function(id){ b.update(db.doc("students/" + id), { zoom: link ? link : FV.delete() }); });
+        await b.commit();
+      }
+      return true;
     },
     updateStudent: async function(id, patch){
       patch = Object.assign({}, patch);
@@ -11193,7 +11209,7 @@ var Store = (function(){
     facts: [
       { i:"🏅", t:"Teaching since 2018" },
       { i:"🎓", t:"1000+ students" },
-      { i:"📚", t:"Grades 1–8 and Algebra 1" },
+      { i:"📚", t:"Pre-K to Calculus" },
       { i:"💻", t:"Online lessons" },
       { i:"⭐", t:"Common Core practice" }
     ],
@@ -11411,12 +11427,12 @@ var Store = (function(){
     var tgUser = String(p.telegram || "").trim().replace(/^https?:\/\/(t\.me|telegram\.me)\//i, "").replace(/^@/, "");
     var igUser = String(p.instagram || "").trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/^@/, "").replace(/\/$/, "");
     var feats = [
-      ["target", "Practice by skill", "3,000+ skills from Grade 1 to Algebra 1, with endless new questions and a SmartScore that grows with every answer."],
+      ["target", "Practice by skill", "5,700+ skills from Pre-K to Calculus, with endless new questions and a SmartScore that grows with every answer."],
       ["medal", "Homework and certificates", "Homework with a clear goal. Reach it and get a certificate to save and print."],
-      ["puzzle", "Brain games in class", "Math Sprint, Match Pairs, Number Memory and Sudoku, played together with the teacher during lessons."],
-      ["quiz", "Quizzes", "Short quizzes with a timer. Results go to your teacher and your parents."],
+      ["puzzle", "Math games", "Learning games like Coins, Clock and Hundred chart, with levels the teacher can give as homework, plus brain games played together in class."],
+      ["quiz", "Quizzes and worksheets", "Quizzes and printable worksheets made from the skills the teacher picks. Results go to your teacher and your parents."],
       ["video", "Video lessons", "Watch the lesson, then practice. Every mistake comes with a step-by-step explanation."],
-      ["chat", "Ask your teacher", "Stuck on a question? Send it to your teacher in the chat with one tap."]
+      ["chat", "Live lessons and chat", "Join the Zoom lesson with one tap, and send your teacher a question in the chat any time."]
     ];
     var social = (tgUser ? '<a class="t-soc" href="https://t.me/'+esc(tgUser)+'" target="_blank" rel="noopener" aria-label="Telegram">'+icon("telegram")+'</a>' : "")+
       (igUser ? '<a class="t-soc" href="https://instagram.com/'+esc(igUser)+'" target="_blank" rel="noopener" aria-label="Instagram">'+icon("instagram")+'</a>' : "")+
@@ -11439,7 +11455,7 @@ var Store = (function(){
           '<div class="ph-msg" aria-hidden="true"><img src="'+LOGO_BADGE_SM+'" alt=""><div><b>Ms. Dilobar</b><span>Great work on fractions today! ⭐</span></div></div>'+
           '<div class="mc-copy"><h1>Practice math, one skill at a time</h1>'+
             '<p>Homework, quizzes and certificates from your teacher, all in one place.</p>'+
-            '<ul class="ph-list"><li>3,000+ skills from Grade 1 to Algebra 1</li><li>A short test at the end of every section</li><li>Results go straight to parents</li></ul>'+
+            '<ul class="ph-list"><li>5,700+ skills from Pre-K to Calculus</li><li>A short test at the end of every section</li><li>Results go straight to parents</li></ul>'+
             (tgUser ? '<a class="mc-ask" href="https://t.me/'+esc(tgUser)+'" target="_blank" rel="noopener">No login yet? Ask on Telegram</a>' : "")+
           '</div>'+
         '</div>'+
@@ -11448,7 +11464,7 @@ var Store = (function(){
       /* hero: the tutor in her classroom */
       '<section class="pg-hero" id="lp-intro"><div class="lp-in pg-hero-in">'+
         '<div class="pg-hero-txt">'+
-          '<p class="pg-note">Online math tutor · Grades 1–8 and Algebra 1</p>'+
+          '<p class="pg-note">Online math tutor · Pre-K to Calculus</p>'+
           '<h1>Math that finally makes sense.</h1>'+
           '<p class="pg-lead">Friendly one-to-one lessons from home. Every lesson is built around your child: their level, their pace, their questions.</p>'+
           '<div class="pg-cta">'+(bookOn(p) ? '<button class="t-btn t-btn-book" data-book>📅 Book a lesson</button>' : (tgUser ? '<a class="t-btn t-btn-book" href="https://t.me/'+esc(tgUser)+'" target="_blank" rel="noopener">📅 Book a lesson</a>' : ""))+
@@ -11672,6 +11688,7 @@ var Store = (function(){
   function sideBrand(sub){ return '<div class="d-brand">'+mascotSVG(42)+'<div><b>Tutor Maksudova</b><small>'+sub+'</small></div></div>'; }
   function heroCount(id, n){ var el = document.querySelector("#" + id + " b"); if(el) el.textContent = n; var t = document.getElementById(id); if(t) t.classList.toggle("lit", n > 0); }
 
+  function zoomHref(v){ try{ var u = new URL(String(v || "")); return (u.protocol === "https:" || u.protocol === "http:") ? u.href : ""; }catch(e){ return ""; } }
   async function viewStudentHome(){
     var sid0 = S.sid, quiet = function(p){ p.then(null, function(){}); return p; };
     var pSt = Store.getStudent(sid0);
@@ -11723,10 +11740,11 @@ var Store = (function(){
         '<h2>'+gr.t+', '+esc(first)+'! <span class="d-wave" aria-hidden="true">👋</span></h2>'+
         '<p>'+(left ? 'You have <b>'+left+'</b> thing'+(left === 1 ? "" : "s")+' to do.' : "You're all caught up. Amazing work!")+' '+
           (streak.current ? 'Keep your 🔥 <b>'+streak.current+'-day</b> streak going!' : 'Practise today to start a streak 🔥')+'</p>'+
-        '<div class="d-hero-cta"><button class="btn d-cta" data-stab="practice">Practice now <span aria-hidden="true">→</span></button><button class="btn d-cta alt" data-board>🖊 My board</button></div></div>'+
+        '<div class="d-hero-cta">'+(zoomHref(st.zoom) ? '<a class="btn d-cta zoom-cta" href="'+esc(zoomHref(st.zoom))+'" target="_blank" rel="noopener">🎥 Join my lesson</a>' : "")+'<button class="btn d-cta" data-stab="practice">Practice now <span aria-hidden="true">→</span></button><button class="btn d-cta alt" data-board>🖊 My board</button></div></div>'+
         '<div class="d-goal" title="Questions answered today">'+goalRing(todayN, GOAL)+'<div class="d-goal-n"><b>'+todayN+'</b><small>of '+GOAL+'</small></div><span class="d-goal-l">'+(todayN >= GOAL ? "Goal done! 🎉" : "Today\'s goal")+'</span></div></section>';
     } else {
       h += '<section class="d-mini"><span class="d-mini-ava">'+avatarHTML(wallet, 44)+'</span><div><b>'+gr.t+', '+esc(first)+'!</b><small>'+esc(todayLabel())+'</small></div>'+
+        (zoomHref(st.zoom) ? '<a class="d-chip zm" href="'+esc(zoomHref(st.zoom))+'" target="_blank" rel="noopener" title="Join my lesson">🎥 Lesson</a>' : "")+
         '<span class="d-chip fl" title="Day streak">🔥 '+streak.current+'</span><span class="d-chip co" title="Coins">🪙 '+wallet.coins+'</span></section>';
     }
     if(tab === "todo" || tab === "results")
@@ -12532,7 +12550,7 @@ var Store = (function(){
      ===================================================================== */
   var DAYS = [["mon","Monday"],["tue","Tuesday"],["wed","Wednesday"],["thu","Thursday"],["fri","Friday"],["sat","Saturday"],["sun","Sunday"]];
   function heroStats(p, reviews){
-    var out = [["3,000+", "Math skills, Grade 1 to Algebra 1"], ["10", "Brain games"]];
+    var out = [["5,700+", "Math skills, Pre-K to Calculus"], ["19", "Math games"]];
     var since = ((p.facts || []).map(function(f){ return f.t || ""; }).join(" ").match(/since\s+(\d{4})/i) || [])[1];
     if(reviews && reviews.length){ var avg = reviews.reduce(function(s, r){ return s + (r.rating || 0); }, 0) / reviews.length; out.push([avg.toFixed(1) + ' <span class="nv-star">★</span>', "Parent rating"]); }
     else if(since) out.push([String(new Date().getFullYear() - (+since)) + "+", "Years of teaching"]);
@@ -13750,6 +13768,8 @@ var Store = (function(){
       '<div class="detail-head"><span class="ini big" style="--h:'+warmHue(st.name)+'">'+initials(st.name)+'</span><div class="dh-info"><h2>'+esc(st.name)+'</h2><div class="muted" style="margin-top:2px;">Login: <code>'+esc(st.login || "")+'</code></div><div style="display:flex;align-items:center;gap:8px;margin-top:6px;"><label for="d-grade" style="margin:0;">Grade</label>'+
       '<select id="d-grade" style="width:auto;padding:6px 10px;">'+(st.grade ? "" : '<option value="" selected>Not set</option>')+gradeOptions(st.grade)+'</select>'+
       (Store.isOwner() && (S.teachers || []).length ? '<label for="d-teacher" style="margin:0 0 0 10px;">Teacher</label><select id="d-teacher" style="width:auto;padding:6px 10px;"><option value="">Me</option>'+S.teachers.map(function(t){ return '<option value="'+t.id+'"'+(st.teacherId === t.id ? " selected" : "")+'>'+esc(t.name)+'</option>'; }).join("")+'</select>' : "")+'</div></div>'+
+      '<div class="zoom-row"><label for="d-zoom">🎥 Lesson link</label><input id="d-zoom" type="url" inputmode="url" placeholder="https://zoom.us/j/..." value="'+esc(st.zoom || "")+'" autocapitalize="off" spellcheck="false">'+
+        '<button class="btn plum sm" id="d-zsave">Save</button><button class="btn ghost sm" id="d-zall">Use for all my students</button></div><p class="muted" style="margin:-6px 0 12px;font-size:13px;">The student sees a "Join my lesson" button with this link. New students get the link too.</p>'+
       '<div class="btn-row"><button class="btn plum sm" id="d-msg">💬 Message</button><button class="btn gold sm" id="d-report">Copy parent report</button><button class="btn ghost sm" id="d-pw">Set new password</button><button class="btn danger sm" id="d-del">Delete student</button></div></div>'+
       consentCardHTML(st, consent) + notifyCard(st) + diagTeacherHTML(revT, stk, walletT) +
       '<div class="stats" style="margin-bottom:6px;"><div class="stat"><b>'+wk.n+'</b><small>questions, last 7 days</small></div><div class="stat"><b>'+fmtDur(wk.s)+'</b><small>practice, last 7 days</small></div>'+
@@ -13799,6 +13819,22 @@ var Store = (function(){
     $("#d-back").onclick = function(){ S.tStudent = null; S.creds = null; render(); };
     on("[data-cert]", "click", function(){ openCert(certs[+this.dataset.cert]); });
     $("#d-grade").onchange = async function(){ await Store.updateStudent(st.id, { grade: this.value }); toast("Grade updated."); };
+    function zoomLink(){
+      var v = $("#d-zoom").value.trim();
+      if(!v) return "";
+      if(!/^https?:\/\//i.test(v)) v = "https://" + v;
+      try{ var u = new URL(v); if(u.protocol !== "https:" && u.protocol !== "http:") return null; return u.href; }catch(e){ return null; }
+    }
+    $("#d-zsave").onclick = async function(){
+      var v = zoomLink(); if(v === null) return toast("That doesn't look like a link. Copy it from Zoom and paste it here.");
+      await Store.setLessonLink([st.id], v); st.zoom = v; $("#d-zoom").value = v; toast(v ? "Lesson link saved." : "Lesson link removed.");
+    };
+    $("#d-zall").onclick = async function(){
+      var v = zoomLink(); if(v === null || !v) return toast("Paste the lesson link first.");
+      var all = (await Store.listStudents()).filter(function(x){ return (x.teacherId || "") === (st.teacherId || ""); });
+      if(!confirm("Use this link for all " + all.length + " students" + (Store.isOwner() && st.teacherId ? " of this teacher" : "") + "?")) return;
+      await Store.setLessonLink(all.map(function(x){ return x.id; }), v); st.zoom = v; toast("Lesson link saved for " + all.length + " student" + (all.length === 1 ? "" : "s") + ".");
+    };
     if($("#d-teacher")) $("#d-teacher").onchange = async function(){ var v = this.value; await Store.setStudentTeacher(st.id, v); st.teacherId = v || undefined; toast(v ? "Student moved to " + ((S.teachers || []).filter(function(t){ return t.id === v; })[0] || {}).name + "." : "Student moved to you."); };
     wireNotifyCard(st); wireConsentCard(st, consent);
     $("#bd-open").onclick = function(){ S.boardSid = st.id; go("board"); };
