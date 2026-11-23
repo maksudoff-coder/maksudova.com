@@ -11267,6 +11267,7 @@ var Store = (function(){
   function ytUrl(v){ v = String(v || "").trim(); if(!v) return null;
     var href = /^https?:\/\//i.test(v) ? v : /^(www\.)?youtube\.com|^youtu\.be/i.test(v) ? "https://" + v : "https://www.youtube.com/" + (v.charAt(0) === "@" ? v : "@" + v);
     var m = href.match(/youtube\.com\/(@[^\/?#]+)/i); return { href: href, label: m ? m[1] : "Tutor Maksudova" }; }
+  var SITE_EMAIL = "info@maksudova.com";
   function contactRows(p){
     var rows = [];
     function row(k, label, value, href){
@@ -11282,7 +11283,8 @@ var Store = (function(){
     var grp = String(p.telegramGroup || "").trim();
     if(grp){ if(!/^https?:\/\//i.test(grp)) grp = "https://t.me/" + grp.replace(/^@/, ""); row("group", "Telegram group", "Join our class group", grp); }
     if(wa) row("whatsapp", "WhatsApp", p.whatsapp, "https://wa.me/" + wa);
-    if(p.email) row("email", "Email", p.email, "mailto:" + p.email.trim());
+    var em = String(p.email || "").trim() || SITE_EMAIL;
+    row("email", "Email", em, "mailto:" + em);
     if(ig) row("instagram", "Instagram", "@" + ig, "https://instagram.com/" + ig);
     var yt = ytUrl(p.youtube); if(yt) row("youtube", "YouTube", yt.label, yt.href);
     if(p.location) row("location", "Location", p.location, "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.location));
@@ -12659,7 +12661,7 @@ var Store = (function(){
   var POLICY_DATE = "October 1, 2026", POLICY_VERSION = "2026-10-01";
   function contactLine(p){
     var out = [];
-    if(p.email) out.push('email <a href="mailto:'+esc(p.email)+'">'+esc(p.email)+'</a>');
+    var em2 = String(p.email || "").trim() || SITE_EMAIL; out.push('email <a href="mailto:'+esc(em2)+'">'+esc(em2)+'</a>');
     if(p.phone) out.push('phone <a href="tel:'+esc(String(p.phone).replace(/[^\d+]/g, ""))+'">'+esc(p.phone)+'</a>');
     var tg = String(p.telegram || "").replace(/^https?:\/\/t\.me\//i, "").replace(/^@/, "");
     if(tg) out.push('Telegram <a href="https://t.me/'+esc(tg)+'" target="_blank" rel="noopener">@'+esc(tg)+'</a>');
