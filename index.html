@@ -16107,6 +16107,26 @@ html:root:not(#x) body .d-mini a.d-chip.zm + .d-chip.fl{margin-left:0;}
   html:root:not(#x) body .t-logo span{font-size:16px !important;}
   html:root:not(#x) body .t-logo{gap:7px;}
 }
+
+/* phones: the bottom tab bar is position:fixed inside the header; a blur filter on the header would trap it at the top of the screen */
+@media (max-width:900px){
+  html:root:not(#x) body .d-side{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;filter:none !important;transform:none !important;}
+}
+
+@media (max-width:900px){
+  html:root:not(#x) body .d-side{background:rgba(250,251,255,.97) !important;}
+  html:root:not(#x)[data-theme="dark"] body .d-side{background:rgba(18,24,52,.97) !important;}
+}
+/* phones: tables turn into stacked cards, each value with its column name */
+@media (max-width:640px){
+  html:root:not(#x) body table.t-table.stack thead{display:none;}
+  html:root:not(#x) body table.t-table.stack, html:root:not(#x) body table.t-table.stack tbody{display:block;width:100%;}
+  html:root:not(#x) body table.t-table.stack tr{display:flex;flex-wrap:wrap;gap:6px 14px;padding:12px 4px;border-bottom:1px solid var(--line,#e4e7f0);}
+  html:root:not(#x) body table.t-table.stack td{display:block;border:0 !important;padding:0 !important;min-width:0;}
+  html:root:not(#x) body table.t-table.stack td:first-child{flex:1 1 100%;}
+  html:root:not(#x) body table.t-table.stack td[data-l]:not(:first-child)::before{content:attr(data-l);display:block;font-size:11px;font-weight:800;color:var(--ink-soft,#7a8199);text-transform:none;margin-bottom:1px;}
+  html:root:not(#x) body table.t-table.stack td:last-child:not([data-l]){flex:1 1 100%;}
+}
 </style>
 <script id="skprev-js">
 (function(){
@@ -16140,6 +16160,20 @@ html:root:not(#x) body .d-mini a.d-chip.zm + .d-chip.fl{margin-left:0;}
   });
   document.addEventListener("mouseout", function(e){ if(cur && e.target.closest && e.target.closest(".skill-row[data-skill]") === cur && !(e.relatedTarget && cur.contains(e.relatedTarget))) hide(); });
   ["scroll","mousedown","keydown"].forEach(function(t){ window.addEventListener(t, hide, true); });
+})();
+
+/* label table cells with their column name so phones can show tables as cards */
+(function(){
+  function label(t){
+    var th = t.querySelectorAll("thead th"); if(!th.length) return;
+    var names = [].map.call(th, function(h){ return h.textContent.trim(); });
+    t.querySelectorAll("tbody tr:not([data-lb])").forEach(function(tr){ tr.setAttribute("data-lb", ""); [].forEach.call(tr.children, function(td, i){ if(names[i]) td.setAttribute("data-l", names[i]); }); });
+    if(!t.classList.contains("stack")) t.classList.add("stack");
+  }
+  function scan(){ document.querySelectorAll("table.t-table").forEach(label); }
+  var q = false;
+  new MutationObserver(function(){ if(q) return; q = true; requestAnimationFrame(function(){ q = false; scan(); }); }).observe(document.documentElement, { childList:true, subtree:true });
+  scan();
 })();
 </script>
 </body>
