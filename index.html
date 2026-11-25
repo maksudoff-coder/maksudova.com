@@ -10424,6 +10424,16 @@ if(typeof module !== "undefined") module.exports = TMPlay;
      topics/{id}                 teacher's practice sets
      assignments/{id}            assignments
    ===================================================================== */
+/* homework removed for one student: assignments/{id}.skip = { <studentId>: ["skill", ...] }
+   (the skills that student no longer has). Returns what is left of the homework for that student, or null. */
+function asgFor(a, sid){
+  var sk = a && a.skip && a.skip[sid];
+  if(!sk || !sk.length) return a;
+  var o = Object.assign({}, a);
+  o.skills = (a.skills || []).filter(function(k){ return sk.indexOf(k) < 0; });
+  o.games = (a.games || []).filter(function(g){ return sk.indexOf("game:" + g.id + ":" + g.level) < 0; });
+  return (o.skills.length || o.games.length) ? o : null;
+}
 var Store = (function(){
   "use strict";
   var DOMAIN = "tutormaksudova.app";
@@ -10446,7 +10456,8 @@ var Store = (function(){
   async function forStudentOnly(list){
     if(me || !currentSid) return list;
     var t = await studentTid();
-    return list.filter(function(x){ return x.studentId === currentSid || (x.studentId === "all" && (x.teacherId || "") === t); });
+    return list.filter(function(x){ return x.studentId === currentSid || (x.studentId === "all" && (x.teacherId || "") === t); })
+      .map(function(x){ return x.skills ? asgFor(x, currentSid) : x; }).filter(Boolean);
   }
   function stamp(o){ if(isT() && !o.teacherId) o.teacherId = me.tid; return o; }
 
@@ -10684,6 +10695,20 @@ var Store = (function(){
       return db.doc("assignments/" + id).set(a).then(function(){ a.id = id; return a; });
     },
     deleteAssignment: function(id){ return db.doc("assignments/" + id).delete(); },
+    // take one skill (or a whole homework) away from one student
+    removeHomeworkFor: async function(id, sid, key){
+      var ref = db.doc("assignments/" + id), d = await ref.get(); if(!d.exists) return;
+      var a = d.data();
+      if(a.studentId === sid){   // their own homework: change it, or delete it when nothing is left
+        var rest = (a.skills || []).filter(function(k){ return k !== key; });
+        if(!rest.length && !(a.games || []).length) return ref.delete();
+        return ref.update({ skills: rest });
+      }
+      var skip = Object.assign({}, a.skip || {}), mineSk = (skip[sid] || []).slice();
+      if(mineSk.indexOf(key) < 0) mineSk.push(key);
+      skip[sid] = mineSk;
+      return ref.update({ skip: skip });
+    },
 
     /* --- blog: posts/{id}; published posts are public --- */
     listPosts: function(all){
@@ -11622,7 +11647,8 @@ var Store = (function(){
   // lowest target per skill among this student's assignments
   function targetsFor(sid, asg){
     var t = {};
-    asg.forEach(function(a){ if(itemFor(a, sid) && a.skills) a.skills.forEach(function(k){ if(t[k] === undefined || a.target < t[k]) t[k] = a.target; }); });
+    var id = (sid && typeof sid === "object") ? sid.id : sid;
+    asg.forEach(function(a){ if(!itemFor(a, sid) || !a.skills) return; var v = asgFor(a, id); if(v) v.skills.forEach(function(k){ if(t[k] === undefined || a.target < t[k]) t[k] = a.target; }); });
     return t;
   }
   function certsFor(st, prog, asg, topics){
@@ -13771,7 +13797,7 @@ var Store = (function(){
     var st = await Store.getStudent(S.tStudent);
     if(!st){ S.tStudent = null; return render(); }
     var r = await Promise.all([Store.getProgress(st.id), Store.getMistakes(st.id), Store.listTopics(), Store.listAssignments(), Store.getActivity(st.id)]);
-    var prog = r[0], mistakes = r[1], topics = r[2], asg = r[3], act = r[4], consent = await Store.getConsent(st.id).catch(function(){ return null; });
+    var prog = r[0], mistakes = r[1], topics = r[2], asg = r[3].map(function(a){ return a.skills ? asgFor(a, st.id) : a; }).filter(Boolean), act = r[4], consent = await Store.getConsent(st.id).catch(function(){ return null; });
     var revT = await Store.getReviewResults(st.id).catch(function(){ return {}; }), walletT = walletOf(await Store.getWallet(st.id).catch(function(){ return {}; })), stk = streakInfo(act);
     var keys = Object.keys(prog).sort(function(a,b){ return (prog[b].lastAt||0) - (prog[a].lastAt||0); });
     var total = keys.reduce(function(s,k){ return s + (prog[k].answered||0); }, 0);
@@ -13792,12 +13818,13 @@ var Store = (function(){
 
     var mine = asg.filter(function(a){ return itemFor(a, st); });
     if(mine.length){
-      h += '<h2 class="sec">Assignments</h2><div class="card table-wrap"><table class="t-table"><thead><tr><th>Skill</th><th>Best SmartScore</th><th>Target</th><th>Due</th><th>Certificate</th></tr></thead><tbody>';
+      h += '<h2 class="sec">Assignments</h2><div class="card table-wrap"><table class="t-table"><thead><tr><th>Skill</th><th>Best SmartScore</th><th>Target</th><th>Due</th><th>Certificate</th><th>Remove</th></tr></thead><tbody>';
       var certs = certsFor(st, prog, asg, topics), certIdx = {}; certs.forEach(function(c, i){ certIdx[c.key] = i; });
       mine.forEach(function(a){ a.skills.forEach(function(k){
         var info = skillInfo(k, topics); if(!info) return; var best = prog[k] ? prog[k].best || 0 : 0;
         h += '<tr><td>'+esc(info.title)+'</td><td class="num">'+(best >= a.target ? '<span class="ok">✓ '+best+'</span>' : best)+'</td><td class="num">'+a.target+'</td><td>'+dueInfo(a.due).text+'</td>'+
-          '<td>'+(certIdx[k] !== undefined ? '<button class="btn ghost sm" data-cert="'+certIdx[k]+'">🎓 View</button>' : '<span class="muted">Not yet</span>')+'</td></tr>';
+          '<td>'+(certIdx[k] !== undefined ? '<button class="btn ghost sm" data-cert="'+certIdx[k]+'">🎓 View</button>' : '<span class="muted">Not yet</span>')+'</td>'+
+          '<td><button class="btn danger sm" data-hwdel="'+esc(a.id)+'|'+esc(k)+'" title="Remove this homework from '+esc(st.name)+'">🗑 Delete</button></td></tr>';
       }); });
       h += '</tbody></table></div>';
     }
@@ -13855,6 +13882,11 @@ var Store = (function(){
     $("#bd-open").onclick = function(){ S.boardSid = st.id; go("board"); };
     $("#d-msg").onclick = function(){ S.tTab = "messages"; S.chatSid = st.id; S.tStudent = null; render(); };
     $("#d-report").onclick = function(){ copyText(parentReport(st, prog, act, asg, topics), "Report copied. Paste it into an email or message."); };
+    $$("[data-hwdel]").forEach(function(b){ armConfirm(b, async function(){
+      var v = b.dataset.hwdel, i = v.indexOf("|");
+      try{ await Store.removeHomeworkFor(v.slice(0, i), st.id, v.slice(i + 1)); toast("Homework removed for " + st.name + "."); render(); }
+      catch(e){ toast("Could not remove it. Please try again."); }
+    }); });
     wireCreds(S.creds);
     $("#d-pw").onclick = async function(){
       var pw = makePassword();
