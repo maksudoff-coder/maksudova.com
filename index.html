@@ -10696,16 +10696,17 @@ var Store = (function(){
     },
     deleteAssignment: function(id){ return db.doc("assignments/" + id).delete(); },
     // take one skill (or a whole homework) away from one student
-    removeHomeworkFor: async function(id, sid, key){
+    removeHomeworkFor: async function(id, sid, keys){
+      keys = [].concat(keys);
       var ref = db.doc("assignments/" + id), d = await ref.get(); if(!d.exists) return;
       var a = d.data();
       if(a.studentId === sid){   // their own homework: change it, or delete it when nothing is left
-        var rest = (a.skills || []).filter(function(k){ return k !== key; });
+        var rest = (a.skills || []).filter(function(k){ return keys.indexOf(k) < 0; });
         if(!rest.length && !(a.games || []).length) return ref.delete();
         return ref.update({ skills: rest });
       }
       var skip = Object.assign({}, a.skip || {}), mineSk = (skip[sid] || []).slice();
-      if(mineSk.indexOf(key) < 0) mineSk.push(key);
+      keys.forEach(function(k){ if(mineSk.indexOf(k) < 0) mineSk.push(k); });
       skip[sid] = mineSk;
       return ref.update({ skip: skip });
     },
@@ -13818,11 +13819,11 @@ var Store = (function(){
 
     var mine = asg.filter(function(a){ return itemFor(a, st); });
     if(mine.length){
-      h += '<h2 class="sec">Assignments</h2><div class="card table-wrap"><table class="t-table"><thead><tr><th>Skill</th><th>Best SmartScore</th><th>Target</th><th>Due</th><th>Certificate</th><th>Remove</th></tr></thead><tbody>';
+      h += '<div class="section-title" style="margin-top:22px;"><h2 class="sec" style="margin:0;">Assignments</h2><span class="btn-row" style="margin:0;align-items:center;"><label class="hw-allbox"><input type="checkbox" id="hw-all"> Select all</label><button class="btn danger sm" id="hw-delsel" disabled>🗑 Delete selected (<span id="hw-nsel">0</span>)</button></span></div><div class="card table-wrap"><table class="t-table hw-tbl"><thead><tr><th class="hw-ck"></th><th>Skill</th><th>Best SmartScore</th><th>Target</th><th>Due</th><th>Certificate</th><th>Remove</th></tr></thead><tbody>';
       var certs = certsFor(st, prog, asg, topics), certIdx = {}; certs.forEach(function(c, i){ certIdx[c.key] = i; });
       mine.forEach(function(a){ a.skills.forEach(function(k){
         var info = skillInfo(k, topics); if(!info) return; var best = prog[k] ? prog[k].best || 0 : 0;
-        h += '<tr><td>'+esc(info.title)+'</td><td class="num">'+(best >= a.target ? '<span class="ok">✓ '+best+'</span>' : best)+'</td><td class="num">'+a.target+'</td><td>'+dueInfo(a.due).text+'</td>'+
+        h += '<tr><td class="hw-ck"><input type="checkbox" class="hw-sel" value="'+esc(a.id)+'|'+esc(k)+'" aria-label="Select '+esc(info.title)+'"></td><td>'+esc(info.title)+'</td><td class="num">'+(best >= a.target ? '<span class="ok">✓ '+best+'</span>' : best)+'</td><td class="num">'+a.target+'</td><td>'+dueInfo(a.due).text+'</td>'+
           '<td>'+(certIdx[k] !== undefined ? '<button class="btn ghost sm" data-cert="'+certIdx[k]+'">🎓 View</button>' : '<span class="muted">Not yet</span>')+'</td>'+
           '<td><button class="btn danger sm" data-hwdel="'+esc(a.id)+'|'+esc(k)+'" title="Remove this homework from '+esc(st.name)+'">🗑 Delete</button></td></tr>';
       }); });
@@ -13887,6 +13888,26 @@ var Store = (function(){
       try{ await Store.removeHomeworkFor(v.slice(0, i), st.id, v.slice(i + 1)); toast("Homework removed for " + st.name + "."); render(); }
       catch(e){ toast("Could not remove it. Please try again."); }
     }); });
+    // select several homework rows and delete them together
+    function hwSync(){
+      var all = $$(".hw-sel"), on = all.filter(function(c){ return c.checked; });
+      if($("#hw-nsel")) $("#hw-nsel").textContent = on.length;
+      if($("#hw-delsel")) $("#hw-delsel").disabled = !on.length;
+      if($("#hw-all")){ $("#hw-all").checked = on.length && on.length === all.length; $("#hw-all").indeterminate = on.length > 0 && on.length < all.length; }
+    }
+    $$(".hw-sel").forEach(function(c){ c.onchange = hwSync; });
+    if($("#hw-all")) $("#hw-all").onchange = function(){ var v = this.checked; $$(".hw-sel").forEach(function(c){ c.checked = v; }); hwSync(); };
+    if($("#hw-delsel")) $("#hw-delsel").onclick = async function(){
+      var on = $$(".hw-sel").filter(function(c){ return c.checked; }); if(!on.length) return;
+      if(!confirm("Delete " + on.length + " homework skill" + (on.length === 1 ? "" : "s") + " for " + st.name + "? Other students keep theirs.")) return;
+      var byA = {};
+      on.forEach(function(c){ var v = c.value, i = v.indexOf("|"); (byA[v.slice(0, i)] = byA[v.slice(0, i)] || []).push(v.slice(i + 1)); });
+      this.disabled = true;
+      try{
+        for(var id in byA) await Store.removeHomeworkFor(id, st.id, byA[id]);
+        toast(on.length + " homework skill" + (on.length === 1 ? "" : "s") + " removed for " + st.name + "."); render();
+      }catch(e){ toast("Some homework could not be removed. Please try again."); render(); }
+    };
     wireCreds(S.creds);
     $("#d-pw").onclick = async function(){
       var pw = makePassword();
@@ -16172,6 +16193,9 @@ html:root:not(#x) body .d-mini a.d-chip.zm + .d-chip.fl{margin-left:0;}
 html:root:not(#x) body .d-brand{cursor:pointer;border-radius:14px;}
 html:root:not(#x) body .d-brand:focus-visible{outline:3px solid #2f6bff;outline-offset:3px;}
 @media (max-width:900px){ html:root:not(#x) body .hw-bar{bottom:calc(88px + env(safe-area-inset-bottom)) !important;} }
+html:root:not(#x) body .hw-tbl .hw-ck{width:36px;text-align:center;} html:root:not(#x) body .hw-tbl .hw-ck input{width:18px;height:18px;margin:0;accent-color:#2f6bff;cursor:pointer;}
+@media (max-width:640px){ html:root:not(#x) body table.t-table.stack.hw-tbl td.hw-ck{flex:0 0 auto !important;order:-1;} html:root:not(#x) body table.t-table.stack.hw-tbl td.hw-ck + td{flex:1 1 calc(100% - 70px) !important;font-weight:800;align-self:center;} html:root:not(#x) body table.t-table.stack.hw-tbl td.hw-ck + td::before{display:none !important;} html:root:not(#x) body table.t-table.stack.hw-tbl td.hw-ck{width:auto;align-self:center;} }
+html:root:not(#x) body .hw-allbox{display:inline-flex;align-items:center;gap:7px;margin:0 6px 0 0;font-weight:800;font-size:14px;cursor:pointer;} html:root:not(#x) body .hw-allbox input{width:18px;height:18px;margin:0;accent-color:#2f6bff;}
 </style>
 <script id="skprev-js">
 (function(){
